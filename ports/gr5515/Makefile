@@ -1,6 +1,9 @@
 include ../../py/mkenv.mk
 
-CROSS = 0
+# must be cross compile
+CROSS = 1
+V = 1
+BUILD_VERBOSE = 1
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
@@ -8,33 +11,46 @@ QSTR_DEFS = qstrdefsport.h
 # include py core make definitions
 include $(TOP)/py/py.mk
 
-ifeq ($(CROSS), 1)
+# set compiler
 CROSS_COMPILE = arm-none-eabi-
-endif
 
+# set target name
+TARGET_NAME := gr5515
+TARGET_APP  := gr5515_app
+
+# set include dirs
 INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
 
-ifeq ($(CROSS), 1)
-DFU = $(TOP)/tools/dfu.py
-PYDFU = $(TOP)/tools/pydfu.py
-CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -msoft-float -fsingle-precision-constant -Wdouble-promotion
-CFLAGS = $(INC) -Wall -Werror -std=c99 -nostdlib $(CFLAGS_CORTEX_M4) $(COPT)
-LDFLAGS = -nostdlib -T stm32f405.ld -Map=$@.map --cref --gc-sections
-else
-LD = gcc
-CFLAGS = -m32 $(INC) -Wall -Werror -std=c99 $(COPT)
-LDFLAGS = -m32 -Wl,-Map=$@.map,--cref -Wl,--gc-sections
-endif
-
-# Tune for Debugging or Optimization
-ifeq ($(DEBUG), 1)
-CFLAGS += -O0 -ggdb
-else
-CFLAGS += -Os -DNDEBUG
-CFLAGS += -fdata-sections -ffunction-sections
-endif
+INC_GR += -I.
+INC_GR += -I./modules
+INC_GR += -I./modules/machine
+INC_GR += -I./GR551x_SDK_V0_94/components/boards
+INC_GR += -I./GR551x_SDK_V0_94/components/drivers_ext/gr551x
+INC_GR += -I./GR551x_SDK_V0_94/components/sdk
+INC_GR += -I./GR551x_SDK_V0_94/components/libraries/app_assert
+INC_GR += -I./GR551x_SDK_V0_94/components/libraries/app_error
+INC_GR += -I./GR551x_SDK_V0_94/components/libraries/app_key
+INC_GR += -I./GR551x_SDK_V0_94/components/libraries/app_log
+INC_GR += -I./GR551x_SDK_V0_94/components/libraries/app_timer
+INC_GR += -I./GR551x_SDK_V0_94/components/libraries/at_cmd
+INC_GR += -I./GR551x_SDK_V0_94/components/libraries/bsp
+INC_GR += -I./GR551x_SDK_V0_94/components/libraries/gui
+INC_GR += -I./GR551x_SDK_V0_94/components/libraries/gui/gui_config
+INC_GR += -I./GR551x_SDK_V0_94/components/libraries/hal_flash
+INC_GR += -I./GR551x_SDK_V0_94/components/libraries/hal_flash/vflash
+INC_GR += -I./GR551x_SDK_V0_94/components/libraries/hci_uart
+INC_GR += -I./GR551x_SDK_V0_94/components/libraries/log
+INC_GR += -I./GR551x_SDK_V0_94/components/libraries/pwr_mgmt
+INC_GR += -I./GR551x_SDK_V0_94/components/libraries/ring_buffer
+INC_GR += -I./GR551x_SDK_V0_94/components/libraries/sensorsim
+INC_GR += -I./GR551x_SDK_V0_94/components/libraries/utility
+INC_GR += -I./GR551x_SDK_V0_94/components/patch/ind
+INC_GR += -I./GR551x_SDK_V0_94/components/profiles/common
+INC_GR += -I./GR551x_SDK_V0_94/drivers/inc
+INC_GR += -I./GR551x_SDK_V0_94/toolchain/cmsis/include
+INC_GR += -I./GR551x_SDK_V0_94/toolchain/gr551x/include
 
 LIBS =
 
@@ -47,45 +63,155 @@ SRC_C = \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
 	$(BUILD)/_frozen_mpy.c \
+    modules/machine/interrupt_gr55xx.c \
+    modules/machine/platform_gr55xx.c \
+    modules/machine/system_gr55xx.c \
+    GR551x_SDK_V0_94/drivers/src/gr55xx_hal.c  \
+    GR551x_SDK_V0_94/drivers/src/gr55xx_hal_adc.c  \
+    GR551x_SDK_V0_94/drivers/src/gr55xx_hal_aes.c  \
+    GR551x_SDK_V0_94/drivers/src/gr55xx_hal_aon_gpio.c  \
+    GR551x_SDK_V0_94/drivers/src/gr55xx_hal_aon_wdt.c  \
+    GR551x_SDK_V0_94/drivers/src/gr55xx_hal_calendar.c  \
+    GR551x_SDK_V0_94/drivers/src/gr55xx_hal_dual_tim.c  \
+    GR551x_SDK_V0_94/drivers/src/gr55xx_hal_efuse.c  \
+    GR551x_SDK_V0_94/drivers/src/gr55xx_hal_exflash.c  \
+    GR551x_SDK_V0_94/drivers/src/gr55xx_hal_gpio.c  \
+    GR551x_SDK_V0_94/drivers/src/gr55xx_hal_hmac.c  \
+    GR551x_SDK_V0_94/drivers/src/gr55xx_hal_i2c.c  \
+    GR551x_SDK_V0_94/drivers/src/gr55xx_hal_i2s.c  \
+    GR551x_SDK_V0_94/drivers/src/gr55xx_hal_pkc.c  \
+    GR551x_SDK_V0_94/drivers/src/gr55xx_hal_pwm.c  \
+    GR551x_SDK_V0_94/drivers/src/gr55xx_hal_pwr.c  \
+    GR551x_SDK_V0_94/drivers/src/gr55xx_hal_qspi.c  \
+    GR551x_SDK_V0_94/drivers/src/gr55xx_hal_rng.c  \
+    GR551x_SDK_V0_94/drivers/src/gr55xx_hal_spi.c  \
+    GR551x_SDK_V0_94/drivers/src/gr55xx_hal_tim.c  \
+    GR551x_SDK_V0_94/drivers/src/gr55xx_hal_uart.c  \
+    GR551x_SDK_V0_94/drivers/src/gr55xx_hal_wdt.c  \
+    GR551x_SDK_V0_94/drivers/src/gr55xx_hal_xqspi.c  \
+    GR551x_SDK_V0_94/drivers/bridge/gr55xx_hal_adc_br.c  \
+    GR551x_SDK_V0_94/drivers/bridge/gr55xx_hal_aes_br.c  \
+    GR551x_SDK_V0_94/drivers/bridge/gr55xx_hal_aon_gpio_br.c  \
+    GR551x_SDK_V0_94/drivers/bridge/gr55xx_hal_aon_wdt_br.c  \
+    GR551x_SDK_V0_94/drivers/bridge/gr55xx_hal_br.c  \
+    GR551x_SDK_V0_94/drivers/bridge/gr55xx_hal_calendar_br.c  \
+    GR551x_SDK_V0_94/drivers/bridge/gr55xx_hal_dual_tim_br.c  \
+    GR551x_SDK_V0_94/drivers/bridge/gr55xx_hal_efuse_br.c  \
+    GR551x_SDK_V0_94/drivers/bridge/gr55xx_hal_exflash_br.c  \
+    GR551x_SDK_V0_94/drivers/bridge/gr55xx_hal_gpio_br.c  \
+    GR551x_SDK_V0_94/drivers/bridge/gr55xx_hal_hmac_br.c  \
+    GR551x_SDK_V0_94/drivers/bridge/gr55xx_hal_i2c_br.c  \
+    GR551x_SDK_V0_94/drivers/bridge/gr55xx_hal_i2s_br.c  \
+    GR551x_SDK_V0_94/drivers/bridge/gr55xx_hal_pkc_br.c  \
+    GR551x_SDK_V0_94/drivers/bridge/gr55xx_hal_pwm_br.c  \
+    GR551x_SDK_V0_94/drivers/bridge/gr55xx_hal_qspi_br.c  \
+    GR551x_SDK_V0_94/drivers/bridge/gr55xx_hal_rng_br.c  \
+    GR551x_SDK_V0_94/drivers/bridge/gr55xx_hal_spi_br.c  \
+    GR551x_SDK_V0_94/drivers/bridge/gr55xx_hal_tim_br.c  \
+    GR551x_SDK_V0_94/drivers/bridge/gr55xx_hal_uart_br.c  \
+    GR551x_SDK_V0_94/drivers/bridge/gr55xx_hal_wdt_br.c  \
+    GR551x_SDK_V0_94/drivers/bridge/gr55xx_hal_xqspi_br.c  \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_cgc.c  \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_cortex.c  \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_dma.c  \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_msio.c  \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_msp_template.c  \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_adc.c  \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_aes.c  \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_aon_gpio.c  \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_cgc.c  \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_dma.c  \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_dual_tim.c  \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_gpio.c  \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_hmac.c  \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_i2c.c  \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_i2s.c  \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_msio.c  \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_pkc.c  \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_pwm.c  \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_rng.c  \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_spi.c  \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_tim.c  \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_uart.c  \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_xqspi.c  \
+    GR551x_SDK_V0_94/components/libraries/hal_flash/hal_flash.c  \
+    GR551x_SDK_V0_94/components/libraries/hal_flash/vflash/vflash.c  \
+    GR551x_SDK_V0_94/components/libraries/app_timer/app_timer.c  \
+    GR551x_SDK_V0_94/components/libraries/app_log/app_log.c  \
+    GR551x_SDK_V0_94/components/libraries/app_log/app_log_port.c  \
+    GR551x_SDK_V0_94/components/libraries/app_error/app_error.c  \
+    GR551x_SDK_V0_94/components/libraries/app_assert/app_assert.c  \
+    GR551x_SDK_V0_94/components/libraries/ring_buffer/ring_buffer.c  \
+    GR551x_SDK_V0_94/components/libraries/utility/utility.c  \
 
-OBJ = $(PY_CORE_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
-ifeq ($(CROSS), 1)
-all: $(BUILD)/firmware.dfu
+SRC_ASM = startup_gr55xx.s
+
+# set CFLAGS
+CFLAGS += $(INC) $(INC_GR)
+CFLAGS += -O0
+CFLAGS += -mfloat-abi=softfp -mfpu=fpv4-sp-d16  -mthumb-interwork  -mthumb -mcpu=cortex-m4
+CFLAGS += -ffunction-sections -fdata-sections -DGR5515_SK -std=gnu99 -ggdb3
+
+# set LDFLAGS
+LDFLAGS += -Wl,--gc-sections -Wa,-mimplicit-it=thumb
+# -Map=$(BUILD)/$(TARGET_NAME).map
+# $(@:.axf=.map) --xref
+LDFLAGS += -L./modules/lib -lsdk
+
+# set ref files
+LINK_SCRIPT := ./gr5515.ld
+PATCH_FILE  += ./modules/lib/rom_symbol.txt
+TOOL_PATH    = ./modules/tools
+
+# set OBJ
+GR_SYS_OBJ += ./modules/lib/gr55xx_hal_exflash.o
+GR_SYS_OBJ += ./modules/lib/gr55xx_hal_pwr.o
+GR_SYS_OBJ += ./modules/lib/gr55xx_hal_xqspi.o
+GR_SYS_OBJ += ./modules/lib/gr55xx_ll_xqspi.o
+GR_SYS_OBJ += ./modules/lib/svc_handler_gcc.o
+
+OBJ = $(PY_CORE_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o)) $(addprefix $(BUILD)/, $(SRC_ASM:.s=.o))
+
+OBJ_DIR = $(BUILD)
+OBJ_2 = $(patsubst %.o,$(OBJ_DIR)/%.o,$(notdir $(OBJ)))
+
+# verbosity switch
+V ?= 0
+ifeq ($(V),0)
+	V_CC = @echo "  arm-none-eabi-CC    " $@;
+	V_CPP = @echo "  arm-none-eabi-CPP   " $@;
+	V_LINK = @echo "  arm-none-eabi-LINK  " $@;
+	V_OBJCOPY = @echo "  arm-none-eabi-OBJCPY" $@;
+	V_CLEAN = @echo "  arm-none-eabi-CLEAN ";
+	V_SED = @echo "  SED   " $@;
+	V_GAWK = @echo "  GAWK  " $@;
 else
-all: $(BUILD)/firmware.elf
+	V_OPT = '-v'
 endif
+
+# default make goal
+all: $(BUILD)/$(TARGET_APP).bin
+
+$(BUILD)/$(TARGET_APP).bin: $(BUILD)/$(TARGET_NAME).bin
+	$(ECHO) "update binary file ..."
+	$(TOOL_PATH)/ble_tools.exe --cfg=./modules/custom_config.h --mode=gen --bin=$(BUILD)/$(TARGET_NAME).bin --outdir=$(BUILD) --app_name=$(TARGET_APP)
+	rm -rf $(BUILD)/info.* $(BUILD)/header.* $(BUILD)/*.tmp $(BUILD)/linker.lds
+    
+$(BUILD)/$(TARGET_NAME).bin: $(BUILD)/$(TARGET_NAME).axf
+	$(ECHO) "compile binary file ..."
+	$(V_OBJCOPY)$(OBJCOPY) -O binary $< $@
+
+$(BUILD)/$(TARGET_NAME).axf: $(OBJ)
+	$(ECHO) "compile .axf file ..."
+	$(V_LINK)$(CC) $(CFLAGS) -T gr5515.lds $(PATCH_FILE) $(OBJ) $(LDFLAGS) -Wl,-Map=$(BUILD)/$(TARGET_NAME).map -o $@
 
 $(BUILD)/_frozen_mpy.c: frozentest.mpy $(BUILD)/genhdr/qstrdefs.generated.h
 	$(ECHO) "MISC freezing bytecode"
 	$(Q)$(TOP)/tools/mpy-tool.py -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h -mlongint-impl=none $< > $@
 
-$(BUILD)/firmware.elf: $(OBJ)
-	$(ECHO) "LINK $@"
-	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
-	$(Q)$(SIZE) $@
+deploy: $(BUILD)/$(TARGET_APP).bin
+	$(ECHO) "Writing $< to the gr5515-sk board"
 
-$(BUILD)/firmware.bin: $(BUILD)/firmware.elf
-	$(Q)$(OBJCOPY) -O binary -j .isr_vector -j .text -j .data $^ $(BUILD)/firmware.bin
-
-$(BUILD)/firmware.dfu: $(BUILD)/firmware.bin
-	$(ECHO) "Create $@"
-	$(Q)$(PYTHON) $(DFU) -b 0x08000000:$(BUILD)/firmware.bin $@
-
-deploy: $(BUILD)/firmware.dfu
-	$(ECHO) "Writing $< to the board"
-	$(Q)$(PYTHON) $(PYDFU) -u $<
-
-# Run emulation build on a POSIX system with suitable terminal settings
-run:
-	stty raw opost -echo
-	build/firmware.elf
-	@echo Resetting terminal...
-# This sleep is useful to spot segfaults
-	sleep 1
-	reset
-
-test: $(BUILD)/firmware.elf
-	$(Q)/bin/echo -e "print('hello world!', list(x+1 for x in range(10)), end='eol\\\\n')\\r\\n\\x04" | $(BUILD)/firmware.elf | tail -n2 | grep "^hello world! \\[1, 2, 3, 4, 5, 6, 7, 8, 9, 10\\]eol"
 
 include $(TOP)/py/mkrules.mk

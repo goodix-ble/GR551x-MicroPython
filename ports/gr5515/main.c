@@ -9,6 +9,66 @@
 #include "py/mperrno.h"
 #include "lib/utils/pyexec.h"
 
+
+#include "app_log.h"
+#include "app_assert.h"
+#include "hal_flash.h"
+
+
+/**@brief Bluetooth device address. */
+static const uint8_t  s_bd_addr[6] = {0x15, 0x00, 0xcf, 0x3e, 0xcb, 0xea};
+//static const uint8_t  s_bd_addr[SYS_BD_ADDR_LEN] = {0x11, 0x00, 0x00, 0x33, 0x22, 0x11};
+static app_log_init_t s_app_log_init; 
+
+/*
+ * LOCAL  FUNCTION DEFINITIONS
+ *****************************************************************************************
+ */
+static void log_assert_init(void)
+{
+    s_app_log_init.filter.level                 = APP_LOG_LVL_DEBUG;
+    s_app_log_init.fmt_set[APP_LOG_LVL_ERROR]   = APP_LOG_FMT_ALL & (~APP_LOG_FMT_TAG);
+    s_app_log_init.fmt_set[APP_LOG_LVL_WARNING] = APP_LOG_FMT_LVL;
+    s_app_log_init.fmt_set[APP_LOG_LVL_INFO]    = APP_LOG_FMT_LVL;
+    s_app_log_init.fmt_set[APP_LOG_LVL_DEBUG]   = APP_LOG_FMT_LVL;
+
+    app_log_init(&s_app_log_init);
+    app_assert_default_cb_register();
+}
+
+
+/*
+ * GLOBAL FUNCTION DEFINITIONS
+ *****************************************************************************************
+ */
+
+void app_periph_init(void)
+{
+    hal_flash_init();
+    log_assert_init();
+    //nvds_init(NVDS_START_ADDR, NVDS_NUM_SECTOR);
+    //SYS_SET_BD_ADDR(s_bd_addr);
+    
+    //pwr_mgmt_init(pwr_table);
+    //pwr_mgmt_mode_set(PMR_MGMT_ACTIVE_MODE);
+    
+    /* enable sdk log*/
+#if 1
+    //ble_stack_debug_setup(0x7FFFFFFF, 0x7FFFFFFF, vprintf);
+#endif
+    
+}
+
+
+
+
+
+
+
+
+
+
+
 #if MICROPY_ENABLE_COMPILER
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     nlr_buf_t nlr;
@@ -35,28 +95,40 @@ int main(int argc, char **argv) {
     int stack_dummy;
     stack_top = (char*)&stack_dummy;
 
-    #if MICROPY_ENABLE_GC
+#if MICROPY_ENABLE_GC
     gc_init(heap, heap + sizeof(heap));
-    #endif
-    mp_init();
-    #if MICROPY_ENABLE_COMPILER
-    #if MICROPY_REPL_EVENT_DRIVEN
-    pyexec_event_repl_init();
-    for (;;) {
-        int c = mp_hal_stdin_rx_chr();
-        if (pyexec_event_repl_process_char(c)) {
-            break;
-        }
+#endif
+app_periph_init();
+    //mp_init();
+
+    while(1){
+        APP_LOG_INFO("test ....\r\n");
+        
+        sys_delay_ms(1000);
     }
+    
+#if MICROPY_ENABLE_COMPILER
+    #if MICROPY_REPL_EVENT_DRIVEN
+        pyexec_event_repl_init();
+        for (;;) {
+            int c = mp_hal_stdin_rx_chr();
+            if (pyexec_event_repl_process_char(c)) {
+                break;
+            }
+        }
     #else
-    pyexec_friendly_repl();
+        pyexec_friendly_repl();
     #endif
+    
     //do_str("print('hello world!', list(x+1 for x in range(10)), end='eol\\n')", MP_PARSE_SINGLE_INPUT);
     //do_str("for i in range(10):\r\n  print(i)", MP_PARSE_FILE_INPUT);
-    #else
+
+#else
     pyexec_frozen_module("frozentest.py");
-    #endif
+#endif
+
     mp_deinit();
+
     return 0;
 }
 
@@ -146,17 +218,7 @@ const uint32_t isr_vector[] __attribute__((section(".isr_vector"))) = {
 };
 
 void _start(void) {
-    // when we get here: stack is initialised, bss is clear, data is copied
-
-    // SCB->CCR: enable 8-byte stack alignment for IRQ handlers, in accord with EABI
-    *((volatile uint32_t*)0xe000ed14) |= 1 << 9;
-
-    // initialise the cpu and peripherals
-    #if MICROPY_MIN_USE_STM32_MCU
-    void stm32_init(void);
-    stm32_init();
-    #endif
-
+    
     // now that we have a basic system up and running we can call main
     main(0, NULL);
 
