@@ -28,17 +28,9 @@ int mp_hal_stdin_rx_chr(void) {
     return c;
 }
 
+extern int _write(int file, const char *buf, int len);
+
 // Send string of given length
 void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
-#if MICROPY_MIN_USE_STDOUT
-    int r = write(1, str, len);
-    (void)r;
-#elif MICROPY_MIN_USE_STM32_MCU
-    while (len--) {
-        // wait for TXE
-        while ((USART1->SR & (1 << 7)) == 0) {
-        }
-        USART1->DR = *str++;
-    }
-#endif
+    _write(0, str, len);
 }

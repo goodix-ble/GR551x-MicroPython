@@ -63,9 +63,9 @@ SRC_C = \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
 	$(BUILD)/_frozen_mpy.c \
-    modules/machine/interrupt_gr55xx.c \
-    modules/machine/platform_gr55xx.c \
-    modules/machine/system_gr55xx.c \
+    GR551x_SDK_V0_94/toolchain/gr551x/source/interrupt_gr55xx.c \
+    GR551x_SDK_V0_94/toolchain/gr551x/source/platform_gr55xx.c \
+    GR551x_SDK_V0_94/toolchain/gr551x/source/system_gr55xx.c \
     GR551x_SDK_V0_94/drivers/src/gr55xx_hal.c  \
     GR551x_SDK_V0_94/drivers/src/gr55xx_hal_adc.c  \
     GR551x_SDK_V0_94/drivers/src/gr55xx_hal_aes.c  \
@@ -74,21 +74,18 @@ SRC_C = \
     GR551x_SDK_V0_94/drivers/src/gr55xx_hal_calendar.c  \
     GR551x_SDK_V0_94/drivers/src/gr55xx_hal_dual_tim.c  \
     GR551x_SDK_V0_94/drivers/src/gr55xx_hal_efuse.c  \
-    GR551x_SDK_V0_94/drivers/src/gr55xx_hal_exflash.c  \
     GR551x_SDK_V0_94/drivers/src/gr55xx_hal_gpio.c  \
     GR551x_SDK_V0_94/drivers/src/gr55xx_hal_hmac.c  \
     GR551x_SDK_V0_94/drivers/src/gr55xx_hal_i2c.c  \
     GR551x_SDK_V0_94/drivers/src/gr55xx_hal_i2s.c  \
     GR551x_SDK_V0_94/drivers/src/gr55xx_hal_pkc.c  \
     GR551x_SDK_V0_94/drivers/src/gr55xx_hal_pwm.c  \
-    GR551x_SDK_V0_94/drivers/src/gr55xx_hal_pwr.c  \
     GR551x_SDK_V0_94/drivers/src/gr55xx_hal_qspi.c  \
     GR551x_SDK_V0_94/drivers/src/gr55xx_hal_rng.c  \
     GR551x_SDK_V0_94/drivers/src/gr55xx_hal_spi.c  \
     GR551x_SDK_V0_94/drivers/src/gr55xx_hal_tim.c  \
     GR551x_SDK_V0_94/drivers/src/gr55xx_hal_uart.c  \
     GR551x_SDK_V0_94/drivers/src/gr55xx_hal_wdt.c  \
-    GR551x_SDK_V0_94/drivers/src/gr55xx_hal_xqspi.c  \
     GR551x_SDK_V0_94/drivers/bridge/gr55xx_hal_adc_br.c  \
     GR551x_SDK_V0_94/drivers/bridge/gr55xx_hal_aes_br.c  \
     GR551x_SDK_V0_94/drivers/bridge/gr55xx_hal_aon_gpio_br.c  \
@@ -111,29 +108,49 @@ SRC_C = \
     GR551x_SDK_V0_94/drivers/bridge/gr55xx_hal_uart_br.c  \
     GR551x_SDK_V0_94/drivers/bridge/gr55xx_hal_wdt_br.c  \
     GR551x_SDK_V0_94/drivers/bridge/gr55xx_hal_xqspi_br.c  \
-    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_cgc.c  \
-    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_cortex.c  \
-    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_dma.c  \
-    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_msio.c  \
-    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_msp_template.c  \
-    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_adc.c  \
-    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_aes.c  \
-    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_aon_gpio.c  \
-    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_cgc.c  \
-    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_dma.c  \
-    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_dual_tim.c  \
-    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_gpio.c  \
-    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_hmac.c  \
-    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_i2c.c  \
-    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_i2s.c  \
-    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_msio.c  \
-    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_pkc.c  \
-    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_pwm.c  \
-    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_rng.c  \
-    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_spi.c  \
-    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_tim.c  \
-    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_uart.c  \
-    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_xqspi.c  \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_adc.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_aes.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_aon_gpio.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_aon_wdt.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_calendar.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_cgc.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_cortex.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_dma.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_dual_tim.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_efuse.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_gpio.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_hmac.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_i2c.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_i2s.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_msio.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_msp_template.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_pkc.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_pwm.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_qspi.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_rng.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_spi.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_tim.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_uart.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_utils.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_wdt.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_adc.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_aes.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_aon_gpio.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_cgc.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_dma.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_dual_tim.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_gpio.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_hmac.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_i2c.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_i2s.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_msio.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_pkc.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_pwm.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_rng.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_spi.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_tim.c \
+    GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_uart.c \
     GR551x_SDK_V0_94/components/libraries/hal_flash/hal_flash.c  \
     GR551x_SDK_V0_94/components/libraries/hal_flash/vflash/vflash.c  \
     GR551x_SDK_V0_94/components/libraries/app_timer/app_timer.c  \
@@ -143,24 +160,33 @@ SRC_C = \
     GR551x_SDK_V0_94/components/libraries/app_assert/app_assert.c  \
     GR551x_SDK_V0_94/components/libraries/ring_buffer/ring_buffer.c  \
     GR551x_SDK_V0_94/components/libraries/utility/utility.c  \
-
-
+    
+    #GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_xqspi.c \
+    #GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_exflash.c \
+    #GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_pwr.c \
+    
+    #GR551x_SDK_V0_94/drivers/src_inner/gr55xx_ll_xqspi.c \
+    #GR551x_SDK_V0_94/drivers/src/gr55xx_hal_xqspi.c  \
+    #GR551x_SDK_V0_94/drivers/src/gr55xx_hal_pwr.c  \
+    #GR551x_SDK_V0_94/drivers/src/gr55xx_hal_exflash.c  \
+    
 SRC_ASM = startup_gr55xx.s
 
 # set CFLAGS
 CFLAGS += $(INC) $(INC_GR)
-CFLAGS += -O0
+CFLAGS += -O0 -DGR5515_SK -DNDEBUG
 CFLAGS += -mfloat-abi=softfp -mfpu=fpv4-sp-d16  -mthumb-interwork  -mthumb -mcpu=cortex-m4
-CFLAGS += -ffunction-sections -fdata-sections -DGR5515_SK -std=gnu99 -ggdb3
+CFLAGS += -ffunction-sections -fdata-sections -std=gnu99 -ggdb3
 
 # set LDFLAGS
-LDFLAGS += -Wl,--gc-sections -Wa,-mimplicit-it=thumb
+LDFLAGS += -Wl,--gc-sections 
+# -Wa,-mimplicit-it=thumb
 # -Map=$(BUILD)/$(TARGET_NAME).map
 # $(@:.axf=.map) --xref
 LDFLAGS += -L./modules/lib -lsdk
 
 # set ref files
-LINK_SCRIPT := ./gr5515.ld
+LINK_SCRIPT := ./gr5515.lds
 PATCH_FILE  += ./modules/lib/rom_symbol.txt
 TOOL_PATH    = ./modules/tools
 
@@ -173,8 +199,8 @@ GR_SYS_OBJ += ./modules/lib/svc_handler_gcc.o
 
 OBJ = $(PY_CORE_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o)) $(addprefix $(BUILD)/, $(SRC_ASM:.s=.o))
 
-OBJ_DIR = $(BUILD)
-OBJ_2 = $(patsubst %.o,$(OBJ_DIR)/%.o,$(notdir $(OBJ)))
+# OBJ_DIR = $(BUILD)
+# OBJ_2 = $(patsubst %.o,$(OBJ_DIR)/%.o,$(notdir $(OBJ)))
 
 # verbosity switch
 V ?= 0
@@ -204,7 +230,7 @@ $(BUILD)/$(TARGET_NAME).bin: $(BUILD)/$(TARGET_NAME).axf
 
 $(BUILD)/$(TARGET_NAME).axf: $(OBJ)
 	$(ECHO) "compile .axf file ..."
-	$(V_LINK)$(CC) $(CFLAGS) -T gr5515.lds $(PATCH_FILE) $(OBJ) $(LDFLAGS) -Wl,-Map=$(BUILD)/$(TARGET_NAME).map -o $@
+	$(V_LINK)$(CC) $(CFLAGS) -T $(LINK_SCRIPT) $(PATCH_FILE)  $(OBJ) ${GR_SYS_OBJ} $(LDFLAGS)  -Wl,-Map=$(BUILD)/$(TARGET_NAME).map -o $@
 
 $(BUILD)/_frozen_mpy.c: frozentest.mpy $(BUILD)/genhdr/qstrdefs.generated.h
 	$(ECHO) "MISC freezing bytecode"
