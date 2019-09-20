@@ -91,6 +91,31 @@ static char *stack_top;
 static char heap[2048];
 #endif
 
+#if 1
+int main(int argc, char **argv) {
+    int stack_dummy;
+    stack_top = (char*)&stack_dummy;
+
+    int ch;
+
+    app_periph_init();
+    mp_hal_log_uart_init();
+
+    APP_LOG_INFO("test start ....\r\n");
+
+    while(1) {
+        
+
+        ch = mp_hal_stdin_rx_chr_nowait();
+
+        if(ch != -1) {
+            app_log_raw_info("%c", (char)ch);
+        }
+        
+        //sys_delay_ms(1000);
+    }
+}
+#else
 int main(int argc, char **argv) {
     int stack_dummy;
     stack_top = (char*)&stack_dummy;
@@ -98,7 +123,7 @@ int main(int argc, char **argv) {
 #if MICROPY_ENABLE_GC
     gc_init(heap, heap + sizeof(heap));
 #endif
-app_periph_init();
+    app_periph_init();
     //mp_init();
 
     while(1){
@@ -131,6 +156,7 @@ app_periph_init();
 
     return 0;
 }
+#endif
 
 void gc_collect(void) {
     // WARNING: This gc_collect implementation doesn't try to get root
