@@ -6,66 +6,20 @@
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/gc.h"
+#include "py/stackctrl.h"
 #include "py/mperrno.h"
+#include "py/mphal.h"
 #include "lib/utils/pyexec.h"
+#include "lib/mp-readline/readline.h"
+
+#include "mp_defs.h"
+#include "mphalport.h"
 
 
-#include "app_log.h"
-#include "app_assert.h"
-#include "hal_flash.h"
-
-
-/**@brief Bluetooth device address. */
-static const uint8_t  s_bd_addr[6] = {0x15, 0x00, 0xcf, 0x3e, 0xcb, 0xea};
-//static const uint8_t  s_bd_addr[SYS_BD_ADDR_LEN] = {0x11, 0x00, 0x00, 0x33, 0x22, 0x11};
-static app_log_init_t s_app_log_init; 
-
-/*
- * LOCAL  FUNCTION DEFINITIONS
- *****************************************************************************************
- */
-static void log_assert_init(void)
-{
-    s_app_log_init.filter.level                 = APP_LOG_LVL_DEBUG;
-    s_app_log_init.fmt_set[APP_LOG_LVL_ERROR]   = APP_LOG_FMT_ALL & (~APP_LOG_FMT_TAG);
-    s_app_log_init.fmt_set[APP_LOG_LVL_WARNING] = APP_LOG_FMT_LVL;
-    s_app_log_init.fmt_set[APP_LOG_LVL_INFO]    = APP_LOG_FMT_LVL;
-    s_app_log_init.fmt_set[APP_LOG_LVL_DEBUG]   = APP_LOG_FMT_LVL;
-
-    app_log_init(&s_app_log_init);
-    app_assert_default_cb_register();
-}
-
-
-/*
- * GLOBAL FUNCTION DEFINITIONS
- *****************************************************************************************
- */
-
-void app_periph_init(void)
-{
-    hal_flash_init();
-    log_assert_init();
-    //nvds_init(NVDS_START_ADDR, NVDS_NUM_SECTOR);
-    //SYS_SET_BD_ADDR(s_bd_addr);
-    
-    //pwr_mgmt_init(pwr_table);
-    //pwr_mgmt_mode_set(PMR_MGMT_ACTIVE_MODE);
-    
-    /* enable sdk log*/
-#if 1
-    //ble_stack_debug_setup(0x7FFFFFFF, 0x7FFFFFFF, vprintf);
+static char *stack_top;
+#if MICROPY_ENABLE_GC
+static char heap[MICROPY_HEAP_SIZE];
 #endif
-    
-}
-
-
-
-
-
-
-
-
 
 
 
@@ -86,37 +40,9 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
 }
 #endif
 
-static char *stack_top;
-#if MICROPY_ENABLE_GC
-static char heap[MICROPY_HEAP_SIZE];
-#endif
 
 
-#if 0
-int main(int argc, char **argv) {
-    int stack_dummy;
-    stack_top = (char*)&stack_dummy;
 
-    int ch;
-
-    app_periph_init();
-    mp_hal_log_uart_init();
-
-    APP_LOG_INFO("test start ....\r\n");
-
-    while(1) {
-        
-
-        ch = mp_hal_stdin_rx_chr_nowait();
-
-        if(ch != -1) {
-            app_log_raw_info("%c", (char)ch);
-        }
-        
-        //sys_delay_ms(1000);
-    }
-}
-#else
 int main(int argc, char **argv) {
     int stack_dummy;
     stack_top = (char*)&stack_dummy;
@@ -125,12 +51,11 @@ soft_reset:
     
     // Make MicroPython's stack limit somewhat smaller than full stack available
 #if MICROPY_STACK_CHECK > 0u
-    mp_stack_set_limit(CSTACK_HEAP_SIZE - 4*1024);
+    mp_stack_set_limit(MP_GR5515_STACK_SIZE - 2*1024);
 #endif
-    app_periph_init();
-    mp_hal_log_uart_init();
+    mp_gr5515_init();
     
-    printf("MicroPython Start...\r\n");
+    mp_hal_stdout_tx_str("MicroPython Start...\r\n");
 
     #if MICROPY_ENABLE_GC
     gc_init(heap, heap + sizeof(heap));
@@ -160,15 +85,17 @@ soft_reset:
         }
     }
 
-    mp_deinit();
-    printf("MPY: soft reboot\n");
+    mp_deinit();    
+    gc_sweep_all();
+    
+    mp_hal_stdout_tx_str("MPY: soft reboot\r\n");    
+    mp_hal_delay_ms(10);
     
     goto soft_reset;
 
     return 0;
-
 }
-#endif
+
 
 void gc_collect(void) {
     // WARNING: This gc_collect implementation doesn't try to get root
@@ -208,151 +135,3 @@ void MP_WEAK __assert_func(const char *file, int line, const char *func, const c
 }
 #endif
 
-#if MICROPY_MIN_USE_CORTEX_CPU
-
-// this is a minimal IRQ and reset framework for any Cortex-M CPU
-
-extern uint32_t _estack, _sidata, _sdata, _edata, _sbss, _ebss;
-
-void Reset_Handler(void) __attribute__((naked));
-void Reset_Handler(void) {
-    // set stack pointer
-    __asm volatile ("ldr sp, =_estack");
-    // copy .data section from flash to RAM
-    for (uint32_t *src = &_sidata, *dest = &_sdata; dest < &_edata;) {
-        *dest++ = *src++;
-    }
-    // zero out .bss section
-    for (uint32_t *dest = &_sbss; dest < &_ebss;) {
-        *dest++ = 0;
-    }
-    // jump to board initialisation
-    void _start(void);
-    _start();
-}
-
-void Default_Handler(void) {
-    for (;;) {
-    }
-}
-
-const uint32_t isr_vector[] __attribute__((section(".isr_vector"))) = {
-    (uint32_t)&_estack,
-    (uint32_t)&Reset_Handler,
-    (uint32_t)&Default_Handler, // NMI_Handler
-    (uint32_t)&Default_Handler, // HardFault_Handler
-    (uint32_t)&Default_Handler, // MemManage_Handler
-    (uint32_t)&Default_Handler, // BusFault_Handler
-    (uint32_t)&Default_Handler, // UsageFault_Handler
-    0,
-    0,
-    0,
-    0,
-    (uint32_t)&Default_Handler, // SVC_Handler
-    (uint32_t)&Default_Handler, // DebugMon_Handler
-    0,
-    (uint32_t)&Default_Handler, // PendSV_Handler
-    (uint32_t)&Default_Handler, // SysTick_Handler
-};
-
-void _start(void) {
-    
-    // now that we have a basic system up and running we can call main
-    main(0, NULL);
-
-    // we must not return
-    for (;;) {
-    }
-}
-
-#endif
-
-#if MICROPY_MIN_USE_STM32_MCU
-
-// this is minimal set-up code for an STM32 MCU
-
-typedef struct {
-    volatile uint32_t CR;
-    volatile uint32_t PLLCFGR;
-    volatile uint32_t CFGR;
-    volatile uint32_t CIR;
-    uint32_t _1[8];
-    volatile uint32_t AHB1ENR;
-    volatile uint32_t AHB2ENR;
-    volatile uint32_t AHB3ENR;
-    uint32_t _2;
-    volatile uint32_t APB1ENR;
-    volatile uint32_t APB2ENR;
-} periph_rcc_t;
-
-typedef struct {
-    volatile uint32_t MODER;
-    volatile uint32_t OTYPER;
-    volatile uint32_t OSPEEDR;
-    volatile uint32_t PUPDR;
-    volatile uint32_t IDR;
-    volatile uint32_t ODR;
-    volatile uint16_t BSRRL;
-    volatile uint16_t BSRRH;
-    volatile uint32_t LCKR;
-    volatile uint32_t AFR[2];
-} periph_gpio_t;
-
-typedef struct {
-    volatile uint32_t SR;
-    volatile uint32_t DR;
-    volatile uint32_t BRR;
-    volatile uint32_t CR1;
-} periph_uart_t;
-
-#define USART1 ((periph_uart_t*) 0x40011000)
-#define GPIOA  ((periph_gpio_t*) 0x40020000)
-#define GPIOB  ((periph_gpio_t*) 0x40020400)
-#define RCC    ((periph_rcc_t*)  0x40023800)
-
-// simple GPIO interface
-#define GPIO_MODE_IN (0)
-#define GPIO_MODE_OUT (1)
-#define GPIO_MODE_ALT (2)
-#define GPIO_PULL_NONE (0)
-#define GPIO_PULL_UP (0)
-#define GPIO_PULL_DOWN (1)
-void gpio_init(periph_gpio_t *gpio, int pin, int mode, int pull, int alt) {
-    gpio->MODER = (gpio->MODER & ~(3 << (2 * pin))) | (mode << (2 * pin));
-    // OTYPER is left as default push-pull
-    // OSPEEDR is left as default low speed
-    gpio->PUPDR = (gpio->PUPDR & ~(3 << (2 * pin))) | (pull << (2 * pin));
-    gpio->AFR[pin >> 3] = (gpio->AFR[pin >> 3] & ~(15 << (4 * (pin & 7)))) | (alt << (4 * (pin & 7)));
-}
-#define gpio_get(gpio, pin) ((gpio->IDR >> (pin)) & 1)
-#define gpio_set(gpio, pin, value) do { gpio->ODR = (gpio->ODR & ~(1 << (pin))) | (value << pin); } while (0)
-#define gpio_low(gpio, pin) do { gpio->BSRRH = (1 << (pin)); } while (0)
-#define gpio_high(gpio, pin) do { gpio->BSRRL = (1 << (pin)); } while (0)
-
-void stm32_init(void) {
-    // basic MCU config
-    RCC->CR |= (uint32_t)0x00000001; // set HSION
-    RCC->CFGR = 0x00000000; // reset all
-    RCC->CR &= (uint32_t)0xfef6ffff; // reset HSEON, CSSON, PLLON
-    RCC->PLLCFGR = 0x24003010; // reset PLLCFGR
-    RCC->CR &= (uint32_t)0xfffbffff; // reset HSEBYP
-    RCC->CIR = 0x00000000; // disable IRQs
-
-    // leave the clock as-is (internal 16MHz)
-
-    // enable GPIO clocks
-    RCC->AHB1ENR |= 0x00000003; // GPIOAEN, GPIOBEN
-
-    // turn on an LED! (on pyboard it's the red one)
-    gpio_init(GPIOA, 13, GPIO_MODE_OUT, GPIO_PULL_NONE, 0);
-    gpio_high(GPIOA, 13);
-
-    // enable UART1 at 9600 baud (TX=B6, RX=B7)
-    gpio_init(GPIOB, 6, GPIO_MODE_ALT, GPIO_PULL_NONE, 7);
-    gpio_init(GPIOB, 7, GPIO_MODE_ALT, GPIO_PULL_NONE, 7);
-    RCC->APB2ENR |= 0x00000010; // USART1EN
-    USART1->BRR = (104 << 4) | 3; // 16MHz/(16*104.1875) = 9598 baud
-    USART1->CR1 = 0x0000200c; // USART enable, tx enable, rx enable
-}
-
-#endif

@@ -3,17 +3,18 @@
 
 #include "py/mpconfig.h"
 #include "mpconfigport.h"
+#include "custom_config.h"
 
 #ifdef TRUE
 #undef TRUE
 #endif
 
-#define TRUE            1
-
 #ifdef FALSE
 #undef FALSE
 #endif
 
-#define FALSE           0
+#define TRUE                        1u
+#define FALSE                       0u
+#define MP_GR5515_STACK_SIZE        CSTACK_HEAP_SIZE
 
 #endif /*__GR55xx_MP_DEFS_H__*/

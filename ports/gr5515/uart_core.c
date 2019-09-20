@@ -1,6 +1,6 @@
 #include <unistd.h>
-#include "py/mpconfig.h"
 #include "string.h"
+#include "py/mpconfig.h"
 #include "mphalport.h"
 
 
