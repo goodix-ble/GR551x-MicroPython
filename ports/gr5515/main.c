@@ -88,10 +88,11 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
 
 static char *stack_top;
 #if MICROPY_ENABLE_GC
-static char heap[2048];
+static char heap[MICROPY_HEAP_SIZE];
 #endif
 
-#if 1
+
+#if 0
 int main(int argc, char **argv) {
     int stack_dummy;
     stack_top = (char*)&stack_dummy;
@@ -119,42 +120,53 @@ int main(int argc, char **argv) {
 int main(int argc, char **argv) {
     int stack_dummy;
     stack_top = (char*)&stack_dummy;
-
-#if MICROPY_ENABLE_GC
-    gc_init(heap, heap + sizeof(heap));
+soft_reset:
+    mp_stack_set_top(stack_top);
+    
+    // Make MicroPython's stack limit somewhat smaller than full stack available
+#if MICROPY_STACK_CHECK > 0u
+    mp_stack_set_limit(CSTACK_HEAP_SIZE - 4*1024);
 #endif
     app_periph_init();
-    //mp_init();
-
-    while(1){
-        APP_LOG_INFO("test ....\r\n");
-        
-        sys_delay_ms(1000);
-    }
+    mp_hal_log_uart_init();
     
-#if MICROPY_ENABLE_COMPILER
-    #if MICROPY_REPL_EVENT_DRIVEN
-        pyexec_event_repl_init();
-        for (;;) {
-            int c = mp_hal_stdin_rx_chr();
-            if (pyexec_event_repl_process_char(c)) {
+    printf("MicroPython Start...\r\n");
+
+    #if MICROPY_ENABLE_GC
+    gc_init(heap, heap + sizeof(heap));
+    #endif
+    mp_init();
+    mp_obj_list_init(mp_sys_path, 0);
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
+    mp_obj_list_init(mp_sys_argv, 0);
+        
+    pyb_set_repl_info(MP_OBJ_NEW_SMALL_INT(0));
+
+    readline_init0();
+
+    #if MICROPY_MODULE_FROZEN
+    pyexec_frozen_module("main.py");
+    #endif
+
+    for (;;) {
+        if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
+            if (pyexec_raw_repl() != 0) {
+                break;
+            }
+        } else {
+            if (pyexec_friendly_repl() != 0) {
                 break;
             }
         }
-    #else
-        pyexec_friendly_repl();
-    #endif
-    
-    //do_str("print('hello world!', list(x+1 for x in range(10)), end='eol\\n')", MP_PARSE_SINGLE_INPUT);
-    //do_str("for i in range(10):\r\n  print(i)", MP_PARSE_FILE_INPUT);
-
-#else
-    pyexec_frozen_module("frozentest.py");
-#endif
+    }
 
     mp_deinit();
+    printf("MPY: soft reboot\n");
+    
+    goto soft_reset;
 
     return 0;
+
 }
 #endif
 
