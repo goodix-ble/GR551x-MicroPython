@@ -7,6 +7,8 @@
 #define MICROPY_PY_BUILTINS_HELP            (1)
 #define MICROPY_STACK_CHECK                 (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT       gr55xx_help_text
+#define MICROPY_PY_UTIME_MP_HAL             (1)
+#define MICROPY_USE_INTERNAL_PRINTF         (0)
 
 /*
  * Support File System
@@ -88,10 +90,13 @@ typedef long            mp_off_t;
 /********************************************************************
  * register py modules
  ********************************************************************/
-extern const struct _mp_obj_module_t board_module;
+extern const struct _mp_obj_module_t mp_module_board;
+extern const struct _mp_obj_module_t mp_module_utime;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_board), MP_ROM_PTR(&board_module) },
+    { MP_ROM_QSTR(MP_QSTR_board),   MP_ROM_PTR(&mp_module_board) }, \
+    { MP_ROM_QSTR(MP_QSTR_utime),   MP_ROM_PTR(&mp_module_utime) }, \
+
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \

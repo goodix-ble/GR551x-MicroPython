@@ -74,6 +74,21 @@ soft_reset:
 
 #if MICROPY_PY_MACHINE_LED > 0u
     mp_led_init();
+    
+    do_str("import board\r\n"   \
+           "import utime\r\n"   \
+           "board.LED(1).on()\r\n"  \
+           "utime.sleep_ms(500)\r\n" \
+           "board.LED(1).off()\r\n" \
+           "utime.sleep_ms(500)\r\n" \
+           "board.LED(1).on()\r\n"  \
+           "utime.sleep_ms(500)\r\n" \
+           "board.LED(1).off()\r\n" \
+           "utime.sleep_ms(500)\r\n" \
+           "board.LED(1).on()\r\n"  \
+           "utime.sleep_ms(500)\r\n" \
+           "board.LED(1).off()\r\n" ,           
+           MP_PARSE_FILE_INPUT);
 #endif
 
 #if MICROPY_MODULE_FROZEN
