@@ -51,11 +51,18 @@ INC_GR += -I./GR551x_SDK_V0_94/components/profiles/common
 INC_GR += -I./GR551x_SDK_V0_94/drivers/inc
 INC_GR += -I./GR551x_SDK_V0_94/toolchain/cmsis/include
 INC_GR += -I./GR551x_SDK_V0_94/toolchain/gr551x/include
+# mp porting
+INC_GR += -I./modules/board
 
 LIBS =
 
-SRC_C = \
+#mpy porting
+SRC_C = modules/board/modboard.c \
+        modules/board/led.c \
+
+SRC_C += \
 	main.c \
+    help.c \
 	uart_core.c \
     mphalport.c \
 	lib/utils/printf.c \
@@ -161,7 +168,6 @@ SRC_C = \
     GR551x_SDK_V0_94/components/libraries/app_assert/app_assert.c  \
     GR551x_SDK_V0_94/components/libraries/ring_buffer/ring_buffer.c  \
     GR551x_SDK_V0_94/components/libraries/utility/utility.c  \
-    
     #GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_xqspi.c \
     #GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_exflash.c \
     #GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_pwr.c \
@@ -170,6 +176,7 @@ SRC_C = \
     #GR551x_SDK_V0_94/drivers/src/gr55xx_hal_xqspi.c  \
     #GR551x_SDK_V0_94/drivers/src/gr55xx_hal_pwr.c  \
     #GR551x_SDK_V0_94/drivers/src/gr55xx_hal_exflash.c  \
+
     
 SRC_ASM = startup_gr55xx.s
 
@@ -198,7 +205,9 @@ GR_SYS_OBJ += ./boards/gr5515/lib/gr55xx_hal_xqspi.o
 GR_SYS_OBJ += ./boards/gr5515/lib/gr55xx_ll_xqspi.o
 GR_SYS_OBJ += ./boards/gr5515/lib/svc_handler_gcc.o
 
-OBJ = $(PY_CORE_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o)) $(addprefix $(BUILD)/, $(SRC_ASM:.s=.o))
+#C_OBJ   = $(PY_CORE_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o)) 
+#ASM_OBJ = $(addprefix $(BUILD)/, $(SRC_ASM:.s=.o))
+OBJ     = $(PY_CORE_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o)) $(addprefix $(BUILD)/, $(SRC_ASM:.s=.o))
 
 # OBJ_DIR = $(BUILD)
 # OBJ_2 = $(patsubst %.o,$(OBJ_DIR)/%.o,$(notdir $(OBJ)))

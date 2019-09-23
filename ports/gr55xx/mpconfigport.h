@@ -1,12 +1,12 @@
 #include <stdint.h>
+#include <alloca.h>
 
-#define MICROPY_HW_BOARD_NAME   "gr5515-sk"
-#define MICROPY_HW_MCU_NAME     "gr5515"
 
-#define MICROPY_HEAP_SIZE           (16*1024)
-#define MICROPY_ENABLE_COMPILER     (1)
-#define MICROPY_PY_BUILTINS_HELP    (1)
-#define MICROPY_STACK_CHECK         (1)
+#define MICROPY_HEAP_SIZE                   (16*1024)
+#define MICROPY_ENABLE_COMPILER             (1)
+#define MICROPY_PY_BUILTINS_HELP            (1)
+#define MICROPY_STACK_CHECK                 (1)
+#define MICROPY_PY_BUILTINS_HELP_TEXT       gr55xx_help_text
 
 /*
  * Support File System
@@ -73,30 +73,27 @@
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)((mp_uint_t)(p) | 1))
 
-// This port is intended to be 32-bit, but unfortunately, int32_t for
-// different targets may be defined in different ways - either as int
-// or as long. This requires different printf formatting specifiers
-// to print such value. So, we avoid int32_t and use int directly.
-#define UINT_FMT "%u"
-#define INT_FMT "%d"
-typedef int mp_int_t; // must be pointer size
-typedef unsigned int mp_uint_t; // must be pointer size
 
-typedef long mp_off_t;
+#define UINT_FMT        "%u"
+#define INT_FMT         "%d"
+typedef int             mp_int_t; // must be pointer size
+typedef unsigned int    mp_uint_t; // must be pointer size
+typedef long            mp_off_t;
 
-#define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
+#define MP_PLAT_PRINT_STRN(str, len)    mp_hal_stdout_tx_strn_cooked(str, len)
+#define MP_STATE_PORT                   MP_STATE_VM
+#define MICROPY_PORT_ROOT_POINTERS      const char *readline_hist[8];
+    
+
+/********************************************************************
+ * register py modules
+ ********************************************************************/
+extern const struct _mp_obj_module_t board_module;
+
+#define MICROPY_PORT_BUILTIN_MODULES \
+    { MP_ROM_QSTR(MP_QSTR_board), MP_ROM_PTR(&board_module) },
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
 
-// We need to provide a declaration/definition of alloca()
-#include <alloca.h>
-
-
-
-
-#define MP_STATE_PORT MP_STATE_VM
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    const char *readline_hist[8];

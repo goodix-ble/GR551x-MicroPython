@@ -3,6 +3,7 @@
 
 #include "py/mpconfig.h"
 #include "mpconfigport.h"
+#include "mpconfigboard.h"
 #include "custom_config.h"
 
 #ifdef TRUE

@@ -15,6 +15,9 @@
 #include "mp_defs.h"
 #include "mphalport.h"
 
+//porting module
+#include "led.h"
+
 
 static char *stack_top;
 #if MICROPY_ENABLE_GC
@@ -57,9 +60,9 @@ soft_reset:
     
     mp_hal_stdout_tx_str("MicroPython Start...\r\n");
 
-    #if MICROPY_ENABLE_GC
+#if MICROPY_ENABLE_GC
     gc_init(heap, heap + sizeof(heap));
-    #endif
+#endif
     mp_init();
     mp_obj_list_init(mp_sys_path, 0);
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
@@ -69,9 +72,13 @@ soft_reset:
 
     readline_init0();
 
-    #if MICROPY_MODULE_FROZEN
+#if MICROPY_PY_MACHINE_LED > 0u
+    mp_led_init();
+#endif
+
+#if MICROPY_MODULE_FROZEN
     pyexec_frozen_module("main.py");
-    #endif
+#endif
 
     for (;;) {
         if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
