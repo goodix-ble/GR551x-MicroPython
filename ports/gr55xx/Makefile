@@ -4,6 +4,7 @@ include ../../py/mkenv.mk
 CROSS = 1
 V = 1
 BUILD_VERBOSE = 1
+MICROPY_FATFS = 1
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
@@ -54,6 +55,10 @@ INC_GR += -I./GR551x_SDK_V0_94/toolchain/gr551x/include
 # mp porting
 INC_GR += -I./modules/board
 INC_GR += -I./modules/utime
+INC_GR += -I./modules/uos
+
+# lib
+INC_GR += -I./lib/timeutils
 
 LIBS =
 
@@ -61,6 +66,17 @@ LIBS =
 SRC_C = modules/board/modboard.c \
         modules/board/led.c \
         modules/utime/modutime.c \
+        modules/uos/moduos.c \
+        lib/timeutils/timeutils.c \
+
+ifeq ($(MICROPY_FATFS), 1)
+    SRC_C += \
+        lib/oofatfs/ff.c \
+        lib/oofatfs/ffunicode.c \
+        ports/gr55xx/boards/ports/fatfs_port.c \
+        
+    INC_GR += -I./lib/oofatfs
+endif
 
 SRC_C += \
 	main.c \
@@ -187,6 +203,7 @@ CFLAGS += $(INC) $(INC_GR)
 CFLAGS += -O0 -DGR5515_SK -DNDEBUG
 CFLAGS += -mfloat-abi=softfp -mfpu=fpv4-sp-d16  -mthumb-interwork  -mthumb -mcpu=cortex-m4
 CFLAGS += -ffunction-sections -fdata-sections -std=gnu99 -ggdb3
+CFLAGS += -DFFCONF_H=\"ports/gr55xx/boards/ports/ffconf.h\"
 
 # set LDFLAGS
 LDFLAGS += -Wl,--gc-sections 

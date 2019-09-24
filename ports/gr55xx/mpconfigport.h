@@ -10,14 +10,32 @@
 #define MICROPY_PY_UTIME_MP_HAL             (1)
 #define MICROPY_USE_INTERNAL_PRINTF         (0)
 
+
+#define MICROPY_PY_BUILTINS_BYTEARRAY       (1)
+#define MICROPY_PY_BUILTINS_DICT_FROMKEYS   (0)
+#define MICROPY_PY_BUILTINS_MEMORYVIEW      (0)
+#define MICROPY_PY_BUILTINS_ENUMERATE       (0)
+#define MICROPY_PY_BUILTINS_FILTER          (0)
+#define MICROPY_PY_BUILTINS_FROZENSET       (0)
+#define MICROPY_PY_BUILTINS_REVERSED        (0)
+#define MICROPY_PY_BUILTINS_SET             (0)
+#define MICROPY_PY_BUILTINS_SLICE           (0)
+#define MICROPY_PY_BUILTINS_PROPERTY        (0)
+#define MICROPY_PY_BUILTINS_MIN_MAX         (0)
+#define MICROPY_PY_BUILTINS_STR_COUNT       (0)
+#define MICROPY_PY_BUILTINS_STR_OP_MODULO   (0)
+
 /*
  * Support File System
  */
 #ifndef MICROPY_VFS
-#define MICROPY_VFS                 (0)
+#define MICROPY_VFS                 (1)
 #endif
 #define MICROPY_VFS_FAT             (MICROPY_VFS)
 
+#if MICROPY_VFS
+    #define MICROPY_FATFS_RPATH         (2)
+#endif
 
 
 #define MICROPY_QSTR_BYTES_IN_HASH  (1)
@@ -43,23 +61,12 @@
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_TERSE)
 #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (0)
 #define MICROPY_PY_ASYNC_AWAIT      (0)
-#define MICROPY_PY_BUILTINS_BYTEARRAY (0)
-#define MICROPY_PY_BUILTINS_DICT_FROMKEYS (0)
-#define MICROPY_PY_BUILTINS_MEMORYVIEW (0)
-#define MICROPY_PY_BUILTINS_ENUMERATE (0)
-#define MICROPY_PY_BUILTINS_FILTER  (0)
-#define MICROPY_PY_BUILTINS_FROZENSET (0)
-#define MICROPY_PY_BUILTINS_REVERSED (0)
-#define MICROPY_PY_BUILTINS_SET     (0)
-#define MICROPY_PY_BUILTINS_SLICE   (0)
-#define MICROPY_PY_BUILTINS_PROPERTY (0)
-#define MICROPY_PY_BUILTINS_MIN_MAX (0)
-#define MICROPY_PY_BUILTINS_STR_COUNT (0)
-#define MICROPY_PY_BUILTINS_STR_OP_MODULO (0)
+
+
 #define MICROPY_PY___FILE__         (0)
 #define MICROPY_PY_GC               (0)
 #define MICROPY_PY_ARRAY            (0)
-#define MICROPY_PY_ATTRTUPLE        (0)
+#define MICROPY_PY_ATTRTUPLE        (1)
 #define MICROPY_PY_COLLECTIONS      (0)
 #define MICROPY_PY_MATH             (0)
 #define MICROPY_PY_CMATH            (0)
@@ -92,8 +99,10 @@ typedef long            mp_off_t;
  ********************************************************************/
 extern const struct _mp_obj_module_t mp_module_board;
 extern const struct _mp_obj_module_t mp_module_utime;
+extern const struct _mp_obj_module_t mp_module_uos;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
+    { MP_ROM_QSTR(MP_QSTR_uos),     MP_ROM_PTR(&mp_module_uos) }, \
     { MP_ROM_QSTR(MP_QSTR_board),   MP_ROM_PTR(&mp_module_board) }, \
     { MP_ROM_QSTR(MP_QSTR_utime),   MP_ROM_PTR(&mp_module_utime) }, \
 
