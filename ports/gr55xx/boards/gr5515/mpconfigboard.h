@@ -7,5 +7,6 @@
 
 // GR5515-sk machine feature
 #define MICROPY_PY_MACHINE_LED              (1u)
+#define MICROPY_PY_MACHINE_XFLASH           (1u)
 
 #endif /*__MP_CONFIG_BOARD_H__*/

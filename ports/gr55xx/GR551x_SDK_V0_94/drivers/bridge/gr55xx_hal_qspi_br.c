@@ -36,7 +36,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "gr55xx_hal.h"
 
-#ifdef HAL_QSPI_MODULE_ENABLED
+#if 0 //def HAL_QSPI_MODULE_ENABLED
 
 /* Private variables ---------------------------------------------------------*/
 

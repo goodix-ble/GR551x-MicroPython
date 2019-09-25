@@ -1,11 +1,19 @@
 // qstrs specific to this port
-//board module
+//board.LED module
 Q(LED)
 Q(on)
 Q(off)
 Q(toggle)
 Q(gr5515_sk)
 Q(repl_info)
+
+//board.Flash module
+Q(Flash)
+Q(readblocks)
+Q(writeblocks)
+Q(ioctl)
+Q(_slash_flash)
+Q(_slash_flash_slash_lib)
 
 //utime module
 Q(utime)
@@ -34,3 +42,4 @@ Q(sync)
 Q(mount)
 Q(umount)
 Q(VfsFat)
+

@@ -48,6 +48,7 @@ static void mp_gr5515_log_assert_init(void)
 
 void mp_gr5515_init(void)
 {
+    hal_init();
     hal_flash_init();
     mp_hal_log_uart_init();
     mp_gr5515_log_assert_init();

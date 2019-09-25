@@ -27,6 +27,8 @@ INC += -I$(BUILD)
 INC_GR += -I.
 INC_GR += -I./boards
 INC_GR += -I./boards/gr5515
+INC_GR += -I./boards/gr5515/system
+INC_GR += -I./boards/drivers
 INC_GR += -I./GR551x_SDK_V0_94/components/boards
 INC_GR += -I./GR551x_SDK_V0_94/components/drivers_ext/gr551x
 INC_GR += -I./GR551x_SDK_V0_94/components/sdk
@@ -57,16 +59,22 @@ INC_GR += -I./modules/board
 INC_GR += -I./modules/utime
 INC_GR += -I./modules/uos
 
+
 # lib
-INC_GR += -I./lib/timeutils
+INC_GR += -I../../lib/timeutils
+INC_GR += -I../../extmod
 
 LIBS =
 
 #mpy porting
 SRC_C = modules/board/modboard.c \
         modules/board/led.c \
+        modules/board/xflash.c \
         modules/utime/modutime.c \
         modules/uos/moduos.c \
+        boards/drivers/spi_flash.c \
+        boards/gr5515/system/gr55xx_hal_msp.c \
+        boards/gr5515/system/gr55xx_it.c \
         lib/timeutils/timeutils.c \
 
 ifeq ($(MICROPY_FATFS), 1)
@@ -186,6 +194,7 @@ SRC_C += \
     GR551x_SDK_V0_94/components/libraries/app_assert/app_assert.c  \
     GR551x_SDK_V0_94/components/libraries/ring_buffer/ring_buffer.c  \
     GR551x_SDK_V0_94/components/libraries/utility/utility.c  \
+    
     #GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_xqspi.c \
     #GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_exflash.c \
     #GR551x_SDK_V0_94/drivers/src_inner/gr55xx_hal_pwr.c \

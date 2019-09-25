@@ -245,11 +245,11 @@
 /  funciton will be available. */
 
 
-#define FF_MIN_SS   512
+#define FF_MIN_SS   4096
 #ifdef MICROPY_FATFS_MAX_SS
 #define FF_MAX_SS   (MICROPY_FATFS_MAX_SS)
 #else
-#define FF_MAX_SS   512
+#define FF_MAX_SS   4096
 #endif
 /* This set of options configures the range of sector size to be supported. (512,
 /  1024, 2048 or 4096) Always set both 512 for most systems, generic memory card and
