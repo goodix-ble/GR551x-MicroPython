@@ -30,6 +30,7 @@
 #define MICROPY_PY_IO_BYTESIO               (1)
 #define MICROPY_PY_IO_BUFFEREDWRITER        (1)
 
+#define MICROPY_PY_SYS_PLATFORM             "gr5515"
 /*
  * Support File System
  */
@@ -39,9 +40,15 @@
 #define MICROPY_VFS_FAT             (MICROPY_VFS)
 
 #if MICROPY_VFS
+    #define MICROPY_READER_VFS          (1)
     #define MICROPY_FATFS_RPATH         (2)
     #define MICROPY_FATFS_MAX_SS        (4096)
     #define MICROPY_FATFS_ENABLE_LFN    (1)
+    
+    // use vfs's functions for import stat and builtin open
+    #define mp_import_stat              mp_vfs_import_stat
+    #define mp_builtin_open             mp_vfs_open
+    #define mp_builtin_open_obj         mp_vfs_open_obj    
 #endif
 
 
@@ -89,12 +96,6 @@
 // TODO these should be generic, not bound to fatfs
 #define mp_type_fileio              mp_type_vfs_fat_fileio
 #define mp_type_textio              mp_type_vfs_fat_textio
-
-// use vfs's functions for import stat and builtin open
-//#define mp_import_stat              mp_vfs_import_stat
-#define mp_builtin_open             mp_vfs_open
-#define mp_builtin_open_obj         mp_vfs_open_obj
-
 
 
 // type definitions for the specific machine
