@@ -122,29 +122,22 @@ soft_reset:
 
     readline_init0();
 
-#if 0//MICROPY_PY_MACHINE_LED > 0u
+#if MICROPY_PY_MACHINE_LED > 0u
     mp_led_init();
     
     do_str("import board\r\n"   \
            "import utime\r\n"   \
            "board.LED(1).on()\r\n"  \
-           "utime.sleep_ms(500)\r\n" \
+           "utime.sleep_ms(200)\r\n" \
            "board.LED(1).off()\r\n" \
-           "utime.sleep_ms(500)\r\n" \
+           "utime.sleep_ms(200)\r\n" \
            "board.LED(1).on()\r\n"  \
-           "utime.sleep_ms(500)\r\n" \
-           "board.LED(1).off()\r\n" \
-           "utime.sleep_ms(500)\r\n" \
-           "board.LED(1).on()\r\n"  \
-           "utime.sleep_ms(500)\r\n" \
+           "utime.sleep_ms(200)\r\n" \
            "board.LED(1).off()\r\n" ,           
            MP_PARSE_FILE_INPUT);
 #endif
 
-#if MICROPY_PY_MACHINE_XFLASH > 0u
-    //xflash_init();
-    //SPI_FLash_test();
-    
+#if MICROPY_PY_MACHINE_XFLASH > 0u    
     if(TRUE == xflash_fs_mount() ){
         mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash));
         mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash_slash_lib));
