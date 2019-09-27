@@ -8,6 +8,10 @@
 #define MICROPY_PY_UTIME_MP_HAL             (1)
 #define MICROPY_USE_INTERNAL_PRINTF         (0)
 
+
+/********************************************************************
+ *       builtin functions
+ ********************************************************************/
 #define MICROPY_PY_SYS_PLATFORM             "gr5515"
 #define MICROPY_PY_BUILTINS_HELP            (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT       gr55xx_help_text
@@ -25,13 +29,37 @@
 #define MICROPY_PY_BUILTINS_STR_COUNT       (1)
 #define MICROPY_PY_BUILTINS_STR_OP_MODULO   (1)
 
+
+/********************************************************************
+ *       py & core modules
+ ********************************************************************/
 #define MICROPY_PY_IO                       (1)
 #define MICROPY_PY_IO_IOBASE                (1)
 #define MICROPY_PY_IO_FILEIO                (1)
 #define MICROPY_PY_IO_BYTESIO               (1)
 #define MICROPY_PY_IO_BUFFEREDWRITER        (1)
 
+#define MICROPY_PY___FILE__                 (1)
+#define MICROPY_PY_GC                       (1)
+#define MICROPY_PY_ARRAY                    (1)
+#define MICROPY_PY_ATTRTUPLE                (1)
+#define MICROPY_PY_COLLECTIONS              (1)
+#define MICROPY_PY_MATH                     (1)
+#define MICROPY_PY_CMATH                    (1)
+#define MICROPY_PY_MATH_SPECIAL_FUNCTIONS   (1)
+#define MICROPY_PY_MATH_ISCLOSE             (1)
+#define MICROPY_PY_MATH_FACTORIAL           (1)
+#define MICROPY_PY_STRUCT                   (1)
+#define MICROPY_PY_SYS                      (1)
 
+#define MICROPY_MODULE_FROZEN_MPY           (1)
+#define MICROPY_CPYTHON_COMPAT              (1)
+#define MICROPY_LONGINT_IMPL                (MICROPY_LONGINT_IMPL_LONGLONG)
+#define MICROPY_FLOAT_IMPL                  (MICROPY_FLOAT_IMPL_FLOAT)
+
+#if MICROPY_FLOAT_IMPL > MICROPY_FLOAT_IMPL_NONE
+    #define MICROPY_OBJ_REPR                (MICROPY_OBJ_REPR_C)
+#endif 
 
 /********************************************************************
  *       Support VFS 
@@ -78,20 +106,6 @@
 #define MICROPY_PY_ASYNC_AWAIT              (0)
 #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG       (0)
 
-#define MICROPY_PY___FILE__                 (1)
-#define MICROPY_PY_GC                       (1)
-#define MICROPY_PY_ARRAY                    (1)
-#define MICROPY_PY_ATTRTUPLE                (1)
-#define MICROPY_PY_COLLECTIONS              (1)
-#define MICROPY_PY_MATH                     (0)
-#define MICROPY_PY_CMATH                    (0)
-
-#define MICROPY_PY_STRUCT                   (1)
-#define MICROPY_PY_SYS                      (1)
-#define MICROPY_MODULE_FROZEN_MPY           (1)
-#define MICROPY_CPYTHON_COMPAT              (1)
-#define MICROPY_LONGINT_IMPL                (MICROPY_LONGINT_IMPL_NONE)
-#define MICROPY_FLOAT_IMPL                  (MICROPY_FLOAT_IMPL_NONE)
 
 
 // TODO these should be generic, not bound to fatfs
@@ -122,7 +136,7 @@ extern const struct _mp_obj_module_t        mp_module_uos;
 
 /*
  * builtin modules
- * /
+ */
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_ROM_QSTR(MP_QSTR_uos),             MP_ROM_PTR(&mp_module_uos) }, \
     { MP_ROM_QSTR(MP_QSTR_board),           MP_ROM_PTR(&mp_module_board) }, \
@@ -131,7 +145,7 @@ extern const struct _mp_obj_module_t        mp_module_uos;
 
 /*
  * builtin functions
- * /
+ */
 #define MICROPY_PORT_BUILTINS \
     { MP_ROM_QSTR(MP_QSTR_open),            MP_ROM_PTR(&mp_builtin_open_obj) },
 

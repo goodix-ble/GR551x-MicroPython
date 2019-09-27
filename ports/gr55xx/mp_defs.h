@@ -2,7 +2,6 @@
 #define __GR55xx_MP_DEFS_H__
 
 #include "py/mpconfig.h"
-#include "mpconfigport.h"
 #include "mpconfigboard.h"
 #include "custom_config.h"
 
