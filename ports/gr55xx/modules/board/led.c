@@ -110,6 +110,9 @@ void led_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t ki
 ///
 ///   - `id` is the LED number, 1-2.
 STATIC mp_obj_t led_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+
+    printf("n_args: %d , n_kw: %d \r\n", n_args, n_kw);
+
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 

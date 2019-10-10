@@ -54,6 +54,8 @@ INC_GR += -I./GR551x_SDK_V0_94/components/profiles/common
 INC_GR += -I./GR551x_SDK_V0_94/drivers/inc
 INC_GR += -I./GR551x_SDK_V0_94/toolchain/cmsis/include
 INC_GR += -I./GR551x_SDK_V0_94/toolchain/gr551x/include
+INC_GR += -I./GR551x_SDK_V0_94/toolchain/gr551x/source/arm
+
 # mp porting
 INC_GR += -I./modules/board
 INC_GR += -I./modules/utime
@@ -66,7 +68,7 @@ INC_GR += -I../../extmod
 
 LIBS =
 
-#mpy porting
+# mpy porting
 SRC_C = modules/board/modboard.c \
         modules/board/led.c \
         modules/board/xflash.c \
@@ -85,6 +87,14 @@ ifeq ($(MICROPY_FATFS), 1)
         
     INC_GR += -I./lib/oofatfs
 endif
+
+# ble porting
+SRC_C += \
+    boards/ports/ble/gr_porting.c \
+    
+INC_GR += -I./boards/ports/ble
+INC_GR += -I./boards/ports/ble/user_callback
+
 
 SRC_C += \
 	main.c \
