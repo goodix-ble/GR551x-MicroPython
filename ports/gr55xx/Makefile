@@ -91,7 +91,9 @@ endif
 # ble porting
 SRC_C += \
     boards/ports/ble/gr_porting.c \
+    modules/ble/modble.c \
     
+INC_GR += -I./modules/ble
 INC_GR += -I./boards/ports/ble
 INC_GR += -I./boards/ports/ble/user_callback
 

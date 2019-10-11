@@ -5,6 +5,8 @@
 #include "user_app.h"
 #include "gr_config.h"
 
+#include "ble_gapc.h"
+
 #define GR_PORT_DEBUG   1
 
 #if GR_PORT_DEBUG > 0u
@@ -43,7 +45,7 @@ typedef struct{
     uint16_t    cur_start_srv_index;
     uint16_t    register_srv_num;
     uint16_t    register_srv_handle[GR_BLE_MAX_SERVICES];
-    uint16_t    start_handle;    
+    uint16_t    start_handle;
 }gr_srv_env_t;
 
 extern gr_ble_common_params_t       s_gr_ble_common_params_ins;

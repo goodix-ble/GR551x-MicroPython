@@ -27,35 +27,42 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "py/runtime.h"
+#include "py/misc.h"
+#include "mp_defs.h"
+#include "gr_porting.h"
 
-#if MICROPY_PY_BLE
-
-#include "led.h"
-#include "mpconfigboard.h"
-#include "ble_drv.h"
+#if MICROPY_PY_BLE > 0u
 
 /// \method enable()
 /// Enable BLE softdevice.
 mp_obj_t ble_obj_enable(void) {
-    printf("SoftDevice enabled\n");
-    uint32_t err_code = ble_drv_stack_enable();
-    if (err_code < 0) {
-        // TODO: raise exception.
+    
+    if(!s_gr_ble_common_params_ins.is_ble_initialized){
+        gr_ble_stack_init();
+        gr_trace("enable the ble stack...\r\n");
+    } else {
+        gr_trace("ble stack enabled already...\r\n");
     }
+    
     return mp_const_none;
 }
 
 /// \method disable()
 /// Disable BLE softdevice.
 mp_obj_t ble_obj_disable(void) {
-    ble_drv_stack_disable();
+    if(s_gr_ble_common_params_ins.is_ble_initialized) {
+        gr_trace("not support disable ble stack ...\r\n");
+    } else {
+        gr_trace("ble stack not enabled...\r\n");
+    }
+    
     return mp_const_none;
 }
 
 /// \method enabled()
 /// Get state of whether the softdevice is enabled or not.
 mp_obj_t ble_obj_enabled(void) {
-    uint8_t is_enabled = ble_drv_stack_enabled();
+    uint8_t is_enabled = (uint8_t)s_gr_ble_common_params_ins.is_ble_initialized;
     mp_int_t enabled = is_enabled;
     return MP_OBJ_NEW_SMALL_INT(enabled);
 }
@@ -63,16 +70,17 @@ mp_obj_t ble_obj_enabled(void) {
 /// \method address()
 /// Return device address as text string.
 mp_obj_t ble_obj_address(void) {
-    ble_drv_addr_t local_addr;
-    ble_drv_address_get(&local_addr);
+    gap_bdaddr_t    local_bd_addr;
+    
+    ble_gap_addr_get(&local_bd_addr);
 
     vstr_t vstr;
     vstr_init(&vstr, 17);
 
     vstr_printf(&vstr, ""HEX2_FMT":"HEX2_FMT":"HEX2_FMT":" \
                          HEX2_FMT":"HEX2_FMT":"HEX2_FMT"",
-                local_addr.addr[5], local_addr.addr[4], local_addr.addr[3],
-                local_addr.addr[2], local_addr.addr[1], local_addr.addr[0]);
+                local_bd_addr.gap_addr.addr[5], local_bd_addr.gap_addr.addr[4], local_bd_addr.gap_addr.addr[3],
+                local_bd_addr.gap_addr.addr[2], local_bd_addr.gap_addr.addr[1], local_bd_addr.gap_addr.addr[0]);
 
     mp_obj_t mac_str = mp_obj_new_str(vstr.buf, vstr.len);
 
@@ -97,7 +105,7 @@ STATIC const mp_rom_map_elem_t ble_module_globals_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(ble_module_globals, ble_module_globals_table);
 
-const mp_obj_module_t ble_module = {
+const mp_obj_module_t mp_module_ble = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&ble_module_globals,
 };

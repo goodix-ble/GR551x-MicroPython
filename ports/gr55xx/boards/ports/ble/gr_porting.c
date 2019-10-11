@@ -34,10 +34,10 @@ static void ble_init_complete_callback(void);
 static app_callback_t s_app_ble_callback = 
 {
     .app_ble_init_cmp_callback = ble_init_complete_callback,
-    .app_gap_callbacks         = &app_gap_callbacks,
-    .app_gatt_common_callback  = &app_gatt_common_callback,
-    .app_gattc_callback        = &app_gattc_callback,
-    .app_sec_callback          = &app_sec_callback,
+    .app_gap_callbacks         = NULL,//&app_gap_callbacks,
+    .app_gatt_common_callback  = NULL,//&app_gatt_common_callback,
+    .app_gattc_callback        = NULL,//&app_gattc_callback,
+    .app_sec_callback          = NULL,//&app_sec_callback,
 };
 
 static void ble_init_complete_callback(void){
@@ -45,15 +45,15 @@ static void ble_init_complete_callback(void){
     sdk_err_t    error_code;
 
     error_code = ble_gap_addr_get(&bd_addr);    
-    gr_trace(">>> code: %d  \r\n", error_code);
-    gr_trace(">>> ble_init_complete_callback called, Local Board %02X:%02X:%02X:%02X:%02X:%02X. \r\n",
+    
+    //gr_trace(">>> code: %d  \r\n", error_code);
+    gr_trace(">>> ble stack init completed [%02X:%02X:%02X:%02X:%02X:%02X] \r\n",
                                          bd_addr.gap_addr.addr[5],
                                          bd_addr.gap_addr.addr[4],
                                          bd_addr.gap_addr.addr[3],
                                          bd_addr.gap_addr.addr[2],
                                          bd_addr.gap_addr.addr[1],
                                          bd_addr.gap_addr.addr[0]);   
-    
     s_gr_ble_common_params_ins.is_ble_initialized = true;
     memcpy(&s_gr_ble_common_params_ins.local_bd_addr, &bd_addr, sizeof(gap_bdaddr_t));
 }

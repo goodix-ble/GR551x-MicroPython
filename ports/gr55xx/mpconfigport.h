@@ -81,6 +81,12 @@
     #define mp_builtin_open_obj             mp_vfs_open_obj    
 #endif
 
+/********************************************************************
+ *       BLE Feature
+ ********************************************************************/
+#define MICROPY_PY_BLE                      (1)
+
+
 
 #define MICROPY_QSTR_BYTES_IN_HASH          (1)
 #define MICROPY_QSTR_EXTRA_POOL             mp_qstr_frozen_const_pool
@@ -117,6 +123,7 @@
 
 #define UINT_FMT                            "%u"
 #define INT_FMT                             "%d"
+#define HEX2_FMT                            "%02x"
 typedef int                                 mp_int_t; // must be pointer size
 typedef unsigned int                        mp_uint_t; // must be pointer size
 typedef long                                mp_off_t;
@@ -134,6 +141,13 @@ extern const struct _mp_obj_module_t        mp_module_board;
 extern const struct _mp_obj_module_t        mp_module_utime;
 extern const struct _mp_obj_module_t        mp_module_uos;
 
+#if MICROPY_PY_BLE > 0u
+    extern const struct _mp_obj_module_t        mp_module_ble;
+    #define BLE_MODULE                          { MP_ROM_QSTR(MP_QSTR_ble), MP_ROM_PTR(&mp_module_ble) },
+#else
+    #define BLE_MODULE
+#endif
+
 /*
  * builtin modules
  */
@@ -141,6 +155,7 @@ extern const struct _mp_obj_module_t        mp_module_uos;
     { MP_ROM_QSTR(MP_QSTR_uos),             MP_ROM_PTR(&mp_module_uos) }, \
     { MP_ROM_QSTR(MP_QSTR_board),           MP_ROM_PTR(&mp_module_board) }, \
     { MP_ROM_QSTR(MP_QSTR_utime),           MP_ROM_PTR(&mp_module_utime) }, \
+    BLE_MODULE \
 
 
 /*

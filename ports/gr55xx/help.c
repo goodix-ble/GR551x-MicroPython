@@ -27,6 +27,7 @@
 
 #include "py/builtin.h"
 #include "mp_defs.h"
+#include "help_ble.h"
 
 
 const char gr55xx_help_text[] =
@@ -38,6 +39,9 @@ const char gr55xx_help_text[] =
 #if MICROPY_PY_MACHINE_LED > 0u
 "  board.LED(n)    -- create an LED object for LED n (n=" MICROPY_HW_BOARD_LED_HELP_TEXT ")\n"
 "\n"
+#endif
+#if MICROPY_PY_BLE > 0u
+HELP_TEXT_BLE
 #endif
 "Control commands:\n"
 "  CTRL-A        -- on a blank line, enter raw REPL mode\n"

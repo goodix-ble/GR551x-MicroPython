@@ -27,21 +27,18 @@
 #ifndef HELP_SD_H__
 #define HELP_SD_H__
 
-#include "bluetooth_conf.h"
+#include "mp_defs.h"
 
 #if MICROPY_PY_BLE
-
-#define HELP_TEXT_SD \
-"If compiled with SD=<softdevice> the additional commands are\n" \
-"available:\n" \
-"  ble.enable()    -- enable bluetooth stack\n" \
-"  ble.disable()   -- disable bluetooth stack\n" \
-"  ble.enabled()   -- check whether bluetooth stack is enabled\n" \
-"  ble.address()   -- return device address as text string\n" \
-"\n"
-
+    #define HELP_TEXT_BLE \
+        "The Ble stack commands are available:\n" \
+        "  ble.enable()    -- enable bluetooth stack\n" \
+        "  ble.disable()   -- disable bluetooth stack\n" \
+        "  ble.enabled()   -- check whether bluetooth stack is enabled\n" \
+        "  ble.address()   -- return device address as text string\n" \
+        "\n"
 #else
-#define HELP_TEXT_SD
+    #define HELP_TEXT_BLE
 #endif // MICROPY_PY_BLE
 
 #endif

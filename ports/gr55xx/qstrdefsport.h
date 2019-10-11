@@ -43,3 +43,9 @@ Q(mount)
 Q(umount)
 Q(VfsFat)
 
+//ble module
+Q(ble)
+Q(enable)
+Q(disable)
+Q(enabled)
+Q(address)
