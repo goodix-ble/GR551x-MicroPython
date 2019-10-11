@@ -26,6 +26,7 @@
 
 #include "py/obj.h"
 #include "py/runtime.h"
+#include "mp_defs.h"
 
 #if MICROPY_PY_UBLUEPY
 

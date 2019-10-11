@@ -85,6 +85,10 @@
  *       BLE Feature
  ********************************************************************/
 #define MICROPY_PY_BLE                      (1)
+#define MICROPY_PY_BLE_NUS                  (0)
+#define BLUETOOTH_WEBBLUETOOTH_REPL         (0)
+#define MICROPY_PY_UBLUEPY                  (1)
+#define MICROPY_PY_UBLUEPY_PERIPHERAL       (1)
 
 
 
@@ -142,10 +146,14 @@ extern const struct _mp_obj_module_t        mp_module_utime;
 extern const struct _mp_obj_module_t        mp_module_uos;
 
 #if MICROPY_PY_BLE > 0u
-    extern const struct _mp_obj_module_t        mp_module_ble;
+    extern const struct _mp_obj_module_t        mp_module_ble;    
+    extern const struct _mp_obj_module_t        mp_module_ubluepy;
+    
     #define BLE_MODULE                          { MP_ROM_QSTR(MP_QSTR_ble), MP_ROM_PTR(&mp_module_ble) },
+    #define UBLUEPY_MODULE                      { MP_ROM_QSTR(MP_QSTR_ubluepy), MP_ROM_PTR(&mp_module_ubluepy) },
 #else
     #define BLE_MODULE
+    #define UBLUEPY_MODULE
 #endif
 
 /*
@@ -156,6 +164,7 @@ extern const struct _mp_obj_module_t        mp_module_uos;
     { MP_ROM_QSTR(MP_QSTR_board),           MP_ROM_PTR(&mp_module_board) }, \
     { MP_ROM_QSTR(MP_QSTR_utime),           MP_ROM_PTR(&mp_module_utime) }, \
     BLE_MODULE \
+    UBLUEPY_MODULE \
 
 
 /*

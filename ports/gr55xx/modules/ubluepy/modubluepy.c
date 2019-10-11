@@ -25,20 +25,31 @@
  */
 
 #include "py/obj.h"
+#include "mp_defs.h"
 
 #if MICROPY_PY_UBLUEPY
 
+extern const mp_obj_type_t ubluepy_uuid_type;
+extern const mp_obj_type_t ubluepy_constants_type;
+extern const mp_obj_type_t ubluepy_delegate_type;
+
+/***
 extern const mp_obj_type_t ubluepy_peripheral_type;
 extern const mp_obj_type_t ubluepy_service_type;
-extern const mp_obj_type_t ubluepy_uuid_type;
 extern const mp_obj_type_t ubluepy_characteristic_type;
-extern const mp_obj_type_t ubluepy_delegate_type;
-extern const mp_obj_type_t ubluepy_constants_type;
+
+
 extern const mp_obj_type_t ubluepy_scanner_type;
 extern const mp_obj_type_t ubluepy_scan_entry_type;
+***/
 
 STATIC const mp_rom_map_elem_t mp_module_ubluepy_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),        MP_ROM_QSTR(MP_QSTR_ubluepy) },
+    { MP_ROM_QSTR(MP_QSTR_UUID),            MP_ROM_PTR(&ubluepy_uuid_type) },
+    { MP_ROM_QSTR(MP_QSTR_constants),       MP_ROM_PTR(&ubluepy_constants_type) },
+    { MP_ROM_QSTR(MP_QSTR_DefaultDelegate), MP_ROM_PTR(&ubluepy_delegate_type) },
+/***    
+    
 #if MICROPY_PY_UBLUEPY_PERIPHERAL
     { MP_ROM_QSTR(MP_QSTR_Peripheral),      MP_ROM_PTR(&ubluepy_peripheral_type) },
 #endif
@@ -49,14 +60,15 @@ STATIC const mp_rom_map_elem_t mp_module_ubluepy_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Scanner),         MP_ROM_PTR(&ubluepy_scanner_type) },
     { MP_ROM_QSTR(MP_QSTR_ScanEntry),       MP_ROM_PTR(&ubluepy_scan_entry_type) },
 #endif
-    { MP_ROM_QSTR(MP_QSTR_DefaultDelegate), MP_ROM_PTR(&ubluepy_delegate_type) },
-    { MP_ROM_QSTR(MP_QSTR_UUID),            MP_ROM_PTR(&ubluepy_uuid_type) },
+    
+    
     { MP_ROM_QSTR(MP_QSTR_Service),         MP_ROM_PTR(&ubluepy_service_type) },
     { MP_ROM_QSTR(MP_QSTR_Characteristic),  MP_ROM_PTR(&ubluepy_characteristic_type) },
-    { MP_ROM_QSTR(MP_QSTR_constants),       MP_ROM_PTR(&ubluepy_constants_type) },
+    
 #if MICROPY_PY_UBLUEPY_DESCRIPTOR
     { MP_ROM_QSTR(MP_QSTR_Descriptor),      MP_ROM_PTR(&ubluepy_descriptor_type) },
 #endif
+***/
 };
 
 

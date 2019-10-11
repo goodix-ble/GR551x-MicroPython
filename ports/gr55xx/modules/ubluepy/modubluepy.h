@@ -111,6 +111,7 @@ typedef struct _ubluepy_uuid_obj_t {
     ubluepy_uuid_type_t type;
     uint8_t             value[2];
     uint8_t             uuid_vs_idx;
+    uint8_t             value_128b[16];
 } ubluepy_uuid_obj_t;
 
 typedef struct _ubluepy_peripheral_obj_t {

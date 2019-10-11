@@ -92,8 +92,14 @@ endif
 SRC_C += \
     boards/ports/ble/gr_porting.c \
     modules/ble/modble.c \
+    modules/ubluepy/modubluepy.c \
+    modules/ubluepy/ubluepy_uuid.c \
+    modules/ubluepy/ubluepy_constants.c \
+    modules/ubluepy/ubluepy_delegate.c \
+
     
 INC_GR += -I./modules/ble
+INC_GR += -I./modules/ubluepy
 INC_GR += -I./boards/ports/ble
 INC_GR += -I./boards/ports/ble/user_callback
 

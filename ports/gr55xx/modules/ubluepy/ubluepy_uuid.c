@@ -28,11 +28,29 @@
 #include "py/runtime.h"
 #include "py/objstr.h"
 #include "py/misc.h"
+#include "string.h"
+#include "assert.h"
 
 #if MICROPY_PY_UBLUEPY
 
 #include "modubluepy.h"
-#include "ble_drv.h"
+
+STATIC char * format_uuid128b_to_string(uint8_t * uuid128b, uint8_t len){
+    
+    //"6e400001-b5a3-f393-e0a9-e50e24dcca9e"
+    static char u128str[37];
+    
+    assert(len == 16);
+    
+    memset(&u128str[0], 0 ,37);    
+    sprintf(&u128str[0], "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x", 
+                                        uuid128b[15], uuid128b[14], uuid128b[13], uuid128b[12], 
+                                        uuid128b[11], uuid128b[10], uuid128b[9],  uuid128b[8], 
+                                        uuid128b[7],  uuid128b[6],  uuid128b[5],  uuid128b[4], 
+                                        uuid128b[3],  uuid128b[2],  uuid128b[1],  uuid128b[0]);
+    
+    return &u128str[0];
+}
 
 STATIC void ubluepy_uuid_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     ubluepy_uuid_obj_t * self = (ubluepy_uuid_obj_t *)o;
@@ -40,8 +58,7 @@ STATIC void ubluepy_uuid_print(const mp_print_t *print, mp_obj_t o, mp_print_kin
         mp_printf(print, "UUID(uuid: 0x" HEX2_FMT HEX2_FMT ")",
                   self->value[1], self->value[0]);
     } else {
-        mp_printf(print, "UUID(uuid: 0x" HEX2_FMT HEX2_FMT ", VS idx: " HEX2_FMT ")",
-                  self->value[1], self->value[0], self->uuid_vs_idx);
+        mp_printf(print, "UUID(uuid: %s)",format_uuid128b_to_string(&self->value_128b[0], 16));
     }
 }
 
@@ -114,13 +131,17 @@ STATIC mp_obj_t ubluepy_uuid_make_new(const mp_obj_type_t *type, size_t n_args, 
             s->value[0] += unichar_xdigit_value(str_data[6]) << 4;
             s->value[1]  = unichar_xdigit_value(str_data[5]);
             s->value[1] += unichar_xdigit_value(str_data[4]) << 4;
+            
+            buffer[12] = s->value[0];
+            buffer[13] = s->value[1];
 
             buffer[14]  = unichar_xdigit_value(str_data[3]);
             buffer[14] += unichar_xdigit_value(str_data[2]) << 4;
             buffer[15]  = unichar_xdigit_value(str_data[1]);
             buffer[15] += unichar_xdigit_value(str_data[0]) << 4;
 
-            ble_drv_uuid_add_vs(buffer, &s->uuid_vs_idx);
+            memcpy(&s->value_128b[0], &buffer[0], 16);
+            //ble_drv_uuid_add_vs(buffer, &s->uuid_vs_idx);
         } else {
             mp_raise_ValueError("Invalid UUID string length");
         }
@@ -146,7 +167,13 @@ STATIC mp_obj_t uuid_bin_val(mp_obj_t self_in) {
     // TODO: Extend the uint16 byte value to 16 byte if 128-bit,
     //       also encapsulate it in a bytearray. For now, return
     //       the uint16_t field of the UUID.
-    return MP_OBJ_NEW_SMALL_INT(self->value[0] | self->value[1] << 8);
+    if (self->type == UBLUEPY_UUID_128_BIT) {
+        mp_obj_t uuid_str = mp_obj_new_str(format_uuid128b_to_string(&self->value_128b[0], 16), 36);        
+        return uuid_str;//MP_OBJ_NEW_SMALL_INT(self->value_128b[0] | self->value_128b[1] << 8);
+    } else {        
+        return MP_OBJ_NEW_SMALL_INT(self->value[0] | self->value[1] << 8);
+    }
+    
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_uuid_bin_val_obj, uuid_bin_val);
 
