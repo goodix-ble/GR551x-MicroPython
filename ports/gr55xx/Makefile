@@ -96,6 +96,7 @@ SRC_C += \
     modules/ubluepy/ubluepy_uuid.c \
     modules/ubluepy/ubluepy_constants.c \
     modules/ubluepy/ubluepy_delegate.c \
+    modules/ubluepy/ubluepy_descriptor.c \
 
     
 INC_GR += -I./modules/ble

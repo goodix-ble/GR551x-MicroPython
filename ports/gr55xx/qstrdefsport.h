@@ -105,3 +105,6 @@ Q(handleConnection)
 Q(handleNotification)
 Q(handleDiscovery)
 
+//Descriptor
+Q(Descriptor)
+

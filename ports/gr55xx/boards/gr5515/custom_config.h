@@ -58,7 +58,7 @@
 
 // <o> The start address of NVDS 
 //  <i>Default: 0x0107E000
-#define NVDS_START_ADDR         0x0107E000    
+#define NVDS_START_ADDR         0x010FC000
 
 // <o> The Number of NVDS sector, each sector is 4K
 //  <i>Default:  1

@@ -54,8 +54,9 @@ extern gr_ble_gatt_params_t         s_gr_ble_gatt_params_ins;
 extern gr_srv_env_t                 s_gattsp_instance;
 
 
-void gr_ble_stack_init(void);
-void gr_gatt_service_reset(void);
+void        gr_ble_stack_init(void);
+void        gr_gatt_service_reset(void);
+char *      gr_ble_format_uuid128b_to_string(uint8_t * uuid128b, uint8_t len);
 
 //BTStatus_t gr_gatt_service_register_all(void) ;
 //BTStatus_t gr_gatt_service_register(uint16_t serviceHandle);

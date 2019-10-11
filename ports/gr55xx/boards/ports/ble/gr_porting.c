@@ -5,6 +5,7 @@
 #include "flash_scatter_config.h"
 #include "gr_porting.h"
 #include "patch.h"
+#include "assert.h"
 
 
 /*
@@ -64,6 +65,20 @@ void gr_ble_stack_init(void){
     ble_stack_init(&s_app_ble_callback, &heaps_table);
 }
 
+char * gr_ble_format_uuid128b_to_string(uint8_t * uuid128b, uint8_t len){    
+    //"6e400001-b5a3-f393-e0a9-e50e24dcca9e"
+    static char u128str[37];
+    
+    assert(len == 16);
+    memset(&u128str[0], 0 ,37);    
+    sprintf(&u128str[0], "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x", 
+                                        uuid128b[15], uuid128b[14], uuid128b[13], uuid128b[12], 
+                                        uuid128b[11], uuid128b[10], uuid128b[9],  uuid128b[8], 
+                                        uuid128b[7],  uuid128b[6],  uuid128b[5],  uuid128b[4], 
+                                        uuid128b[3],  uuid128b[2],  uuid128b[1],  uuid128b[0]);
+    
+    return &u128str[0];
+}
 
 #if 0
 /*

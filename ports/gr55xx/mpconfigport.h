@@ -89,6 +89,7 @@
 #define BLUETOOTH_WEBBLUETOOTH_REPL         (0)
 #define MICROPY_PY_UBLUEPY                  (1)
 #define MICROPY_PY_UBLUEPY_PERIPHERAL       (1)
+#define MICROPY_PY_UBLUEPY_DESCRIPTOR       (1)
 
 
 

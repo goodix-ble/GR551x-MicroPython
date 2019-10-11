@@ -28,17 +28,27 @@
 #include "py/runtime.h"
 #include "py/objstr.h"
 #include "py/misc.h"
+#include "mp_defs.h"
+#include "gr_porting.h"
 
 #if MICROPY_PY_UBLUEPY
 
 #include "modubluepy.h"
-#include "ble_drv.h"
 
 STATIC void ubluepy_descriptor_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     ubluepy_descriptor_obj_t * self = (ubluepy_descriptor_obj_t *)o;
 
-    mp_printf(print, "Descriptor(uuid: 0x" HEX2_FMT HEX2_FMT ")",
+    if(self->p_uuid == NULL) {
+        mp_printf(print, "Descriptor(uuid: none)");
+    } else {
+        if(self->p_uuid->type == UBLUEPY_UUID_128_BIT) {
+            mp_printf(print, "Descriptor(uuid: %s)",gr_ble_format_uuid128b_to_string(&self->p_uuid->value_128b[0], 16));
+        } else {
+            mp_printf(print, "Descriptor(uuid: 0x" HEX2_FMT HEX2_FMT ")",
               self->p_uuid->value[1], self->p_uuid->value[0]);
+        }
+    }
+    
 }
 
 STATIC mp_obj_t ubluepy_descriptor_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
@@ -58,7 +68,9 @@ STATIC mp_obj_t ubluepy_descriptor_make_new(const mp_obj_type_t *type, size_t n_
 
     mp_obj_t uuid_obj = args[ARG_NEW_UUID].u_obj;
 
-    (void)uuid_obj;
+    //(void)uuid_obj;
+    
+    s->p_uuid = (ubluepy_descriptor_obj_t *) uuid_obj;
 
     return MP_OBJ_FROM_PTR(s);
 }
