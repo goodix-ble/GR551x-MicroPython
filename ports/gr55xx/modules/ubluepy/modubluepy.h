@@ -194,8 +194,8 @@ typedef enum _ubluepy_prop_t {
 } ubluepy_prop_t;
 
 typedef enum _ubluepy_attr_t {
-    UBLUEPY_ATTR_CCCD           = 0x01,
-    UBLUEPY_ATTR_SCCD           = 0x02,
+    UBLUEPY_ATTR_CCCD           = 0x01,     //Client CCD
+    UBLUEPY_ATTR_SCCD           = 0x02,     //Server CCD
 } ubluepy_attr_t;
 
 #endif // UBLUEPY_H__

@@ -91,12 +91,20 @@ endif
 # ble porting
 SRC_C += \
     boards/ports/ble/gr_porting.c \
+    boards/ports/ble/ubluepy_hal_common.c \
+    boards/ports/ble/ubluepy_hal_gap.c \
+    boards/ports/ble/ubluepy_hal_gatt_server.c \
     modules/ble/modble.c \
     modules/ubluepy/modubluepy.c \
     modules/ubluepy/ubluepy_uuid.c \
     modules/ubluepy/ubluepy_constants.c \
     modules/ubluepy/ubluepy_delegate.c \
     modules/ubluepy/ubluepy_descriptor.c \
+    modules/ubluepy/ubluepy_characteristic.c \
+    modules/ubluepy/ubluepy_service.c \
+    modules/ubluepy/ubluepy_peripheral.c \
+    modules/ubluepy/ubluepy_scan_entry.c \
+    modules/ubluepy/ubluepy_scanner.c \
 
     
 INC_GR += -I./modules/ble

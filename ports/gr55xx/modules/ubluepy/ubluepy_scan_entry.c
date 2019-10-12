@@ -33,9 +33,9 @@
 #include "py/objtuple.h"
 #include "py/qstr.h"
 
-#if MICROPY_PY_UBLUEPY_CENTRAL
+#include "mp_defs.h"
 
-#include "ble_drv.h"
+#if MICROPY_PY_UBLUEPY_CENTRAL
 
 STATIC void ubluepy_scan_entry_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     ubluepy_scan_entry_obj_t * self = (ubluepy_scan_entry_obj_t *)o;

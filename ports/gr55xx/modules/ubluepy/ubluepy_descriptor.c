@@ -56,7 +56,7 @@ STATIC mp_obj_t ubluepy_descriptor_make_new(const mp_obj_type_t *type, size_t n_
     enum { ARG_NEW_UUID };
 
     static const mp_arg_t allowed_args[] = {
-        { ARG_NEW_UUID, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { ARG_NEW_UUID, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
 
     // parse args
@@ -67,10 +67,8 @@ STATIC mp_obj_t ubluepy_descriptor_make_new(const mp_obj_type_t *type, size_t n_
     s->base.type = type;
 
     mp_obj_t uuid_obj = args[ARG_NEW_UUID].u_obj;
-
-    //(void)uuid_obj;
     
-    s->p_uuid = (ubluepy_descriptor_obj_t *) uuid_obj;
+    s->p_uuid = MP_OBJ_TO_PTR(uuid_obj);
 
     return MP_OBJ_FROM_PTR(s);
 }

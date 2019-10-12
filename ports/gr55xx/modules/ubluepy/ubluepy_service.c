@@ -28,15 +28,17 @@
 #include "py/runtime.h"
 #include "py/objlist.h"
 
-#if MICROPY_PY_UBLUEPY_PERIPHERAL || MICROPY_PY_UBLUEPY_CENTRAL
+#include "mp_defs.h"
+#include "ubluepy_hal.h"
+
+#if MICROPY_PY_UBLUEPY && ( MICROPY_PY_UBLUEPY_PERIPHERAL || MICROPY_PY_UBLUEPY_CENTRAL )
 
 #include "modubluepy.h"
-#include "ble_drv.h"
 
 STATIC void ubluepy_service_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     ubluepy_service_obj_t * self = (ubluepy_service_obj_t *)o;
 
-    mp_printf(print, "Service(handle: 0x" HEX2_FMT ")", self->handle);
+    mp_printf(print, "Service(handle: 0x%02x)", self->handle);
 }
 
 STATIC mp_obj_t ubluepy_service_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
@@ -44,7 +46,7 @@ STATIC mp_obj_t ubluepy_service_make_new(const mp_obj_type_t *type, size_t n_arg
     enum { ARG_NEW_UUID, ARG_NEW_TYPE };
 
     static const mp_arg_t allowed_args[] = {
-        { ARG_NEW_UUID, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { ARG_NEW_UUID, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { ARG_NEW_TYPE, MP_ARG_INT, {.u_int = UBLUEPY_SERVICE_PRIMARY} },
     };
 
@@ -53,7 +55,9 @@ STATIC mp_obj_t ubluepy_service_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     ubluepy_service_obj_t *s = m_new_obj(ubluepy_service_obj_t);
-    s->base.type = type;
+    s->base.type    = type;
+    s->handle       = gr_ble_get_mpy_handle();
+    s->start_handle = s->handle;
 
     mp_obj_t uuid_obj = args[ARG_NEW_UUID].u_obj;
 
@@ -71,7 +75,7 @@ STATIC mp_obj_t ubluepy_service_make_new(const mp_obj_type_t *type, size_t n_arg
             mp_raise_ValueError("Invalid Service type");
         }
 
-        (void)ble_drv_service_add(s);
+        gr_ubluepy_add_service(s);
 
     } else {
         mp_raise_ValueError("Invalid UUID parameter");
@@ -91,9 +95,9 @@ STATIC mp_obj_t service_add_characteristic(mp_obj_t self_in, mp_obj_t characteri
     ubluepy_service_obj_t        * self   = MP_OBJ_TO_PTR(self_in);
     ubluepy_characteristic_obj_t * p_char = MP_OBJ_TO_PTR(characteristic);
 
-    p_char->service_handle = self->handle;
+    p_char->service_handle  = self->handle;
 
-    bool retval = ble_drv_characteristic_add(p_char);
+    bool retval = gr_ubluepy_add_characteristic(p_char);
 
     if (retval) {
         p_char->p_service = self;
@@ -147,6 +151,90 @@ STATIC mp_obj_t service_get_characteristic(mp_obj_t self_in, mp_obj_t uuid) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_service_get_char_obj, service_get_characteristic);
+
+
+
+
+
+
+
+
+#if 0
+
+
+
+/// \method addDescriptor(Descriptor)
+/// Add Descriptor to the Service.
+///
+STATIC mp_obj_t service_add_descriptor(mp_obj_t self_in, mp_obj_t descriptor) {
+    ubluepy_service_obj_t        * self   = MP_OBJ_TO_PTR(self_in);
+    ubluepy_descriptor_obj_t     * p_desc = MP_OBJ_TO_PTR(descriptor);
+
+    p_desc->service_handle  = self->handle;
+
+    bool retval = gr_ubluepy_add_descriptor(p_desc);
+
+    if (retval) {
+        p_desc->p_service = self;
+    }
+
+    mp_obj_list_append(self->desc_list, descriptor);
+
+    // return mp_obj_new_bool(retval);
+    return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_service_add_desc_obj, service_add_descriptor);
+
+/// \method getDescriptors()
+/// Return list with all descriptors registered in the Service.
+///
+STATIC mp_obj_t service_get_descs(mp_obj_t self_in) {
+    ubluepy_service_obj_t * self = MP_OBJ_TO_PTR(self_in);
+
+    return self->desc_list;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_service_get_descs_obj, service_get_descs);
+
+/// \method getDescriptor(UUID)
+/// Return descriptor with the given UUID.
+///
+STATIC mp_obj_t service_get_descriptor(mp_obj_t self_in, mp_obj_t uuid) {
+    ubluepy_service_obj_t * self   = MP_OBJ_TO_PTR(self_in);
+    ubluepy_uuid_obj_t    * p_uuid = MP_OBJ_TO_PTR(uuid);
+
+    // validate that there is an UUID object passed in as parameter
+    if (!(mp_obj_is_type(uuid, &ubluepy_uuid_type))) {
+        mp_raise_ValueError("Invalid UUID parameter");
+    }
+
+    mp_obj_t * descs     = NULL;
+    mp_uint_t  num_descs = 0;
+    mp_obj_get_array(self->desc_list, &num_descs, &descs);
+
+    for (uint8_t i = 0; i < num_descs; i++) {
+        ubluepy_descriptor_obj_t * p_desc = (ubluepy_descriptor_obj_t *)descs[i];
+
+        bool type_match = p_desc->p_uuid->type == p_uuid->type;
+        bool uuid_match = ((uint16_t)(*(uint16_t *)&p_desc->p_uuid->value[0]) ==
+                           (uint16_t)(*(uint16_t *)&p_uuid->value[0]));
+
+        if (type_match && uuid_match) {
+            return MP_OBJ_FROM_PTR(p_desc);
+        }
+    }
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_service_get_desc_obj, service_get_descriptor);
+
+
+#endif
+
+
+
+
+
 
 /// \method uuid()
 /// Get UUID instance of the Service.

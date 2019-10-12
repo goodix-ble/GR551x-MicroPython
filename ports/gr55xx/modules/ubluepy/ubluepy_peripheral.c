@@ -30,9 +30,11 @@
 #include "py/objstr.h"
 #include "py/objlist.h"
 
+#include "mp_defs.h"
+#include "ubluepy_hal.h"
+
 #if MICROPY_PY_UBLUEPY
 
-#include "ble_drv.h"
 
 STATIC void ubluepy_peripheral_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     ubluepy_peripheral_obj_t * self = (ubluepy_peripheral_obj_t *)o;
@@ -225,11 +227,11 @@ STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args,
     if (connectable_obj != mp_const_none && !(mp_obj_is_true(connectable_obj))) {
         adv_data.connectable = false;
     } else {
-        ble_drv_gap_event_handler_set(MP_OBJ_FROM_PTR(self), gap_event_handler);
-        ble_drv_gatts_event_handler_set(MP_OBJ_FROM_PTR(self), gatts_event_handler);
+        gr_ubluepy_set_gap_event_handler(MP_OBJ_FROM_PTR(self), gap_event_handler);
+        gr_ubluepy_set_gatts_event_handler(MP_OBJ_FROM_PTR(self), gatts_event_handler);
     }
 
-    (void)ble_drv_advertise_data(&adv_data);
+    (void)gr_ubluepy_gap_advertise_start(&adv_data);
 
     return mp_const_none;
 }
@@ -243,7 +245,7 @@ STATIC mp_obj_t peripheral_advertise_stop(mp_obj_t self_in) {
 
     (void)self;
 
-    ble_drv_advertise_stop();
+    gr_ubluepy_gap_advertise_stop();
 
     return mp_const_none;
 }
@@ -290,161 +292,161 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_peripheral_get_services_obj, peripheral
 
 #if MICROPY_PY_UBLUEPY_CENTRAL
 
-void static disc_add_service(mp_obj_t self, ble_drv_service_data_t * p_service_data) {
-    ubluepy_service_obj_t * p_service = m_new_obj(ubluepy_service_obj_t);
-    p_service->base.type = &ubluepy_service_type;
+    void static disc_add_service(mp_obj_t self, ble_drv_service_data_t * p_service_data) {
+        ubluepy_service_obj_t * p_service = m_new_obj(ubluepy_service_obj_t);
+        p_service->base.type = &ubluepy_service_type;
 
-    ubluepy_uuid_obj_t * p_uuid = m_new_obj(ubluepy_uuid_obj_t);
-    p_uuid->base.type = &ubluepy_uuid_type;
+        ubluepy_uuid_obj_t * p_uuid = m_new_obj(ubluepy_uuid_obj_t);
+        p_uuid->base.type = &ubluepy_uuid_type;
 
-    p_service->p_uuid = p_uuid;
+        p_service->p_uuid = p_uuid;
 
-    p_uuid->type = p_service_data->uuid_type;
-    p_uuid->value[0] = p_service_data->uuid & 0xFF;
-    p_uuid->value[1] = p_service_data->uuid >> 8;
+        p_uuid->type = p_service_data->uuid_type;
+        p_uuid->value[0] = p_service_data->uuid & 0xFF;
+        p_uuid->value[1] = p_service_data->uuid >> 8;
 
-    p_service->handle       = p_service_data->start_handle;
-    p_service->start_handle = p_service_data->start_handle;
-    p_service->end_handle   = p_service_data->end_handle;
+        p_service->handle       = p_service_data->start_handle;
+        p_service->start_handle = p_service_data->start_handle;
+        p_service->end_handle   = p_service_data->end_handle;
 
-    p_service->char_list = mp_obj_new_list(0, NULL);
+        p_service->char_list = mp_obj_new_list(0, NULL);
 
-    peripheral_add_service(self, MP_OBJ_FROM_PTR(p_service));
-}
+        peripheral_add_service(self, MP_OBJ_FROM_PTR(p_service));
+    }
 
-void static disc_add_char(mp_obj_t service_in, ble_drv_char_data_t * p_desc_data) {
-    ubluepy_service_obj_t        * p_service   = MP_OBJ_TO_PTR(service_in);
-    ubluepy_characteristic_obj_t * p_char = m_new_obj(ubluepy_characteristic_obj_t);
-    p_char->base.type = &ubluepy_characteristic_type;
+    void static disc_add_char(mp_obj_t service_in, ble_drv_char_data_t * p_desc_data) {
+        ubluepy_service_obj_t        * p_service   = MP_OBJ_TO_PTR(service_in);
+        ubluepy_characteristic_obj_t * p_char = m_new_obj(ubluepy_characteristic_obj_t);
+        p_char->base.type = &ubluepy_characteristic_type;
 
-    ubluepy_uuid_obj_t * p_uuid = m_new_obj(ubluepy_uuid_obj_t);
-    p_uuid->base.type = &ubluepy_uuid_type;
+        ubluepy_uuid_obj_t * p_uuid = m_new_obj(ubluepy_uuid_obj_t);
+        p_uuid->base.type = &ubluepy_uuid_type;
 
-    p_char->p_uuid = p_uuid;
+        p_char->p_uuid = p_uuid;
 
-    p_uuid->type = p_desc_data->uuid_type;
-    p_uuid->value[0] = p_desc_data->uuid & 0xFF;
-    p_uuid->value[1] = p_desc_data->uuid >> 8;
+        p_uuid->type = p_desc_data->uuid_type;
+        p_uuid->value[0] = p_desc_data->uuid & 0xFF;
+        p_uuid->value[1] = p_desc_data->uuid >> 8;
 
-    // add characteristic specific data from discovery
-    p_char->props  = p_desc_data->props;
-    p_char->handle = p_desc_data->value_handle;
+        // add characteristic specific data from discovery
+        p_char->props  = p_desc_data->props;
+        p_char->handle = p_desc_data->value_handle;
 
-    // equivalent to ubluepy_service.c - service_add_characteristic()
-    // except the registration of the characteristic towards the bluetooth stack
-    p_char->service_handle = p_service->handle;
-    p_char->p_service      = p_service;
+        // equivalent to ubluepy_service.c - service_add_characteristic()
+        // except the registration of the characteristic towards the bluetooth stack
+        p_char->service_handle = p_service->handle;
+        p_char->p_service      = p_service;
 
-    mp_obj_list_append(p_service->char_list, MP_OBJ_FROM_PTR(p_char));
-}
+        mp_obj_list_append(p_service->char_list, MP_OBJ_FROM_PTR(p_char));
+    }
 
-/// \method connect(device_address [, addr_type=ADDR_TYPE_PUBLIC])
-/// Connect to device peripheral with the given device address.
-/// addr_type can be either ADDR_TYPE_PUBLIC (default) or
-/// ADDR_TYPE_RANDOM_STATIC.
-///
-STATIC mp_obj_t peripheral_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    mp_obj_t dev_addr              = pos_args[1];
+    /// \method connect(device_address [, addr_type=ADDR_TYPE_PUBLIC])
+    /// Connect to device peripheral with the given device address.
+    /// addr_type can be either ADDR_TYPE_PUBLIC (default) or
+    /// ADDR_TYPE_RANDOM_STATIC.
+    ///
+    STATIC mp_obj_t peripheral_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+        ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+        mp_obj_t dev_addr              = pos_args[1];
 
-    self->role = UBLUEPY_ROLE_CENTRAL;
+        self->role = UBLUEPY_ROLE_CENTRAL;
 
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_addr_type, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UBLUEPY_ADDR_TYPE_PUBLIC } },
-    };
+        static const mp_arg_t allowed_args[] = {
+            { MP_QSTR_addr_type, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UBLUEPY_ADDR_TYPE_PUBLIC } },
+        };
 
-    // parse args
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args - 2, pos_args + 2, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+        // parse args
+        mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+        mp_arg_parse_all(n_args - 2, pos_args + 2, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    uint8_t addr_type = args[0].u_int;
+        uint8_t addr_type = args[0].u_int;
 
-    ble_drv_gap_event_handler_set(MP_OBJ_FROM_PTR(self), gap_event_handler);
+        ble_drv_gap_event_handler_set(MP_OBJ_FROM_PTR(self), gap_event_handler);
 
-    if (mp_obj_is_str(dev_addr)) {
-        GET_STR_DATA_LEN(dev_addr, str_data, str_len);
-        if (str_len == 17) { // Example "11:22:33:aa:bb:cc"
+        if (mp_obj_is_str(dev_addr)) {
+            GET_STR_DATA_LEN(dev_addr, str_data, str_len);
+            if (str_len == 17) { // Example "11:22:33:aa:bb:cc"
 
-            uint8_t * p_addr = m_new(uint8_t, 6);
+                uint8_t * p_addr = m_new(uint8_t, 6);
 
-            p_addr[0]  = unichar_xdigit_value(str_data[16]);
-            p_addr[0] += unichar_xdigit_value(str_data[15]) << 4;
-            p_addr[1]  = unichar_xdigit_value(str_data[13]);
-            p_addr[1] += unichar_xdigit_value(str_data[12]) << 4;
-            p_addr[2]  = unichar_xdigit_value(str_data[10]);
-            p_addr[2] += unichar_xdigit_value(str_data[9]) << 4;
-            p_addr[3]  = unichar_xdigit_value(str_data[7]);
-            p_addr[3] += unichar_xdigit_value(str_data[6]) << 4;
-            p_addr[4]  = unichar_xdigit_value(str_data[4]);
-            p_addr[4] += unichar_xdigit_value(str_data[3]) << 4;
-            p_addr[5]  = unichar_xdigit_value(str_data[1]);
-            p_addr[5] += unichar_xdigit_value(str_data[0]) << 4;
+                p_addr[0]  = unichar_xdigit_value(str_data[16]);
+                p_addr[0] += unichar_xdigit_value(str_data[15]) << 4;
+                p_addr[1]  = unichar_xdigit_value(str_data[13]);
+                p_addr[1] += unichar_xdigit_value(str_data[12]) << 4;
+                p_addr[2]  = unichar_xdigit_value(str_data[10]);
+                p_addr[2] += unichar_xdigit_value(str_data[9]) << 4;
+                p_addr[3]  = unichar_xdigit_value(str_data[7]);
+                p_addr[3] += unichar_xdigit_value(str_data[6]) << 4;
+                p_addr[4]  = unichar_xdigit_value(str_data[4]);
+                p_addr[4] += unichar_xdigit_value(str_data[3]) << 4;
+                p_addr[5]  = unichar_xdigit_value(str_data[1]);
+                p_addr[5] += unichar_xdigit_value(str_data[0]) << 4;
 
-            ble_drv_connect(p_addr, addr_type);
+                ble_drv_connect(p_addr, addr_type);
 
-            m_del(uint8_t, p_addr, 6);
+                m_del(uint8_t, p_addr, 6);
+            }
         }
-    }
 
-    // block until connected
-    while (self->conn_handle == 0xFFFF) {
-        ;
-    }
+        // block until connected
+        while (self->conn_handle == 0xFFFF) {
+            ;
+        }
 
-    ble_drv_gattc_event_handler_set(MP_OBJ_FROM_PTR(self), gattc_event_handler);
+        ble_drv_gattc_event_handler_set(MP_OBJ_FROM_PTR(self), gattc_event_handler);
 
-    bool service_disc_retval = ble_drv_discover_services(self, self->conn_handle, 0x0001, disc_add_service);
+        bool service_disc_retval = ble_drv_discover_services(self, self->conn_handle, 0x0001, disc_add_service);
 
-    // continue discovery of primary services ...
-    while (service_disc_retval) {
-        // locate the last added service
+        // continue discovery of primary services ...
+        while (service_disc_retval) {
+            // locate the last added service
+            mp_obj_t * services = NULL;
+            mp_uint_t  num_services;
+            mp_obj_get_array(self->service_list, &num_services, &services);
+
+            ubluepy_service_obj_t * p_service = (ubluepy_service_obj_t *)services[num_services - 1];
+
+            service_disc_retval = ble_drv_discover_services(self,
+                                                            self->conn_handle,
+                                                            p_service->end_handle + 1,
+                                                            disc_add_service);
+        }
+
+        // For each service perform a characteristic discovery
         mp_obj_t * services = NULL;
         mp_uint_t  num_services;
         mp_obj_get_array(self->service_list, &num_services, &services);
 
-        ubluepy_service_obj_t * p_service = (ubluepy_service_obj_t *)services[num_services - 1];
+        for (uint16_t s = 0; s < num_services; s++) {
+            ubluepy_service_obj_t * p_service = (ubluepy_service_obj_t *)services[s];
+            bool char_disc_retval = ble_drv_discover_characteristic(p_service,
+                                                                    self->conn_handle,
+                                                                    p_service->start_handle,
+                                                                    p_service->end_handle,
+                                                                    disc_add_char);
+            // continue discovery of characteristics ...
+            while (char_disc_retval) {
+                mp_obj_t * characteristics = NULL;
+                mp_uint_t  num_chars;
+                mp_obj_get_array(p_service->char_list, &num_chars, &characteristics);
 
-        service_disc_retval = ble_drv_discover_services(self,
-                                                        self->conn_handle,
-                                                        p_service->end_handle + 1,
-                                                        disc_add_service);
-    }
-
-    // For each service perform a characteristic discovery
-    mp_obj_t * services = NULL;
-    mp_uint_t  num_services;
-    mp_obj_get_array(self->service_list, &num_services, &services);
-
-    for (uint16_t s = 0; s < num_services; s++) {
-        ubluepy_service_obj_t * p_service = (ubluepy_service_obj_t *)services[s];
-        bool char_disc_retval = ble_drv_discover_characteristic(p_service,
-                                                                self->conn_handle,
-                                                                p_service->start_handle,
-                                                                p_service->end_handle,
-                                                                disc_add_char);
-        // continue discovery of characteristics ...
-        while (char_disc_retval) {
-            mp_obj_t * characteristics = NULL;
-            mp_uint_t  num_chars;
-            mp_obj_get_array(p_service->char_list, &num_chars, &characteristics);
-
-            ubluepy_characteristic_obj_t * p_char = (ubluepy_characteristic_obj_t *)characteristics[num_chars - 1];
-            uint16_t next_handle = p_char->handle + 1;
-            if ((next_handle) < p_service->end_handle) {
-                char_disc_retval = ble_drv_discover_characteristic(p_service,
-                                                                   self->conn_handle,
-                                                                   next_handle,
-                                                                   p_service->end_handle,
-                                                                   disc_add_char);
-            } else {
-                break;
+                ubluepy_characteristic_obj_t * p_char = (ubluepy_characteristic_obj_t *)characteristics[num_chars - 1];
+                uint16_t next_handle = p_char->handle + 1;
+                if ((next_handle) < p_service->end_handle) {
+                    char_disc_retval = ble_drv_discover_characteristic(p_service,
+                                                                       self->conn_handle,
+                                                                       next_handle,
+                                                                       p_service->end_handle,
+                                                                       disc_add_char);
+                } else {
+                    break;
+                }
             }
         }
-    }
 
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ubluepy_peripheral_connect_obj, 2, peripheral_connect);
+        return mp_const_none;
+    }
+    STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ubluepy_peripheral_connect_obj, 2, peripheral_connect);
 
 #endif
 
@@ -455,31 +457,33 @@ STATIC const mp_rom_map_elem_t ubluepy_peripheral_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_getServices),            MP_ROM_PTR(&ubluepy_peripheral_get_services_obj) },
 #if MICROPY_PY_UBLUEPY_CENTRAL
     { MP_ROM_QSTR(MP_QSTR_connect),                MP_ROM_PTR(&ubluepy_peripheral_connect_obj) },
-#if 0
-    { MP_ROM_QSTR(MP_QSTR_disconnect),             MP_ROM_PTR(&ubluepy_peripheral_disconnect_obj) },
-    { MP_ROM_QSTR(MP_QSTR_getServiceByUUID),       MP_ROM_PTR(&ubluepy_peripheral_get_service_by_uuid_obj) },
-    { MP_ROM_QSTR(MP_QSTR_getCharacteristics),     MP_ROM_PTR(&ubluepy_peripheral_get_chars_obj) },
-    { MP_ROM_QSTR(MP_QSTR_getDescriptors),         MP_ROM_PTR(&ubluepy_peripheral_get_descs_obj) },
-    { MP_ROM_QSTR(MP_QSTR_waitForNotifications),   MP_ROM_PTR(&ubluepy_peripheral_wait_for_notif_obj) },
-    { MP_ROM_QSTR(MP_QSTR_writeCharacteristic),    MP_ROM_PTR(&ubluepy_peripheral_write_char_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readCharacteristic),     MP_ROM_PTR(&ubluepy_peripheral_read_char_obj) },
-#endif // 0
+    #if 0
+        { MP_ROM_QSTR(MP_QSTR_disconnect),             MP_ROM_PTR(&ubluepy_peripheral_disconnect_obj) },
+        { MP_ROM_QSTR(MP_QSTR_getServiceByUUID),       MP_ROM_PTR(&ubluepy_peripheral_get_service_by_uuid_obj) },
+        { MP_ROM_QSTR(MP_QSTR_getCharacteristics),     MP_ROM_PTR(&ubluepy_peripheral_get_chars_obj) },
+        { MP_ROM_QSTR(MP_QSTR_getDescriptors),         MP_ROM_PTR(&ubluepy_peripheral_get_descs_obj) },
+        { MP_ROM_QSTR(MP_QSTR_waitForNotifications),   MP_ROM_PTR(&ubluepy_peripheral_wait_for_notif_obj) },
+        { MP_ROM_QSTR(MP_QSTR_writeCharacteristic),    MP_ROM_PTR(&ubluepy_peripheral_write_char_obj) },
+        { MP_ROM_QSTR(MP_QSTR_readCharacteristic),     MP_ROM_PTR(&ubluepy_peripheral_read_char_obj) },
+    #endif // 0
 #endif // MICROPY_PY_UBLUEPY_CENTRAL
 #if MICROPY_PY_UBLUEPY_PERIPHERAL
     { MP_ROM_QSTR(MP_QSTR_advertise),              MP_ROM_PTR(&ubluepy_peripheral_advertise_obj) },
     { MP_ROM_QSTR(MP_QSTR_advertise_stop),         MP_ROM_PTR(&ubluepy_peripheral_advertise_stop_obj) },
     { MP_ROM_QSTR(MP_QSTR_disconnect),             MP_ROM_PTR(&ubluepy_peripheral_disconnect_obj) },
     { MP_ROM_QSTR(MP_QSTR_addService),             MP_ROM_PTR(&ubluepy_peripheral_add_service_obj) },
-#if 0
-    { MP_ROM_QSTR(MP_QSTR_addCharacteristic),      MP_ROM_PTR(&ubluepy_peripheral_add_char_obj) },
-    { MP_ROM_QSTR(MP_QSTR_addDescriptor),          MP_ROM_PTR(&ubluepy_peripheral_add_desc_obj) },
-    { MP_ROM_QSTR(MP_QSTR_writeCharacteristic),    MP_ROM_PTR(&ubluepy_peripheral_write_char_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readCharacteristic),     MP_ROM_PTR(&ubluepy_peripheral_read_char_obj) },
+    #if 0
+        { MP_ROM_QSTR(MP_QSTR_addCharacteristic),      MP_ROM_PTR(&ubluepy_peripheral_add_char_obj) },
+        { MP_ROM_QSTR(MP_QSTR_addDescriptor),          MP_ROM_PTR(&ubluepy_peripheral_add_desc_obj) },
+        { MP_ROM_QSTR(MP_QSTR_writeCharacteristic),    MP_ROM_PTR(&ubluepy_peripheral_write_char_obj) },
+        { MP_ROM_QSTR(MP_QSTR_readCharacteristic),     MP_ROM_PTR(&ubluepy_peripheral_read_char_obj) },
+    #endif
 #endif
-#endif
+
 #if MICROPY_PY_UBLUEPY_BROADCASTER
     { MP_ROM_QSTR(MP_QSTR_advertise),              MP_ROM_PTR(&ubluepy_peripheral_advertise_obj) },
 #endif
+
 #if MICROPY_PY_UBLUEPY_OBSERVER
     // Nothing yet.
 #endif

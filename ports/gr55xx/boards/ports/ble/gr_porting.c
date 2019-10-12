@@ -80,6 +80,12 @@ char * gr_ble_format_uuid128b_to_string(uint8_t * uuid128b, uint8_t len){
     return &u128str[0];
 }
 
+uint16_t gr_ble_get_mpy_handle(void){
+    static uint16_t mpy_start_handle = 1;
+    
+    return mpy_start_handle++;
+}
+
 #if 0
 /*
  * transfer porting layer handle to gatt handle in ble stack

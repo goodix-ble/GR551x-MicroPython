@@ -26,17 +26,25 @@
 
 #include "py/obj.h"
 #include "py/runtime.h"
+#include "mp_defs.h"
 
-#if MICROPY_PY_UBLUEPY_PERIPHERAL || MICROPY_PY_UBLUEPY_CENTRAL
+#if MICROPY_PY_UBLUEPY && ( MICROPY_PY_UBLUEPY_PERIPHERAL || MICROPY_PY_UBLUEPY_CENTRAL )
 
 #include "modubluepy.h"
-#include "ble_drv.h"
 
 STATIC void ubluepy_characteristic_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     ubluepy_characteristic_obj_t * self = (ubluepy_characteristic_obj_t *)o;
 
-    mp_printf(print, "Characteristic(handle: 0x" HEX2_FMT ", conn_handle: " HEX2_FMT ")",
-              self->handle, self->p_service->p_periph->conn_handle);
+    if(self->p_uuid == NULL) {
+        mp_printf(print, "Characteristic(uuid: none, handle: %d)", self->handle);
+    } else {
+        if(self->p_uuid->type == UBLUEPY_UUID_128_BIT) {
+            mp_printf(print, "Characteristic(uuid: %s, handle: %d)",gr_ble_format_uuid128b_to_string(&self->p_uuid->value_128b[0], 16), self->handle);
+        } else {
+            mp_printf(print, "Characteristic(uuid: 0x%02x%02x, handle: %d)",
+              self->p_uuid->value[1], self->p_uuid->value[0], self->handle);
+        }
+    }    
 }
 
 STATIC mp_obj_t ubluepy_characteristic_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
@@ -97,10 +105,7 @@ STATIC mp_obj_t char_read(mp_obj_t self_in) {
 #if MICROPY_PY_UBLUEPY_CENTRAL
     // TODO: free any previous allocation of value_data
 
-    ble_drv_attr_c_read(self->p_service->p_periph->conn_handle,
-                        self->handle,
-                        self_in,
-                        char_data_callback);
+    //TODO: read value data
 
     return self->value_data;
 #else
@@ -132,6 +137,9 @@ STATIC mp_obj_t char_write(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t 
     ubluepy_role_type_t role = self->p_service->p_periph->role;
 
     if (role == UBLUEPY_ROLE_PERIPHERAL) {
+#if MICROPY_PY_UBLUEPY_PERIPHERAL
+    //todo
+    /*
         if (self->props & UBLUEPY_PROP_NOTIFY) {
             ble_drv_attr_s_notify(self->p_service->p_periph->conn_handle,
                                   self->handle,
@@ -143,15 +151,20 @@ STATIC mp_obj_t char_write(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t 
                                  bufinfo.len,
                                  bufinfo.buf);
         }
+    */
+#endif
     } else {
 #if MICROPY_PY_UBLUEPY_CENTRAL
         bool with_response = args[0].u_bool;
 
+        //todo: write
+        /*
         ble_drv_attr_c_write(self->p_service->p_periph->conn_handle,
                              self->handle,
                              bufinfo.len,
                              bufinfo.buf,
                              with_response);
+        */
 #endif
     }
     return mp_const_none;
