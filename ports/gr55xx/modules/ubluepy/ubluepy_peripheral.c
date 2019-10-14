@@ -231,7 +231,10 @@ STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args,
         gr_ubluepy_set_gatts_event_handler(MP_OBJ_FROM_PTR(self), gatts_event_handler);
     }
 
-    (void)gr_ubluepy_gap_start_services_and_advertise(&adv_data);
+    if(!gr_ubluepy_gap_start_services_and_advertise(&adv_data)){
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                "Can not start adv."));
+    }
 
     return mp_const_none;
 }

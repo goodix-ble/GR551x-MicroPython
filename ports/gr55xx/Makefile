@@ -94,6 +94,7 @@ SRC_C += \
     boards/ports/ble/ubluepy_hal_common.c \
     boards/ports/ble/ubluepy_hal_gap.c \
     boards/ports/ble/ubluepy_hal_gatt_server.c \
+    boards/ports/ble/user_callback/user_gatts_profile_callback.c \
     modules/ble/modble.c \
     modules/ubluepy/modubluepy.c \
     modules/ubluepy/ubluepy_uuid.c \

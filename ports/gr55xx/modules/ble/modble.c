@@ -39,6 +39,7 @@ mp_obj_t ble_obj_enable(void) {
     
     if(!s_gr_ble_common_params_ins.is_ble_initialized){
         gr_ble_stack_init();
+        gr_ubluepy_init();
         gr_trace("enable the ble stack...\r\n");
     } else {
         gr_trace("ble stack enabled already...\r\n");

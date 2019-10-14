@@ -13,5 +13,7 @@
 #define GR_BLE_MAX_SERVICES                                 (10)
 #define GR_BLE_GATT_PORTING_LAYER_START_HANDLE              (1)
 #define GR_BLE_GATT_INVALID_HANDLE                          0xFFFF
-
+//#define GR_BLE_ADV_DATA_LEN_MAX                             (28)        /// Advertising data maximum length
+//#define GR_BLE_SCAN_RSP_DATA_LEN_MAX                        (31)        /// Scan response data maximum length
+#define GR_BLE_GAP_ADV_DEFAULT_SIZE                         (31)
 #endif /* __GR_CONFIG_H__ */

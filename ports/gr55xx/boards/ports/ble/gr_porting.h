@@ -4,8 +4,8 @@
 #include "gr55xx_sys.h"
 #include "user_app.h"
 #include "gr_config.h"
-
-#include "ble_gapc.h"
+#include "ble.h"
+#include "modubluepy.h"
 
 #define GR_PORT_DEBUG   1
 
@@ -48,18 +48,59 @@ typedef struct{
     uint16_t    start_handle;
 }gr_srv_env_t;
 
+
+
+
+typedef struct
+{
+    ubluepy_uuid_type_t         uuid_type;
+    union
+    {
+        attm_desc_t             attm;
+        attm_desc_128_t         attm128;
+    } properties;
+    uint16_t                    service_handle;     //save service handle
+    uint16_t                    parent_handle;      //save parent handle
+    uint16_t                    handle;             //save my onw handle, service handle's parent is 0, if service_handle == handle, it's service entity    
+    ubluepy_attr_type_t         type;
+    
+    ubluepy_prop_t              raw_properties;
+    ubluepy_permission_t        raw_permissions;
+} BTGattEntity_t;
+
+typedef struct{
+    bool                isUsed;             //record this posit
+    uint16_t            mServiceHandle;     //service handlle
+    uint16_t            mGattNum;           //number of attribute
+    ubluepy_uuid_type_t mUuidType;          //just support 16b & 128b
+    void *              pAttTable;          //pointer to att table, real type is attm_desc_t * or attm_desc_128_t *    
+}BTGattServiceList_t;
+
+
+
 extern gr_ble_common_params_t       s_gr_ble_common_params_ins;
 extern gr_ble_gap_params_t          s_gr_ble_gap_params_ins;
 extern gr_ble_gatt_params_t         s_gr_ble_gatt_params_ins;
 extern gr_srv_env_t                 s_gattsp_instance;
 
 
+
 void        gr_ble_stack_init(void);
 void        gr_gatt_service_reset(void);
 char *      gr_ble_format_uuid128b_to_string(uint8_t * uuid128b, uint8_t len);
 uint16_t    gr_ble_get_mpy_handle(void);
-//BTStatus_t gr_gatt_service_register_all(void) ;
-//BTStatus_t gr_gatt_service_register(uint16_t serviceHandle);
+bool        gr_gatt_service_register(uint16_t service_handle);
+
+
+
+void                    prvBTGattServiceListInit(void);
+bool                    prvBTGattServiceListPut(const BTGattServiceList_t srv);
+BTGattServiceList_t *   prvBTGattServiceListGet(uint16_t serviceHandle);
+BTGattServiceList_t *   prvBTGattServiceListGetHead(void);
+void                    prvBTGattServiceListDelete(uint16_t serviceHandle);
+
+
+
 
 /*
  * transfer porting layer handle to gatt handle in ble stack

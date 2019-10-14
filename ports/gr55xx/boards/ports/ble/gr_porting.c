@@ -91,7 +91,7 @@ uint16_t gr_ble_get_mpy_handle(void){
     return mpy_start_handle++;
 }
 
-#if 0
+#if 1
 /*
  * transfer porting layer handle to gatt handle in ble stack
  * JUST Be called when connected
@@ -104,6 +104,8 @@ uint16_t gr_gatt_transto_ble_stack_handle(uint16_t porting_handle){
     } else {
         stack_handle = porting_handle - GR_BLE_GATT_PORTING_LAYER_START_HANDLE + s_gattsp_instance.start_handle;
     }    
+    
+    //gr_trace(">>> Porting Handle %d transferred to Stack Handle: %d \r\n",porting_handle, stack_handle);
     
     return stack_handle;
 }

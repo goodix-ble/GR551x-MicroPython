@@ -7,30 +7,7 @@
 
 #include "ble.h"
 
-typedef struct
-{
-    ubluepy_uuid_type_t         uuid_type;
-    union
-    {
-        attm_desc_t             attm;
-        attm_desc_128_t         attm128;
-    } properties;
-    uint16_t                    service_handle;     //save service handle
-    uint16_t                    parent_handle;      //save parent handle
-    uint16_t                    handle;             //save my onw handle, service handle's parent is 0, if service_handle == handle, it's service entity    
-    ubluepy_attr_type_t         type;
-    
-    ubluepy_prop_t              raw_properties;
-    ubluepy_permission_t        raw_permissions;
-} BTGattEntity_t;
 
-typedef struct{
-    bool                isUsed;             //record this posit
-    uint16_t            mServiceHandle;     //service handlle
-    uint16_t            mGattNum;           //number of attribute
-    ubluepy_uuid_type_t mUuidType;          //just support 16b & 128b
-    void *              pAttTable;          //pointer to att table, real type is attm_desc_t * or attm_desc_128_t *    
-}BTGattServiceList_t;
 
 
 uint8_t                     xGattTableSize = 0;
@@ -41,11 +18,7 @@ BTGattEntity_t              xGattTable[GR_BLE_GATT_MAX_ENTITIES];
 
 static bool prvGetServiceAttmTable(uint16_t usServiceHandle, bool * isUUID128, void ** ptable, uint32_t * att_num);
 
-void                    prvBTGattServiceListInit(void);
-bool                    prvBTGattServiceListPut(const BTGattServiceList_t srv);
-BTGattServiceList_t *   prvBTGattServiceListGet(uint16_t serviceHandle);
-BTGattServiceList_t *   prvBTGattServiceListGetHead(void);
-void                    prvBTGattServiceListDelete(uint16_t serviceHandle);
+
 
 
 
@@ -307,10 +280,10 @@ bool gr_ubluepy_gatt_start_service(ubluepy_service_obj_t * service) {
         ret = prvBTGattServiceListPut(srvlist);
         
         if(ret == true){
-            //ret = gr_gatt_service_register(service_handle);
+            ret = gr_gatt_service_register(service_handle);
         }
     }
-    gr_trace("+++ gr_ubluepy_gatt_start_service : %d  ", ret); 
+    gr_trace("+++ gr_ubluepy_gatt_start_service : %d  \r\n", ret); 
     
     return ret;    
 }
@@ -489,9 +462,54 @@ void prvBTGattServiceListDelete(uint16_t serviceHandle){
 }
 
 
+static char * prvFormatUUID(BTGattEntity_t gatt){
+    static char tbuff[64];
+    uint8_t len = 0;
+    memset(&tbuff[0], 0 , 64);
+    
+    if(gatt.uuid_type == UBLUEPY_UUID_128_BIT){
+        len = 0;
+        for(int i = 15;i >= 0; i--){
+            len += sprintf(&tbuff[len], "%02x", gatt.properties.attm128.uuid[i]);
+        }
+        
+    } else if(gatt.uuid_type == UBLUEPY_UUID_16_BIT){
+        sprintf(&tbuff[0], "%04x", gatt.properties.attm.uuid);
+    }
+    
+    return &tbuff[0];
+}
+
+//can be called after service added finished
+void gr_ble_gatt_handle_map_print(void){
+#if 1//GR_BLE_HAL_TRACE_ENABLE > 0u    
+    uint32_t max = xGattTableSize > GR_BLE_GATT_MAX_ENTITIES ? GR_BLE_GATT_MAX_ENTITIES : xGattTableSize;
+    uint16_t stack_handle = 0;
+    
+    gr_trace("\r\n+++++ Gatt Service Handle Map +++++\r\n");
+    gr_trace("+++ Port  +++  Stack  +++  UUID +++\r\n");
+    
+    for (int i=0; i< max; i++){
+        stack_handle = gr_gatt_transto_ble_stack_handle(xGattTable[i].handle);
+        gr_trace("+++ %-4d  +++  %-6d +++ %s \r\n", xGattTable[i].handle, stack_handle, prvFormatUUID(xGattTable[i]));
+    }
+    gr_trace("++++++++++++++++++++++++++++++++++++\r\n");
+#endif
+    return;
+}
 
 
 
+void gr_ubluepy_init(void)
+{    
+    xGattTableSize = 0;
+    memset(&xGattTable[0], 0, sizeof(BTGattEntity_t) * GR_BLE_GATT_MAX_ENTITIES);
+    gr_gatt_service_reset();
+    prvBTGattServiceListInit();
+    //prvBTGattValueHandleInit();
+    
+    memset(&s_gr_ble_gap_params_ins, 0 , sizeof(gr_ble_gap_params_t));
+}
 
 
 

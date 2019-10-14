@@ -4,14 +4,8 @@
  */
 #include "gr55xx_sys.h"
 #include "user_app.h"
-#include "iot_ble_gap_config.h"
-#include "iot_ble_hal_internals.h"
-#include "FreeRTOSConfig.h"
-#include "bt_hal_manager_types.h"
 #include "ble_prf_utils.h"
 #include "gr_config.h"
-#include "gr_utils.h"
-#include "gr_message.h"
 #include "gr_porting.h"
 
 
@@ -71,7 +65,7 @@ static ble_err_t gatt_prf_db_init(void)
     memset(&gatts_db, 0, sizeof(gatts_db));
     
     if(s_gattsp_instance.cur_start_srv_index >= s_gattsp_instance.register_srv_num){
-        GRC_LOG(ERROR, ("gatt_prf_db_init, index exception... "));
+        gr_trace("gatt_prf_db_init, index exception... ");
         return BLE_ATT_ERR_INVALID_HANDLE;
     }
     
@@ -82,7 +76,7 @@ static ble_err_t gatt_prf_db_init(void)
     s_gattsp_instance.cur_start_srv_index ++;
     
     if(psrv == NULL){
-        GRC_LOG(DEBUG, ("gatt_prf_db_init, invalid service handle... "));
+        gr_trace("gatt_prf_db_init, invalid service handle... \r\n");
         return SDK_ERR_INVALID_HANDLE;
     }
     for(int i = 0; i < GR_BLE_ATTR_MASK_LEN; i++){
@@ -93,7 +87,7 @@ static ble_err_t gatt_prf_db_init(void)
     gatts_db.attr_tab_cfg          = &s_attr_mask[0];
     gatts_db.max_nb_attr           = psrv->mGattNum;
     
-    if (psrv->mUuidType == eBTuuidType128)
+    if (psrv->mUuidType == UBLUEPY_UUID_128_BIT)
     {
         gatts_db.uuid                  = ((attm_desc_128_t *)psrv->pAttTable)->uuid;
         gatts_db.srvc_perm             = SRVC_UUID_TYPE_SET(UUID_TYPE_128);
@@ -118,10 +112,12 @@ static ble_err_t gatt_prf_db_init(void)
         is_first_srv = false;
     }
     
-    GRC_LOG(DEBUG, ("gatt_prf_db_init, code: %d, start handle: %d... ", error_code, s_gattsp_instance.start_handle));
+    gr_trace("gatt_prf_db_init, code: %d, start handle: %d... \r\n", error_code, s_gattsp_instance.start_handle);
 
     return error_code;
 }
+
+
 
 void gr_gatt_service_reset(void){
     is_first_srv = true;
@@ -135,66 +131,42 @@ void gr_gatt_service_reset(void){
     }
 }
 
-BTStatus_t gr_gatt_service_register_all(void) {
-    sdk_err_t  error_code;
-    BTGattServiceList_t * srvhead =  prvBTGattServiceListGetHead();
-    BTGattServiceList_t srvlist;
-        
-    s_gattsp_instance.cur_start_srv_index = 0;
-        
-    for(int i = 0;i < GR_BLE_MAX_SERVICES; i++){
-        srvlist = *((BTGattServiceList_t *)srvhead + i);
-        if(srvlist.isUsed) {
-            s_gattsp_instance.register_srv_handle[s_gattsp_instance.register_srv_num%GR_BLE_MAX_SERVICES] = srvlist.mServiceHandle;
-            s_gattsp_instance.register_srv_num++;
-            
-            //every service calls gatt_prf_db_init each time
-            error_code = ble_server_prf_add(&srv_prf_info);  
-            
-            if (error_code != SDK_SUCCESS){
-                GRC_LOG(DEBUG, ("ble_server_prf_add fail: %d  ", error_code));
-                return gr_util_to_afr_status_code(error_code);
-            }
-        }
-    }
-    gr_util_gatt_handle_map_print();
-    
-    return gr_util_to_afr_status_code(SDK_SUCCESS);
-}
 
-BTStatus_t gr_gatt_service_register(uint16_t serviceHandle) {
-    BTStatus_t rStatus = eBTStatusSuccess;
+bool gr_gatt_service_register(uint16_t service_handle) {
+    bool ret = true;
     sdk_err_t  error_code;    
     BTGattServiceList_t * srvlist;
         
-    srvlist = prvBTGattServiceListGet(serviceHandle);
+    srvlist = prvBTGattServiceListGet(service_handle);
     
     if(srvlist != NULL){
-        s_gattsp_instance.register_srv_handle[s_gattsp_instance.register_srv_num%GR_BLE_MAX_SERVICES] = serviceHandle;
+        s_gattsp_instance.register_srv_handle[s_gattsp_instance.register_srv_num%GR_BLE_MAX_SERVICES] = service_handle;
         s_gattsp_instance.register_srv_num++;
             
         //every service calls gatt_prf_db_init each time
         error_code = ble_server_prf_add(&srv_prf_info);  
         
         if (error_code != SDK_SUCCESS){
-            GRC_LOG(DEBUG, ("ble_server_prf_add fail: %d  ", error_code));
-            return gr_util_to_afr_status_code(error_code);
+            gr_trace("ble_server_prf_add fail: %d  \r\n", error_code);
+            //return gr_util_to_afr_status_code(error_code);
+            ret = false;
         } else {
-            gr_util_gatt_handle_map_print();
+            gr_ble_gatt_handle_map_print();
         }
     } else {
-        rStatus = eBTStatusUnHandled;
+        ret = false;
     }           
     
-    return rStatus;
+    return ret;
 }
 
 static void srv_gatts_read_cb(uint8_t conn_idx, const gatts_read_req_cb_t *p_read_req)
 {
+    gr_trace("srv_gatts_read_cb called...  \r\n");
+#if 0    
     static GR_CB_MSG_GATTS_READ_T  msg_read;
     GR_CALLBACK_MSG_T            * msg = NULL;
     
-    GRC_LOG(DEBUG, ("srv_gatts_read_cb called...  "));
     
     msg = (GR_CALLBACK_MSG_T*) gr_ble_cb_msg_alloc_mem();
     if(msg == NULL){
@@ -207,16 +179,19 @@ static void srv_gatts_read_cb(uint8_t conn_idx, const gatts_read_req_cb_t *p_rea
     msg->msg                     = (void*) &msg_read;
     
     gr_ble_cb_msg_send(msg, true);
+#endif
 }
 
 static uint8_t s_safe_copy_buff[GR_BLE_GATTS_VAR_ATTR_LEN_MAX];
 
 static void srv_gatts_write_cb(uint8_t conn_idx, const gatts_write_req_cb_t *p_write_req)
 {
+    gr_trace("srv_gatts_write_cb called...  \r\n");
+#if 0    
     static GR_CB_MSG_GATTS_WRITE_T msg_write;
     GR_CALLBACK_MSG_T            * msg = NULL;
     
-    GRC_LOG(DEBUG, ("srv_gatts_write_cb called...  "));
+    
     
     msg = (GR_CALLBACK_MSG_T*) gr_ble_cb_msg_alloc_mem();
     if(msg == NULL){
@@ -235,14 +210,17 @@ static void srv_gatts_write_cb(uint8_t conn_idx, const gatts_write_req_cb_t *p_w
     msg->msg           = (void*) &msg_write;
     
     gr_ble_cb_msg_send(msg, true);
+#endif
 }
 
 static void srv_gatts_prep_write_cb(uint8_t conn_idx, const gatts_prep_write_req_cb_t *p_prep_req)
 {
+    gr_trace("srv_gatts_prep_write_cb called...  \r\n");
+#if 0
     static GR_CB_MSG_GATTS_PREP_WRITE_T p_wr_msg;
     GR_CALLBACK_MSG_T            * msg = NULL;
     
-    GRC_LOG(DEBUG, ("srv_gatts_prep_write_cb called...  "));
+    
     
     msg = (GR_CALLBACK_MSG_T*) gr_ble_cb_msg_alloc_mem();
     if(msg == NULL){
@@ -255,16 +233,17 @@ static void srv_gatts_prep_write_cb(uint8_t conn_idx, const gatts_prep_write_req
     msg->msg                    = (void*) &p_wr_msg;
     
     gr_ble_cb_msg_send(msg, true);    
-    
-    
+#endif
 }
 
 static void srv_gatts_ntf_ind_cb(uint8_t conn_idx, uint8_t status, const ble_gatts_ntf_ind_t *p_ntf_ind)
 {
+    gr_trace("srv_gatts_ntf_ind_cb called, idx:%d, status:%d...\r\n", conn_idx, status);
+#if 0
     static GR_CB_MSG_NTF_IND_T n_msg;
     GR_CALLBACK_MSG_T            * msg = NULL;
     
-    GRC_LOG(DEBUG, ("srv_gatts_ntf_ind_cb called, idx:%d, status:%d...  ", conn_idx, status));
+    
     
     msg = (GR_CALLBACK_MSG_T*) gr_ble_cb_msg_alloc_mem();
     if(msg == NULL){
@@ -279,5 +258,6 @@ static void srv_gatts_ntf_ind_cb(uint8_t conn_idx, uint8_t status, const ble_gat
     msg->msg                    = (void*) &n_msg;
     
     gr_ble_cb_msg_send(msg, true);    
+#endif
 }
 
