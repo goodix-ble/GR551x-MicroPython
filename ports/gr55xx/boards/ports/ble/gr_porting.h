@@ -74,4 +74,14 @@ uint16_t gr_gatt_transto_ble_stack_handle(uint16_t porting_handle);
 uint16_t gr_gatt_transto_porting_layer_handle(uint16_t stack_handle);
 
 
+/*************************************************************************
+ * mm Functions bases on py/gc for porting layer, etc.
+ *************************************************************************/
+ 
+void *      gr_malloc(size_t size);
+void        gr_free(void *ptr);
+void *      gr_calloc(size_t nmemb, size_t size);
+void *      gr_realloc(void *ptr, size_t size);
+
+
 #endif /*__GR_PORTING_H__*/

@@ -106,6 +106,51 @@ typedef enum {
     UBLUEPY_ROLE_CENTRAL
 } ubluepy_role_type_t;
 
+
+typedef enum _ubluepy_prop_t {
+    UBLUEPY_PROP_NONE           = 0x00,
+    UBLUEPY_PROP_BROADCAST      = 0x01,
+    UBLUEPY_PROP_READ           = 0x02,
+    UBLUEPY_PROP_WRITE_WO_RESP  = 0x04,
+    UBLUEPY_PROP_WRITE          = 0x08,
+    UBLUEPY_PROP_NOTIFY         = 0x10,
+    UBLUEPY_PROP_INDICATE       = 0x20,
+    UBLUEPY_PROP_AUTH_SIGNED_WR = 0x40,
+    UBLUEPY_PROP_EXTENDED_PROP  = 0x80,
+} ubluepy_prop_t;
+
+typedef enum _ubluepy_permission_t
+{
+    UBLUEPY_PERM_NONE                  = 0x0000,
+    UBLUEPY_PERM_READ                  = 0x0001,       /**< Readable, Encryption not required, No Authentication Required. */
+    UBLUEPY_PERM_READ_ENCRYPTED        = 0x0002,       /**< Readable, Encryption required, No Authentication Required. */
+    UBLUEPY_PERM_READ_ENCRYPTED_MITM   = 0x0004,       /**< Readable, Encryption required, Authentication Required. */
+    UBLUEPY_PERM_WRITE                 = 0x0010,       /**< Writable, Encryption not required, No Authentication Required. */
+    UBLUEPY_PERM_WRITE_ENCRYPTED       = 0x0020,       /**< Writable, Encryption required, No Authentication Required. */
+    UBLUEPY_PERM_WRITE_ENCRYPTED_MITM  = 0x0040,       /**< Writable, Encryption required, Authentication Required. */
+    UBLUEPY_PERM_WRITE_SIGNED          = 0x0080,       /**< Writable, Signed required, No Authentication Required. */
+    UBLUEPY_PERM_WRITE_SIGNED_MITM     = 0x0100,       /**< Writable, Signed required, Authentication Required. */    
+}ubluepy_permission_t;
+
+typedef enum _ubluepy_attr_t {
+    UBLUEPY_ATTR_CCCD           = 0x01,     //Client CCD
+    UBLUEPY_ATTR_SCCD           = 0x02,     //Server CCD
+} ubluepy_attr_t;
+
+
+/**
+ * @brief Attribute types.
+ */
+typedef enum
+{
+    UBLUEPY_ATTR_TYPE_PRIMARY_SERVICE = 0,      /**< Primary service. */
+    UBLUEPY_ATTR_TYPE_SECONDARY_SERVICE,        /**< Secondary service. */
+    UBLUEPY_ATTR_TYPE_INCLUDED_SERVICE,         /**< Included service. */
+    UBLUEPY_ATTR_TYPE_CHARACTERISTIC_DECL,      /**< Characteristic declaration. */
+    UBLUEPY_ATTR_TYPE_CHARACTERISTIC_VAL,       /**< Characteristic. */
+    UBLUEPY_ATTR_TYPE_DESCRIPTOR,               /**< Characteristic descriptor. */    
+} ubluepy_attr_type_t;
+
 typedef struct _ubluepy_uuid_obj_t {
     mp_obj_base_t       base;
     ubluepy_uuid_type_t type;
@@ -127,7 +172,7 @@ typedef struct _ubluepy_peripheral_obj_t {
 typedef struct _ubluepy_service_obj_t {
     mp_obj_base_t              base;
     uint16_t                   handle;
-    uint8_t                    type;
+    ubluepy_service_type_t     type;
     ubluepy_uuid_obj_t       * p_uuid;
     ubluepy_peripheral_obj_t * p_periph;
     mp_obj_t                   char_list;
@@ -142,9 +187,10 @@ typedef struct _ubluepy_characteristic_obj_t {
     uint16_t                service_handle;
     uint16_t                user_desc_handle;
     uint16_t                cccd_handle;
-    uint16_t                sccd_handle;
-    uint8_t                 props;
-    uint8_t                 attrs;
+    uint16_t                sccd_handle;    
+    ubluepy_attr_t          attrs;
+    ubluepy_prop_t          props;
+    ubluepy_permission_t    perms;
     ubluepy_service_obj_t * p_service;
     mp_obj_t                value_data;
 } ubluepy_characteristic_obj_t;
@@ -183,19 +229,7 @@ typedef struct _ubluepy_scan_entry_obj_t {
     mp_obj_t      data;
 } ubluepy_scan_entry_obj_t;
 
-typedef enum _ubluepy_prop_t {
-    UBLUEPY_PROP_BROADCAST      = 0x01,
-    UBLUEPY_PROP_READ           = 0x02,
-    UBLUEPY_PROP_WRITE_WO_RESP  = 0x04,
-    UBLUEPY_PROP_WRITE          = 0x08,
-    UBLUEPY_PROP_NOTIFY         = 0x10,
-    UBLUEPY_PROP_INDICATE       = 0x20,
-    UBLUEPY_PROP_AUTH_SIGNED_WR = 0x40,
-} ubluepy_prop_t;
 
-typedef enum _ubluepy_attr_t {
-    UBLUEPY_ATTR_CCCD           = 0x01,     //Client CCD
-    UBLUEPY_ATTR_SCCD           = 0x02,     //Server CCD
-} ubluepy_attr_t;
+
 
 #endif // UBLUEPY_H__

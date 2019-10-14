@@ -2,7 +2,7 @@
 #include <alloca.h>
 
 
-#define MICROPY_HEAP_SIZE                   (32*1024)
+#define MICROPY_HEAP_SIZE                   (64*1024)
 #define MICROPY_ENABLE_COMPILER             (1)
 #define MICROPY_STACK_CHECK                 (1)
 #define MICROPY_PY_UTIME_MP_HAL             (1)

@@ -3,6 +3,8 @@
 
 #include "custom_config.h"
 
+#define GR_BLE_128BIT_UUID_LEN                              (16)
+
 #define GR_BLE_GATT_MAX_ENTITIES                            (40)
 #define GR_BLE_ATTR_MASK_LEN                                (GR_BLE_GATT_MAX_ENTITIES/8+1)
 #define GR_BLE_GATTS_VAR_ATTR_LEN_DEFAULT                   (64)

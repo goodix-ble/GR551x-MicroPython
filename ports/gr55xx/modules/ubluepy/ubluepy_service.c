@@ -27,6 +27,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/objlist.h"
+#include "py/mperrno.h"
 
 #include "mp_defs.h"
 #include "ubluepy_hal.h"
@@ -37,8 +38,17 @@
 
 STATIC void ubluepy_service_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     ubluepy_service_obj_t * self = (ubluepy_service_obj_t *)o;
-
-    mp_printf(print, "Service(handle: 0x%02x)", self->handle);
+    
+    if(self->p_uuid == NULL) {
+        mp_printf(print, "Service(uuid: none, handle: 0x%02x)", self->handle);
+    } else {
+        if(self->p_uuid->type == UBLUEPY_UUID_128_BIT) {
+            mp_printf(print, "Service(uuid: %s, handle: %d)",gr_ble_format_uuid128b_to_string(&self->p_uuid->value_128b[0], 16), self->handle);
+        } else {
+            mp_printf(print, "Service(uuid: 0x%02x%02x, handle: %d)",
+              self->p_uuid->value[1], self->p_uuid->value[0], self->handle);
+        }
+    }
 }
 
 STATIC mp_obj_t ubluepy_service_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
@@ -57,8 +67,7 @@ STATIC mp_obj_t ubluepy_service_make_new(const mp_obj_type_t *type, size_t n_arg
     ubluepy_service_obj_t *s = m_new_obj(ubluepy_service_obj_t);
     s->base.type    = type;
     s->handle       = gr_ble_get_mpy_handle();
-    s->start_handle = s->handle;
-
+    
     mp_obj_t uuid_obj = args[ARG_NEW_UUID].u_obj;
 
     if (uuid_obj == MP_OBJ_NULL) {
@@ -75,7 +84,12 @@ STATIC mp_obj_t ubluepy_service_make_new(const mp_obj_type_t *type, size_t n_arg
             mp_raise_ValueError("Invalid Service type");
         }
 
-        gr_ubluepy_add_service(s);
+        if(!gr_ubluepy_gatt_add_service(s)) {
+            mp_raise_OSError(MP_ENOMEM);
+        } else {
+            //update handle
+            s->start_handle = s->handle;
+        }
 
     } else {
         mp_raise_ValueError("Invalid UUID parameter");
@@ -96,17 +110,18 @@ STATIC mp_obj_t service_add_characteristic(mp_obj_t self_in, mp_obj_t characteri
     ubluepy_characteristic_obj_t * p_char = MP_OBJ_TO_PTR(characteristic);
 
     p_char->service_handle  = self->handle;
+    p_char->p_service       = self;
 
-    bool retval = gr_ubluepy_add_characteristic(p_char);
+    bool retval = gr_ubluepy_gatt_add_characteristic(p_char);
 
     if (retval) {
-        p_char->p_service = self;
+        mp_obj_list_append(self->char_list, characteristic);
+    } else {
+        p_char->p_service = NULL;
     }
 
-    mp_obj_list_append(self->char_list, characteristic);
-
-    // return mp_obj_new_bool(retval);
-    return mp_const_none;
+    //return mp_obj_new_bool(retval);
+    return self;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_service_add_char_obj, service_add_characteristic);
 
@@ -172,7 +187,7 @@ STATIC mp_obj_t service_add_descriptor(mp_obj_t self_in, mp_obj_t descriptor) {
 
     p_desc->service_handle  = self->handle;
 
-    bool retval = gr_ubluepy_add_descriptor(p_desc);
+    bool retval = gr_ubluepy_gatt_add_descriptor(p_desc);
 
     if (retval) {
         p_desc->p_service = self;
@@ -233,7 +248,46 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_service_get_desc_obj, service_get_descr
 
 
 
+/// \method desc()
+/// use to describe the Service Member structure
+///
+STATIC mp_obj_t service_desc(mp_obj_t self_in) {
+    ubluepy_service_obj_t * self = MP_OBJ_TO_PTR(self_in);
+    
+    if(self->p_uuid == NULL) {
+        printf("+++ Service(uuid: none, handle: 0x%02x)\r\n", self->handle);
+    } else {
+        if(self->p_uuid->type == UBLUEPY_UUID_128_BIT) {
+            printf("+++ Service(uuid: %s, handle: %d)\r\n",gr_ble_format_uuid128b_to_string(&self->p_uuid->value_128b[0], 16), self->handle);
+        } else {
+            printf("+++ Service(uuid: 0x%02x%02x, handle: %d)\r\n",
+              self->p_uuid->value[1], self->p_uuid->value[0], self->handle);
+        }
+    }
+        
+    
+    mp_obj_t * chars     = NULL;
+    mp_uint_t  num_chars = 0;
+    mp_obj_get_array(self->char_list, &num_chars, &chars);
 
+    for (uint8_t i = 0; i < num_chars; i++) {
+        ubluepy_characteristic_obj_t * p_char = (ubluepy_characteristic_obj_t *)chars[i];
+        
+        if(p_char->p_uuid == NULL) {
+            printf("+++++ Characteristic(uuid: none, handle: %d)\r\n", p_char->handle);
+        } else {
+            if(p_char->p_uuid->type == UBLUEPY_UUID_128_BIT) {
+                printf("+++++ Characteristic(uuid: %s, handle: %d)\r\n",gr_ble_format_uuid128b_to_string(&p_char->p_uuid->value_128b[0], 16), p_char->handle);
+            } else {
+                printf("+++++ Characteristic(uuid: 0x%02x%02x, handle: %d)\r\n",
+                  p_char->p_uuid->value[1], p_char->p_uuid->value[0], p_char->handle);
+            }
+        } 
+    }
+        
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_service_desc_obj, service_desc);
 
 
 /// \method uuid()
@@ -253,6 +307,7 @@ STATIC const mp_rom_map_elem_t ubluepy_service_locals_dict_table[] = {
     // Properties
     { MP_ROM_QSTR(MP_QSTR_peripheral), MP_ROM_PTR(&ubluepy_service_get_peripheral_obj) },
 #endif
+    { MP_ROM_QSTR(MP_QSTR_desc),       MP_ROM_PTR(&ubluepy_service_desc_obj) },
     { MP_ROM_QSTR(MP_QSTR_uuid),       MP_ROM_PTR(&ubluepy_service_get_uuid_obj) },
     { MP_ROM_QSTR(MP_QSTR_PRIMARY),    MP_ROM_INT(UBLUEPY_SERVICE_PRIMARY) },
     { MP_ROM_QSTR(MP_QSTR_SECONDARY),  MP_ROM_INT(UBLUEPY_SERVICE_SECONDARY) },

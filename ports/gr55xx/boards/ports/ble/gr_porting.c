@@ -1,3 +1,8 @@
+#include <stdint.h>
+#include <stdio.h>
+#include "py/mphal.h"
+#include "py/gc.h"
+
 #include "app_error.h"
 #include "gr551xx.h"
 #include "user_app.h"
@@ -119,6 +124,36 @@ uint16_t gr_gatt_transto_porting_layer_handle(uint16_t stack_handle){
 }
 
 #endif
+
+
+
+
+
+
+/*
+ * mm Functions bases on py/gc for porting layer, etc.
+ */ 
+
+void *gr_malloc(size_t size) {
+    void *p = gc_alloc(size, false);
+    if (p == NULL) {
+        // POSIX requires ENOMEM to be set in case of error        
+    }
+    return p;
+}
+void gr_free(void *ptr) {
+    gc_free(ptr);
+}
+void *gr_calloc(size_t nmemb, size_t size) {
+    return gr_malloc(nmemb * size);
+}
+void *gr_realloc(void *ptr, size_t size) {
+    void *p = gc_realloc(ptr, size, true);
+    if (p == NULL) {
+        // POSIX requires ENOMEM to be set in case of error       
+    }
+    return p;
+}
 
 
 

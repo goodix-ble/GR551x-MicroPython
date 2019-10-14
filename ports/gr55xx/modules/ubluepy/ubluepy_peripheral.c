@@ -168,7 +168,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_peripheral_set_conn_handler_obj, periph
 #if MICROPY_PY_UBLUEPY_PERIPHERAL
 
 /// \method advertise(device_name, [service=[service1, service2, ...]], [data=bytearray], [connectable=True])
-/// Start advertising. Connectable advertisment type by default.
+/// Start Services and advertising. Connectable advertisment type by default.
 ///
 STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
@@ -231,7 +231,7 @@ STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args,
         gr_ubluepy_set_gatts_event_handler(MP_OBJ_FROM_PTR(self), gatts_event_handler);
     }
 
-    (void)gr_ubluepy_gap_advertise_start(&adv_data);
+    (void)gr_ubluepy_gap_start_services_and_advertise(&adv_data);
 
     return mp_const_none;
 }
@@ -245,7 +245,7 @@ STATIC mp_obj_t peripheral_advertise_stop(mp_obj_t self_in) {
 
     (void)self;
 
-    gr_ubluepy_gap_advertise_stop();
+    gr_ubluepy_gap_stop_advertise();
 
     return mp_const_none;
 }
