@@ -99,7 +99,7 @@ bool gr_ubluepy_gap_start_adv(ubluepy_advertise_data_t * p_adv_params) {
         {
             memcpy(&s_gr_ble_gap_params_ins.scan_rsp_data[0], &adv_data[0], byte_pos);
             s_gr_ble_gap_params_ins.scan_rsp_data_len = byte_pos;
-#if 0            
+#if 1            
             s_err = ble_gap_adv_data_set(0, BLE_GAP_ADV_DATA_TYPE_SCAN_RSP, &adv_data[0], byte_pos);
             if(SDK_SUCCESS != s_err )
             {
@@ -145,6 +145,7 @@ bool gr_ubluepy_gap_start_services_and_advertise(ubluepy_advertise_data_t * p_ad
     gr_trace("+++ gr_ubluepy_gap_start_services_and_advertise called (%s/%d) \r\n", p_adv_params->p_device_name, p_adv_params->num_of_services);
     
     //1. start service 
+#if 1
     if (p_adv_params->num_of_services > 0) {
 
         for (uint8_t i = 0; i < p_adv_params->num_of_services; i++) {
@@ -156,9 +157,13 @@ bool gr_ubluepy_gap_start_services_and_advertise(ubluepy_advertise_data_t * p_ad
             }
         }
     }
-    
+#endif
     //2. start adv
     ret = gr_ubluepy_gap_start_adv(p_adv_params);    
+
+    uint32_t patch_enable_flag_addr = 0x300041b4;
+    printf("+++ patch_enable_flag: 0x%x \r\n", *((uint32_t *)0x300041b4));
+
     
     return ret;
 }

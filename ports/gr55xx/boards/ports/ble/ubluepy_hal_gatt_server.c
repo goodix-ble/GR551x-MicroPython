@@ -486,18 +486,31 @@ void gr_ble_gatt_handle_map_print(void){
     uint32_t max = xGattTableSize > GR_BLE_GATT_MAX_ENTITIES ? GR_BLE_GATT_MAX_ENTITIES : xGattTableSize;
     uint16_t stack_handle = 0;
     
-    gr_trace("\r\n+++++ Gatt Service Handle Map +++++\r\n");
+    gr_trace("\r\n++++++++ Gatt Service Handle Map ++++++++\r\n");
     gr_trace("+++ Port  +++  Stack  +++  UUID +++\r\n");
     
     for (int i=0; i< max; i++){
-        stack_handle = gr_gatt_transto_ble_stack_handle(xGattTable[i].handle);
-        gr_trace("+++ %-4d  +++  %-6d +++ %s \r\n", xGattTable[i].handle, stack_handle, prvFormatUUID(xGattTable[i]));
+        if((xGattTable[i].type >= UBLUEPY_ATTR_TYPE_PRIMARY_SERVICE) && (xGattTable[i].type <= UBLUEPY_ATTR_TYPE_INCLUDED_SERVICE)) {
+            stack_handle = gr_gatt_transto_ble_stack_handle(xGattTable[i].handle);
+            gr_trace("+++ %-4d  +++  %-6d +++ (SERVICE    )%s \r\n", xGattTable[i].handle, stack_handle, prvFormatUUID(xGattTable[i]));
+        }else if(UBLUEPY_ATTR_TYPE_CHARACTERISTIC_VAL == xGattTable[i].type) {
+            stack_handle = gr_gatt_transto_ble_stack_handle(xGattTable[i].handle - 1);
+            gr_trace("+++ %-4d  +++  %-6d +++   (CHAR DECL)0x2803 \r\n", xGattTable[i].handle - 1, stack_handle);
+
+            stack_handle = gr_gatt_transto_ble_stack_handle(xGattTable[i].handle);
+            gr_trace("+++ %-4d  +++  %-6d +++   (CHAR VALU)%s \r\n", xGattTable[i].handle, stack_handle, prvFormatUUID(xGattTable[i]));
+        } else if(UBLUEPY_ATTR_TYPE_DESCRIPTOR == xGattTable[i].type) {
+            stack_handle = gr_gatt_transto_ble_stack_handle(xGattTable[i].handle);
+            gr_trace("+++ %-4d  +++  %-6d +++   (DESC     )%s \r\n", xGattTable[i].handle, stack_handle, prvFormatUUID(xGattTable[i]));
+        } else {
+            stack_handle = gr_gatt_transto_ble_stack_handle(xGattTable[i].handle);
+            gr_trace("+++ %-4d  +++  %-6d +++ %s \r\n", xGattTable[i].handle, stack_handle, prvFormatUUID(xGattTable[i]));
+        }
     }
-    gr_trace("++++++++++++++++++++++++++++++++++++\r\n");
+    gr_trace("++++++++++++++++++++++++++++++++++++++++++\r\n\r\n");
 #endif
     return;
 }
-
 
 
 void gr_ubluepy_init(void)

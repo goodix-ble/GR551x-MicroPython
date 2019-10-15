@@ -3,7 +3,7 @@
 #include "hal_flash.h"
 #include "custom_config.h"
 #include "platform_sdk.h"
-
+#include "patch.h"
 
     /*****************************************************************
      Default resistor configurations for SK board and EV Board.
@@ -33,10 +33,11 @@ io_table_t io_table =
 
 void platform_init(void)
 {
+    set_patch_flag(MANDATORY_PATCH);
     hal_flash_init(); 
     nvds_init(NVDS_START_ADDR, NVDS_NUM_SECTOR);
     system_io_leakage_protect(&io_table);
-	//set_patch_flag(MANDATORY_PATCH);
+	
     //platform_clock_init(RTC_OSC_CLK, CFG_LF_ACCURACY_PPM, 0);
     platform_clock_init(1, 20, 0);
     platform_sdk_init();
