@@ -41,9 +41,8 @@
  */
 #include "gr55xx_sys.h"
 #include "user_app.h"
-#include "FreeRTOSConfig.h"
 #include "gr_config.h"
-
+#include "gr_porting.h"
 /*
 * LOCAL FUNCTION DECLARATION
 ******************************************************************************************
@@ -88,7 +87,7 @@ const gattc_cb_fun_t app_gattc_callback =
  */
 static void app_gattc_srvc_disc_cb(uint8_t conn_idx, uint8_t status, const ble_gattc_srvc_disc_t *p_prim_srvc_disc)
 {
-    GRC_LOG(DEBUG, (">>> app_gattc_srvc_disc_cb called, conn_idx:%d, status:%d  ", conn_idx, status));
+    gr_trace("+++ app_gattc_srvc_disc_cb called, conn_idx:%d, status:%d  ", conn_idx, status);
 }
 
 /**
@@ -102,7 +101,7 @@ static void app_gattc_srvc_disc_cb(uint8_t conn_idx, uint8_t status, const ble_g
  */
 static void app_gattc_inc_srvc_disc_cb(uint8_t conn_idx, uint8_t status, const ble_gattc_incl_disc_t *p_inc_srvc_disc)
 {
-    GRC_LOG(DEBUG, (">>> app_gattc_inc_srvc_disc_cb called, conn_idx:%d, status:%d  ", conn_idx, status));
+    gr_trace("+++ app_gattc_inc_srvc_disc_cb called, conn_idx:%d, status:%d  ", conn_idx, status);
 }
 
 /**
@@ -116,7 +115,7 @@ static void app_gattc_inc_srvc_disc_cb(uint8_t conn_idx, uint8_t status, const b
  */
 static void app_gattc_char_disc_cb(uint8_t conn_idx, uint8_t status, const ble_gattc_char_disc_t *p_char_disc)
 {
-    GRC_LOG(DEBUG, (">>> app_gattc_char_disc_cb called, conn_idx:%d, status:%d  ", conn_idx, status));
+    gr_trace("+++ app_gattc_char_disc_cb called, conn_idx:%d, status:%d  ", conn_idx, status);
 }
 
 /**
@@ -130,7 +129,7 @@ static void app_gattc_char_disc_cb(uint8_t conn_idx, uint8_t status, const ble_g
  */
 static void app_gattc_char_desc_disc_cb(uint8_t conn_idx, uint8_t status, const ble_gattc_char_desc_disc_t *p_char_desc_disc)
 {
-    GRC_LOG(DEBUG, (">>> app_gattc_char_desc_disc_cb called, conn_idx:%d, status:%d  ", conn_idx, status));
+    gr_trace("+++ app_gattc_char_desc_disc_cb called, conn_idx:%d, status:%d  ", conn_idx, status);
 }
 
 /**
@@ -144,7 +143,7 @@ static void app_gattc_char_desc_disc_cb(uint8_t conn_idx, uint8_t status, const 
  */
 static void app_gattc_write_cb(uint8_t conn_idx, uint8_t status, uint16_t handle)
 {
-    GRC_LOG(DEBUG, (">>> app_gattc_write_cb called, conn_idx:%d, status:%d  ", conn_idx, status));
+    gr_trace("+++ app_gattc_write_cb called, conn_idx:%d, status:%d  ", conn_idx, status);
 }
 
 /**
@@ -158,7 +157,7 @@ static void app_gattc_write_cb(uint8_t conn_idx, uint8_t status, uint16_t handle
  */
 static void app_gattc_read_cb(uint8_t conn_idx, uint8_t status, const ble_gattc_read_rsp_t *p_read_rsp)
 {
-    GRC_LOG(DEBUG, (">>> app_gattc_read_cb called, conn_idx:%d, status:%d  ", conn_idx, status));
+    gr_trace("+++ app_gattc_read_cb called, conn_idx:%d, status:%d  ", conn_idx, status);
 }
 
 /**
@@ -172,7 +171,7 @@ static void app_gattc_read_cb(uint8_t conn_idx, uint8_t status, const ble_gattc_
  */
 static void app_gattc_ntf_ind_cb(uint8_t conn_idx, const ble_gattc_ntf_ind_t *p_ntf_ind)
 {
-    GRC_LOG(DEBUG, (">>> app_gattc_ntf_ind_cb called, conn_idx:%d  ", conn_idx));
+    gr_trace("+++ app_gattc_ntf_ind_cb called, conn_idx:%d  ", conn_idx);
 }
 
 /**
@@ -186,5 +185,5 @@ static void app_gattc_ntf_ind_cb(uint8_t conn_idx, const ble_gattc_ntf_ind_t *p_
  */
 static void app_gattc_srvc_browse_cb(uint8_t conn_idx, uint8_t status, const ble_gattc_browse_srvc_t *p_browse_srvc)
 {
-    GRC_LOG(DEBUG, (">>> app_gattc_srvc_browse_cb called, conn_idx:%d, status:%d  ", conn_idx, status));
+    gr_trace("+++ app_gattc_srvc_browse_cb called, conn_idx:%d, status:%d  ", conn_idx, status);
 }

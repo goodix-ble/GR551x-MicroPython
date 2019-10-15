@@ -41,8 +41,8 @@
  */
 #include "gr55xx_sys.h"
 #include "user_app.h"
-#include "FreeRTOSConfig.h"
 #include "gr_config.h"
+#include "gr_porting.h"
 
  /*
  * LOCAL FUNCTION DECLARATION
@@ -85,7 +85,7 @@ const l2cap_lecb_cb_fun_t app_l2cap_callback =
  */
 static void app_l2cap_lecb_conn_req_cb(uint8_t conn_idx, lecb_conn_req_ind_t *p_conn_req)
 {
-    GRC_LOG(DEBUG, (">>> app_l2cap_lecb_conn_req_cb called, conn_idx:%d  ", conn_idx));
+    gr_trace("+++ app_l2cap_lecb_conn_req_cb called, conn_idx:%d  \r\n", conn_idx);
 }
 
 /**
@@ -99,7 +99,7 @@ static void app_l2cap_lecb_conn_req_cb(uint8_t conn_idx, lecb_conn_req_ind_t *p_
  */
  static void app_l2cap_lecb_conn_cb(uint8_t conn_idx, uint8_t status, lecb_conn_ind_t *p_conn_ind)
 {
-    GRC_LOG(DEBUG, (">>> app_l2cap_lecb_conn_cb called, conn_idx:%d, status:%d, peer_mtu=%d, peer_mps=%d  ", conn_idx, status,p_conn_ind->peer_mtu, p_conn_ind->peer_mps));
+    gr_trace("+++ app_l2cap_lecb_conn_cb called, conn_idx:%d, status:%d, peer_mtu=%d, peer_mps=%d  \r\n", conn_idx, status,p_conn_ind->peer_mtu, p_conn_ind->peer_mps);
 }
 
 /**
@@ -112,7 +112,7 @@ static void app_l2cap_lecb_conn_req_cb(uint8_t conn_idx, lecb_conn_req_ind_t *p_
  */
 static void app_l2cap_lecb_add_credits_ind_cb(uint8_t conn_idx, lecb_add_credits_ind_t *p_add_credits_ind)
 {
-    GRC_LOG(DEBUG, (">>> app_l2cap_lecb_add_credits_ind_cb called, conn_idx:%d  ", conn_idx));
+    gr_trace("+++ app_l2cap_lecb_add_credits_ind_cb called, conn_idx:%d  \r\n", conn_idx);
 }
 
 /**
@@ -126,7 +126,7 @@ static void app_l2cap_lecb_add_credits_ind_cb(uint8_t conn_idx, lecb_add_credits
  */
 static void app_l2cap_lecb_disconn_cb(uint8_t conn_idx, uint8_t status, lecb_disconn_ind_t *p_disconn_ind)
 {
-    GRC_LOG(DEBUG, (">>> app_l2cap_lecb_disconn_cb called, conn_idx:%d, status:%d  ", conn_idx, status));
+    gr_trace("+++ app_l2cap_lecb_disconn_cb called, conn_idx:%d, status:%d  \r\n", conn_idx, status);
 }
 
 /**
@@ -139,7 +139,7 @@ static void app_l2cap_lecb_disconn_cb(uint8_t conn_idx, uint8_t status, lecb_dis
  */
 static void app_l2cap_lecb_sdu_recv_cb(uint8_t conn_idx, lecb_sdu_t *p_sdu)
 {
-    GRC_LOG(DEBUG, (">>> app_l2cap_lecb_sdu_recv_cb called, conn_idx:%d  ", conn_idx));
+    gr_trace("+++ app_l2cap_lecb_sdu_recv_cb called, conn_idx:%d  \r\n", conn_idx);
 }
 
 /**
@@ -153,7 +153,7 @@ static void app_l2cap_lecb_sdu_recv_cb(uint8_t conn_idx, lecb_sdu_t *p_sdu)
  */
 static void app_l2cap_lecb_sdu_send_cb(uint8_t conn_idx, uint8_t status, lecb_sdu_send_evt_t *p_sdu_send_evt)
 {
-    GRC_LOG(DEBUG, (">>> app_l2cap_lecb_sdu_send_cb called, conn_idx:%d, status:%d  ", conn_idx, status));
+    gr_trace("+++ app_l2cap_lecb_sdu_send_cb called, conn_idx:%d, status:%d  \r\n", conn_idx, status);
 }
 
 /**
@@ -166,6 +166,6 @@ static void app_l2cap_lecb_sdu_send_cb(uint8_t conn_idx, uint8_t status, lecb_sd
  */
 static void app_l2cap_lecb_credit_add_cmp_cb(uint8_t conn_idx, uint8_t status)
 {
-    GRC_LOG(DEBUG, (">>> app_l2cap_lecb_credit_add_cmp_cb called, conn_idx:%d, status:%d  ", conn_idx, status));
+    gr_trace("+++ app_l2cap_lecb_credit_add_cmp_cb called, conn_idx:%d, status:%d  \r\n", conn_idx, status);
 }
 

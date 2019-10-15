@@ -40,10 +40,10 @@ static void ble_init_complete_callback(void);
 static app_callback_t s_app_ble_callback = 
 {
     .app_ble_init_cmp_callback = ble_init_complete_callback,
-    .app_gap_callbacks         = NULL,//&app_gap_callbacks,
-    .app_gatt_common_callback  = NULL,//&app_gatt_common_callback,
-    .app_gattc_callback        = NULL,//&app_gattc_callback,
-    .app_sec_callback          = NULL,//&app_sec_callback,
+    .app_gap_callbacks         = &app_gap_callbacks,
+    .app_gatt_common_callback  = &app_gatt_common_callback,
+    .app_gattc_callback        = &app_gattc_callback,
+    .app_sec_callback          = &app_sec_callback,
 };
 
 static void ble_init_complete_callback(void){

@@ -95,6 +95,11 @@ SRC_C += \
     boards/ports/ble/ubluepy_hal_gap.c \
     boards/ports/ble/ubluepy_hal_gatt_server.c \
     boards/ports/ble/user_callback/user_gatts_profile_callback.c \
+    boards/ports/ble/user_callback/user_gap_callback.c \
+    boards/ports/ble/user_callback/user_gatt_common_callback.c \
+    boards/ports/ble/user_callback/user_gattc_callback.c \
+    boards/ports/ble/user_callback/user_l2cap_callback.c \
+    boards/ports/ble/user_callback/user_sm_callback.c \
     modules/ble/modble.c \
     modules/ubluepy/modubluepy.c \
     modules/ubluepy/ubluepy_uuid.c \

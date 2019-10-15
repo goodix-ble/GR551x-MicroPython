@@ -11,7 +11,8 @@
 #define     GR_BLE_DEFAULT_ADV_NAME                 "gr_mpy"
 #define     GR_BLE_DEFAULT_ADV_NAME_LEN             (sizeof(GR_BLE_DEFAULT_ADV_NAME) - 1)
 
-#define     GR_BLE_ADVERTISING_INTERVAL             200
+#define     GR_BLE_ADVERTISING_INTERVAL             300
+#define     GR_BLE_ADVERTISING_TIMEOUT              3000
 
 gr_ble_gap_params_t s_gr_ble_gap_params_ins = {
     .is_connected       = false,
@@ -98,7 +99,7 @@ bool gr_ubluepy_gap_start_adv(ubluepy_advertise_data_t * p_adv_params) {
         {
             memcpy(&s_gr_ble_gap_params_ins.scan_rsp_data[0], &adv_data[0], byte_pos);
             s_gr_ble_gap_params_ins.scan_rsp_data_len = byte_pos;
-            
+#if 0            
             s_err = ble_gap_adv_data_set(0, BLE_GAP_ADV_DATA_TYPE_SCAN_RSP, &adv_data[0], byte_pos);
             if(SDK_SUCCESS != s_err )
             {
@@ -106,6 +107,7 @@ bool gr_ubluepy_gap_start_adv(ubluepy_advertise_data_t * p_adv_params) {
                           "Can not set scan rsp data,err(%d)", s_err));
                 return false;
             }
+#endif
         }
         
         {
@@ -123,7 +125,7 @@ bool gr_ubluepy_gap_start_adv(ubluepy_advertise_data_t * p_adv_params) {
     
     //start adv
     {
-        s_gr_ble_gap_params_ins.gap_adv_time_param.duration     = 0;
+        s_gr_ble_gap_params_ins.gap_adv_time_param.duration     = 0;//GR_BLE_ADVERTISING_TIMEOUT;
         s_gr_ble_gap_params_ins.gap_adv_time_param.max_adv_evt  = 0;
     
         s_err = ble_gap_adv_start(0, &s_gr_ble_gap_params_ins.gap_adv_time_param);

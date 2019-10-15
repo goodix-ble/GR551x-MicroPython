@@ -41,9 +41,9 @@
  */
 #include "gr55xx_sys.h"
 #include "user_app.h"
-#include "FreeRTOSConfig.h"
 #include "gr_config.h"
-#include "gr_message.h"
+#include "gr_porting.h"
+//#include "gr_message.h"
 
  /*
  * LOCAL FUNCTION DECLARATION
@@ -78,10 +78,12 @@ const sec_cb_fun_t app_sec_callback =
  */
 static void app_sec_rcv_enc_req_cb(uint8_t conn_idx, sec_enc_req_t *p_enc_req)
 {
+    gr_trace("+++ app_sec_rcv_enc_req_cb called, conn_idx:%d  \r\n", conn_idx); 
+#if 0    
     static GR_CB_MSG_ENC_REQ_T     enc_msg;
     GR_CALLBACK_MSG_T            * msg = NULL;
     
-    GRC_LOG(DEBUG, (">>> app_sec_rcv_enc_req_cb called, conn_idx:%d  ", conn_idx));    
+       
     
     if (NULL == p_enc_req)
     {
@@ -99,6 +101,7 @@ static void app_sec_rcv_enc_req_cb(uint8_t conn_idx, sec_enc_req_t *p_enc_req)
     msg->msg                 = (void*) &enc_msg;
 
     gr_ble_cb_msg_send(msg, true);
+#endif
 }
 
 /**
@@ -111,10 +114,13 @@ static void app_sec_rcv_enc_req_cb(uint8_t conn_idx, sec_enc_req_t *p_enc_req)
  */
 static void app_sec_rcv_enc_ind_cb(uint8_t conn_idx, sec_enc_ind_t enc_ind, uint8_t auth)
 {
+    gr_trace("+++ app_sec_rcv_enc_ind_cb called, conn_idx:%d , status: %d , auth: %d \r\n", conn_idx, enc_ind, auth);
+
+#if 0
     static GR_CB_MSG_PAIR_INC_T   pair_msg;
     GR_CALLBACK_MSG_T            * msg = NULL;
     
-    GRC_LOG(DEBUG, (">>> app_sec_rcv_enc_ind_cb called, conn_idx:%d , status: %d , auth: %d", conn_idx, enc_ind, auth));
+    
     
     msg = (GR_CALLBACK_MSG_T*) gr_ble_cb_msg_alloc_mem();
     if(msg == NULL){
@@ -128,6 +134,7 @@ static void app_sec_rcv_enc_ind_cb(uint8_t conn_idx, sec_enc_ind_t enc_ind, uint
     msg->msg                    = (void*) &pair_msg;
 
     gr_ble_cb_msg_send(msg, true);    
+#endif
 }
 
 /**
@@ -140,5 +147,5 @@ static void app_sec_rcv_enc_ind_cb(uint8_t conn_idx, sec_enc_ind_t enc_ind, uint
  */
 static void app_sec_rcv_keypress_nofify_cb(uint8_t conn_idx, sec_keypress_notify_t notify_type)
 {
-    GRC_LOG(DEBUG, (">>> app_sec_rcv_keypress_nofify_cb called, conn_idx:%d  ", conn_idx));
+    gr_trace("+++ app_sec_rcv_keypress_nofify_cb called, conn_idx:%d  \r\n", conn_idx);
 }

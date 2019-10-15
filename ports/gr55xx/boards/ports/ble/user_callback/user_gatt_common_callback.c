@@ -41,10 +41,9 @@
  */
 #include "gr55xx_sys.h"
 #include "user_app.h"
-#include "FreeRTOSConfig.h"
 #include "gr_config.h"
 #include "gr_porting.h"
-#include "gr_message.h"
+//#include "gr_message.h"
 
  /*
  * LOCAL FUNCTION DECLARATION
@@ -78,10 +77,12 @@ const gatt_common_cb_fun_t app_gatt_common_callback =
  */
 static void app_gatt_mtu_exchange_cb(uint8_t conn_idx, uint8_t status, uint16_t mtu)
 {
+    gr_trace("+++ app_gatt_mtu_exchange_cb called, conn_idx:%d, status:%d, mtu:%d  \r\n", conn_idx, status, mtu);
+#if 0    
     static GR_CB_MSG_MTU_EXCHANGE_T mtu_msg;
     GR_CALLBACK_MSG_T            * msg = NULL;
     
-    GRC_LOG(DEBUG, (">>> app_gatt_mtu_exchange_cb called, conn_idx:%d, status:%d, mtu:%d  ", conn_idx, status, mtu));
+    
     if(status == BLE_SUCCESS){
         
         xProperties.xExchangedMtu       = mtu;
@@ -99,6 +100,7 @@ static void app_gatt_mtu_exchange_cb(uint8_t conn_idx, uint8_t status, uint16_t 
         
         gr_ble_cb_msg_send(msg, true);
     }
+#endif
 }
 
 /**
@@ -111,5 +113,5 @@ static void app_gatt_mtu_exchange_cb(uint8_t conn_idx, uint8_t status, uint16_t 
  */
 static void app_gatt_prf_register_cb(uint8_t status, uint8_t prf_index)
 {
-    GRC_LOG(DEBUG, (">>> app_gatt_prf_register_cb called, prf_index:%d, status:%d  ", prf_index, status));
+    gr_trace("+++ app_gatt_prf_register_cb called, prf_index:%d, status:%d  \r\n", prf_index, status);
 }

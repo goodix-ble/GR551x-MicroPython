@@ -45,5 +45,5 @@ user.props
 genrst/
 .vscode/*
 lib/*
-ports/gr5515/build/*
+ports/gr55xx/build/*
 

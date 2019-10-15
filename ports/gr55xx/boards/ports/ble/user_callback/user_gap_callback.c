@@ -42,10 +42,9 @@
 #include "gr55xx_sys.h"
 #include "user_app.h"
 #include "app_log.h"
-#include "FreeRTOS.h"
 #include "gr_config.h"
 #include "gr_porting.h"
-#include "gr_message.h"
+
 
 /*
  * LOCAL FUNCTION DECLARATION
@@ -132,7 +131,7 @@ const gap_cb_fun_t app_gap_callbacks =
  */
 static void app_gap_param_set_cb(uint8_t status, const gap_param_set_op_id_t set_param_op)
 {
-    GRC_LOG(DEBUG, (">>> app_gap_param_set_cb called. status:%d ", status));
+    gr_trace("+++ app_gap_param_set_cb called. status:%d \r\n", status);
 }
 
 /**
@@ -145,7 +144,7 @@ static void app_gap_param_set_cb(uint8_t status, const gap_param_set_op_id_t set
  */
 static void app_gap_psm_manager_cb(uint8_t status, const gap_psm_manager_op_id_t psm_op)
 {
-    GRC_LOG(DEBUG, (">>> app_gap_psm_manager_cb called . status: %d ", status));
+    gr_trace("+++ app_gap_psm_manager_cb called . status: %d \r\n", status);
 }
 
 /**
@@ -159,7 +158,7 @@ static void app_gap_psm_manager_cb(uint8_t status, const gap_psm_manager_op_id_t
  */
 static void app_gap_phy_update_cb(uint8_t conn_idx, uint8_t status, const gap_le_phy_ind_t *p_phy_ind)
 {
-    GRC_LOG(DEBUG, (">>> app_gap_phy_update_cb called . status: %d ", status));
+    gr_trace("+++ app_gap_phy_update_cb called . status: %d \r\n", status);
 }
 
 /**
@@ -172,7 +171,7 @@ static void app_gap_phy_update_cb(uint8_t conn_idx, uint8_t status, const gap_le
  */
 static void app_gap_dev_info_get_cb(uint8_t status, const gap_dev_info_get_t *p_dev_info)
 {
-    GRC_LOG(DEBUG, (">>> app_gap_dev_info_get_cb called . status: %d ", status));
+    gr_trace("+++ app_gap_dev_info_get_cb called . status: %d \r\n", status);
 }
 
 /**
@@ -185,10 +184,12 @@ static void app_gap_dev_info_get_cb(uint8_t status, const gap_dev_info_get_t *p_
  */
 static void app_gap_adv_start_cb(uint8_t inst_idx, uint8_t status)
 {
+    gr_trace("Adverting started idx: %d, status: (0X%02X). \r\n", inst_idx, status); 
+#if 0    
     static GR_CB_MSG_BASIC_T     s_adv_msg; 
     GR_CALLBACK_MSG_T            * msg = (GR_CALLBACK_MSG_T*) gr_ble_cb_msg_alloc_mem();
     
-    GRC_LOG(DEBUG, ("Adverting started idx: %d, status: (0X%02X). ", inst_idx, status));        
+           
     
     if (BLE_SUCCESS == status){
         s_gr_ble_gap_params_ins.is_adv_started = true;
@@ -204,6 +205,7 @@ static void app_gap_adv_start_cb(uint8_t inst_idx, uint8_t status)
     msg->msg                = (void*) &s_adv_msg;
     
     gr_ble_cb_msg_send(msg, true);    
+#endif
 }
 
 /**
@@ -220,9 +222,9 @@ static void app_gap_adv_stop_cb(uint8_t inst_idx, uint8_t status, gap_stopped_re
     if (BLE_SUCCESS == status)
     {
         s_gr_ble_gap_params_ins.is_adv_started = false;
-        GRC_LOG(DEBUG, ("Advertising Stopped, reason: %d  ", reason));
+        gr_trace("+++ Advertising Stopped, reason: %d  \r\n", reason);
     } else {
-        GRC_LOG(DEBUG, ("Advertising Stop failed... "));
+        gr_trace("+++ Advertising Stop failed... \r\n");
     }
     //no upper callback to notify
 }
@@ -237,13 +239,13 @@ static void app_gap_adv_stop_cb(uint8_t inst_idx, uint8_t status, gap_stopped_re
  */
 static void app_gap_scan_req_ind_cb(uint8_t inst_idx, const gap_bdaddr_t *p_scanner_addr)
 {
-    GRC_LOG(DEBUG, (">>> app_gap_scan_req_ind_cb called, Received the scan request from the peer %02X:%02X:%02X:%02X:%02X:%02X  ",
+    gr_trace("+++ app_gap_scan_req_ind_cb called, Received the scan request from the peer %02X:%02X:%02X:%02X:%02X:%02X  \r\n",
                    p_scanner_addr->gap_addr.addr[5],
                    p_scanner_addr->gap_addr.addr[4],
                    p_scanner_addr->gap_addr.addr[3],
                    p_scanner_addr->gap_addr.addr[2],
                    p_scanner_addr->gap_addr.addr[1],
-                   p_scanner_addr->gap_addr.addr[0]));
+                   p_scanner_addr->gap_addr.addr[0]);
 }
 
 /**
@@ -256,7 +258,7 @@ static void app_gap_scan_req_ind_cb(uint8_t inst_idx, const gap_bdaddr_t *p_scan
  */
 static void app_gap_adv_data_update_cb(uint8_t inst_idx, uint8_t status)
 {
-    GRC_LOG(DEBUG, (">>> app_gap_adv_data_update_cb called . status: %d ", status));
+    gr_trace("+++ app_gap_adv_data_update_cb called . status: %d \r\n", status);
 }
 
 /**
@@ -268,7 +270,7 @@ static void app_gap_adv_data_update_cb(uint8_t inst_idx, uint8_t status)
  */
 static void app_gap_scan_start_cb(uint8_t status)
 {
-    GRC_LOG(DEBUG, (">>> app_gap_scan_start_cb called . status: %d ", status));
+    gr_trace("+++ app_gap_scan_start_cb called . status: %d \r\n", status);
 }
 
 /**
@@ -281,11 +283,11 @@ static void app_gap_scan_start_cb(uint8_t status)
  */
 static void app_gap_scan_stop_cb(uint8_t status, gap_stopped_reason_t reason)
 {
-    GRC_LOG(DEBUG, (">>> app_gap_scan_stop_cb called . status: %d, reason:%d  ", status, reason));
+    gr_trace("+++ app_gap_scan_stop_cb called . status: %d, reason:%d  \r\n", status, reason);
     
     if (GAP_STOPPED_REASON_TIMEOUT == reason)
     {
-        GRC_LOG(DEBUG, ("Scan Timeout."));
+        gr_trace("Scan Timeout.\r\n");
     }
     else
     {
@@ -302,7 +304,7 @@ static void app_gap_scan_stop_cb(uint8_t status, gap_stopped_reason_t reason)
  */
 static void app_gap_adv_report_ind_cb(const gap_ext_adv_report_ind_t  *p_adv_report)
 {
-    GRC_LOG(DEBUG, (">>> app_gap_adv_report_ind_cb called  "));
+    gr_trace("+++ app_gap_adv_report_ind_cb called  \r\n");
 }
 
 /**
@@ -315,19 +317,19 @@ static void app_gap_adv_report_ind_cb(const gap_ext_adv_report_ind_t  *p_adv_rep
  */
 static void app_gap_sync_establish_cb(uint8_t inst_idx, uint8_t status, const gap_sync_established_ind_t *p_sync_established_info)
 {
-    GRC_LOG(DEBUG, ("app_gap_sync_established_cb: ")); 
-    GRC_LOG(DEBUG, ("-- phy: %d ", p_sync_established_info->phy));
-    GRC_LOG(DEBUG, ("-- intv: %d ", p_sync_established_info->intv));
-    GRC_LOG(DEBUG, ("-- adv_sid: %d ", p_sync_established_info->adv_sid));
-    GRC_LOG(DEBUG, ("-- clk_acc: %d ", p_sync_established_info->clk_acc));
-    GRC_LOG(DEBUG, ("-- addr_type: %d ", p_sync_established_info->bd_addr.addr_type));
-    GRC_LOG(DEBUG, ("-- addr: %02x-%02x-%02x-%02x-%02x-%02x ", 
+    gr_trace("app_gap_sync_established_cb: \r\n"); 
+    gr_trace("-- phy: %d \r\n", p_sync_established_info->phy);
+    gr_trace("-- intv: %d \r\n", p_sync_established_info->intv);
+    gr_trace("-- adv_sid: %d \r\n", p_sync_established_info->adv_sid);
+    gr_trace("-- clk_acc: %d \r\n", p_sync_established_info->clk_acc);
+    gr_trace("-- addr_type: %d \r\n", p_sync_established_info->bd_addr.addr_type);
+    gr_trace("-- addr: %02x-%02x-%02x-%02x-%02x-%02x \r\n", 
                     p_sync_established_info->bd_addr.gap_addr.addr[0],
                     p_sync_established_info->bd_addr.gap_addr.addr[1],
                     p_sync_established_info->bd_addr.gap_addr.addr[2],
                     p_sync_established_info->bd_addr.gap_addr.addr[3],
                     p_sync_established_info->bd_addr.gap_addr.addr[4],
-                    p_sync_established_info->bd_addr.gap_addr.addr[5]));
+                    p_sync_established_info->bd_addr.gap_addr.addr[5]);
 }
 
 /**
@@ -339,7 +341,7 @@ static void app_gap_sync_establish_cb(uint8_t inst_idx, uint8_t status, const ga
  */
 static void app_gap_stop_sync_cb(uint8_t inst_idx, uint8_t status)
 {
-    GRC_LOG(DEBUG, (">>> app_gap_stop_sync_cb called, status:%d  ", status));
+    gr_trace("+++ app_gap_stop_sync_cb called, status:%d  \r\n", status);
 }
 
 /**
@@ -349,7 +351,7 @@ static void app_gap_stop_sync_cb(uint8_t inst_idx, uint8_t status)
  */
 static void app_gap_sync_lost_cb(uint8_t inst_idx)
 {
-    GRC_LOG(DEBUG, (">>> app_gap_sync_lost_cb called  "));
+    gr_trace("+++ app_gap_sync_lost_cb called  \r\n");
 }
 
 /**
@@ -363,25 +365,25 @@ static void app_gap_sync_lost_cb(uint8_t inst_idx)
  */
 static void app_gap_connect_cb(uint8_t conn_idx, uint8_t status, const gap_conn_cmp_t *p_conn_param)
 {
-    static GR_CB_MSG_BASIC_T     s_conn_msg; 
-    GR_CALLBACK_MSG_T            * msg = NULL;
+    //static GR_CB_MSG_BASIC_T     s_conn_msg; 
+    //GR_CALLBACK_MSG_T            * msg = NULL;
     
     if (BLE_SUCCESS == status)
     {
-        GRC_LOG(DEBUG, ("app_gap_connect_cb Connected with the peer %02X:%02X:%02X:%02X:%02X:%02X.  ",
+        gr_trace("+++ app_gap_connect_cb Connected with the peer %02X:%02X:%02X:%02X:%02X:%02X.  \r\n",
                      p_conn_param->peer_addr.addr[5],
                      p_conn_param->peer_addr.addr[4],
                      p_conn_param->peer_addr.addr[3],
                      p_conn_param->peer_addr.addr[2],
                      p_conn_param->peer_addr.addr[1],
-                     p_conn_param->peer_addr.addr[0]));
+                     p_conn_param->peer_addr.addr[0]);
         
         s_gr_ble_gap_params_ins.is_connected = true;
         s_gr_ble_gap_params_ins.is_mtu_exchanged = false;
         s_gr_ble_gap_params_ins.cur_connect_id = conn_idx;
         
         memcpy(&s_gr_ble_gap_params_ins.gap_conn_cmp_param, p_conn_param, sizeof(gap_conn_cmp_t));
-    
+#if 0    
         msg = (GR_CALLBACK_MSG_T*) gr_ble_cb_msg_alloc_mem();
         if(msg == NULL){
             return;
@@ -393,8 +395,9 @@ static void app_gap_connect_cb(uint8_t conn_idx, uint8_t status, const gap_conn_
         msg->msg                 = (void*) &s_conn_msg;
         
         gr_ble_cb_msg_send(msg, true);
+#endif
     } else {
-        GRC_LOG(DEBUG, ("app_gap_connect_cb connect fail: %d  ", status));
+        gr_trace("+++ app_gap_connect_cb connect fail: %d  \r\n", status);
     }
 }
 
@@ -409,15 +412,15 @@ static void app_gap_connect_cb(uint8_t conn_idx, uint8_t status, const gap_conn_
  */
 static void app_gap_disconnect_cb(uint8_t conn_idx, uint8_t status, uint8_t reason)
 {
-    static GR_CB_MSG_BASIC_T     s_disconn_msg; 
-    GR_CALLBACK_MSG_T            * msg = NULL;
+    //static GR_CB_MSG_BASIC_T     s_disconn_msg; 
+    //GR_CALLBACK_MSG_T            * msg = NULL;
     
     if (BLE_SUCCESS == status)
     {
-        GRC_LOG(DEBUG, ("Disconnected, reason:%d  ", reason));
+        gr_trace("+++ Disconnected, reason:%d  \r\n", reason);
         
         s_gr_ble_gap_params_ins.is_connected = false;
-        
+#if 0        
         msg = (GR_CALLBACK_MSG_T*) gr_ble_cb_msg_alloc_mem();
         if(msg == NULL){
             return;
@@ -430,8 +433,9 @@ static void app_gap_disconnect_cb(uint8_t conn_idx, uint8_t status, uint8_t reas
         msg->msg                 = (void*) &s_disconn_msg;
         
         gr_ble_cb_msg_send(msg, true);
+#endif        
     } else {
-        GRC_LOG(DEBUG, ("app_gap_disconnect_cb connect fail: %d  ", status));
+        ("app_gap_disconnect_cb connect fail: %d  ", status);
     }
 }
 
@@ -444,7 +448,7 @@ static void app_gap_disconnect_cb(uint8_t conn_idx, uint8_t status, uint8_t reas
 */
 static void app_gap_connect_cancel_cb(uint8_t status)
 {
-    GRC_LOG(DEBUG, (">>> app_gap_connect_cancel_cb called, status:%d  ", status));
+    gr_trace("+++ app_gap_connect_cancel_cb called, status:%d  \r\n", status);
     s_gr_ble_gap_params_ins.is_connected = false;
 }
 
@@ -455,7 +459,7 @@ static void app_gap_connect_cancel_cb(uint8_t status)
  */
 static void app_gap_auto_connection_timeout_cb(void)
 {
-    GRC_LOG(DEBUG, (">>> app_gap_auto_connection_timeout_cb called "));
+    gr_trace("+++ app_gap_auto_connection_timeout_cb called \r\n");
     s_gr_ble_gap_params_ins.is_connected = false;
 }
 
@@ -469,7 +473,7 @@ static void app_gap_auto_connection_timeout_cb(void)
  */
 static void app_gap_peer_name_ind_cb(uint8_t conn_idx, const gap_peer_name_ind_t  *p_peer_name)
 {
-    GRC_LOG(DEBUG, (">>> app_gap_peer_name_ind_cb called "));
+    gr_trace("+++ app_gap_peer_name_ind_cb called \r\n");
 }
 
 /**
@@ -483,10 +487,12 @@ static void app_gap_peer_name_ind_cb(uint8_t conn_idx, const gap_peer_name_ind_t
  */
 static void app_gap_connection_update_cb(uint8_t conn_idx, uint8_t status, const gap_conn_update_cmp_t *p_conn_param_update_info)
 {
+    gr_trace("+++ app_gap_connection_update_cb called, conn_idx:%d, status:%d  \r\n", conn_idx, status);
+#if 0    
     static GR_CB_MSG_CONN_UPDATE_T conn_update;
     GR_CALLBACK_MSG_T            * msg = NULL;
     
-    GRC_LOG(DEBUG, (">>> app_gap_connection_update_cb called, conn_idx:%d, status:%d  ", conn_idx, status));
+    
     
     msg = (GR_CALLBACK_MSG_T*) gr_ble_cb_msg_alloc_mem();
     if(msg == NULL){
@@ -500,6 +506,7 @@ static void app_gap_connection_update_cb(uint8_t conn_idx, uint8_t status, const
     msg->msg                 = (void*) &conn_update;
     
     gr_ble_cb_msg_send(msg, true);
+#endif
 }
 
 /**
@@ -512,7 +519,7 @@ static void app_gap_connection_update_cb(uint8_t conn_idx, uint8_t status, const
  */
 static void app_gap_connection_update_req_cb(uint8_t conn_idx, const gap_conn_param_t *p_conn_param_update_req)
 {
-    GRC_LOG(DEBUG, (">>> app_gap_connection_update_req_cb called  "));
+    gr_trace("+++ app_gap_connection_update_req_cb called  \r\n");
     ble_gap_conn_param_update_reply(conn_idx, true);
 }
 
@@ -527,7 +534,7 @@ static void app_gap_connection_update_req_cb(uint8_t conn_idx, const gap_conn_pa
  */
 static void app_gap_connection_info_get_cb(uint8_t conn_idx, uint8_t status, const gap_conn_info_param_t *p_conn_info)
 {
-    GRC_LOG(DEBUG, (">>> app_gap_connection_info_get_cb called, conn_idx:%d, status:%d  ", conn_idx, status));
+    gr_trace("+++ app_gap_connection_info_get_cb called, conn_idx:%d, status:%d  \r\n", conn_idx, status);
 }
 
 /**
@@ -541,7 +548,7 @@ static void app_gap_connection_info_get_cb(uint8_t conn_idx, uint8_t status, con
  */
 static void app_gap_peer_info_get_cb(uint8_t conn_idx,  uint8_t status, const gap_peer_info_param_t *p_peer_dev_info)
 {
-    GRC_LOG(DEBUG, (">>> app_gap_peer_info_get_cb called, conn_idx:%d, status:%d  ", conn_idx, status));
+    gr_trace("+++ app_gap_peer_info_get_cb called, conn_idx:%d, status:%d  \r\n", conn_idx, status);
 }
 
 /**
@@ -555,5 +562,5 @@ static void app_gap_peer_info_get_cb(uint8_t conn_idx,  uint8_t status, const ga
  */
 static void app_gap_le_pkt_size_info_cb(uint8_t conn_idx,  uint8_t status, const gap_le_pkt_size_ind_t *p_supported_data_length)
 {
-    GRC_LOG(DEBUG, (">>> app_gap_le_pkt_size_info_cb called, conn_idx:%d, status:%d  ", conn_idx, status));
+    gr_trace("+++ app_gap_le_pkt_size_info_cb called, conn_idx:%d, status:%d  \r\n", conn_idx, status);
 }
