@@ -258,7 +258,7 @@ STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args,
         gr_ubluepy_set_gatts_event_handler(MP_OBJ_FROM_PTR(self), gatts_event_handler);
     }
 
-    if(!gr_ubluepy_gap_start_services_and_advertise(&adv_data)){
+    if(!gr_ubluepy_gap_start_advertise(&adv_data)){
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
                 "Can not start adv."));
     }
@@ -321,7 +321,8 @@ STATIC mp_obj_t peripheral_remove_service(mp_obj_t self_in, mp_obj_t service) {
 
     // 2. remove
     if(p_service != mp_const_none) {
-        //TODO: free the service resources in porting layer
+        //free the service resources in porting layer
+        gr_ubluepy_delete_service(p_service);
 
         p_service->p_periph = NULL;
         mp_obj_list_remove(self->service_list, service);

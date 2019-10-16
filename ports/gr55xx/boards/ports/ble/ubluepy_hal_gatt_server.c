@@ -340,9 +340,7 @@ bool gr_ubluepy_gatt_add_descriptor(ubluepy_descriptor_obj_t * p_desc) {
 }
 
 
-
-
-bool gr_ubluepy_gatt_start_service(ubluepy_service_obj_t * service) {
+bool gr_ubluepy_start_service(ubluepy_service_obj_t * service) {
     if(service == NULL)
         return false;
     
@@ -370,16 +368,34 @@ bool gr_ubluepy_gatt_start_service(ubluepy_service_obj_t * service) {
             ret = gr_gatt_service_register(service_handle);
         }
     }
-    gr_trace("+++ gr_ubluepy_gatt_start_service : %d  \r\n", ret); 
+    gr_trace("+++ gr_ubluepy_start_service : %d  \r\n", ret); 
     
     return ret;    
 }
 
-bool gr_ubluepy_gatt_stop_service(ubluepy_service_obj_t * service) {
+bool gr_ubluepy_stop_service(ubluepy_service_obj_t * service) {
     service = service;
     //nothing to to
     
     return true;
+}
+
+bool gr_ubluepy_delete_service(ubluepy_service_obj_t * service) {
+    bool ret = true;
+    uint16_t service_handle = service->handle;
+
+    BTGattServiceList_t * psrv = prvBTGattServiceListGet(service_handle);
+    
+    if(psrv != NULL){
+        if(psrv->pAttTable != NULL)
+            gr_free(psrv->pAttTable);
+        
+        prvBTGattServiceListDelete(service_handle);
+    } else {
+        ret = false;
+    }
+
+    return ret;
 }
 
 
@@ -513,13 +529,6 @@ bool prvBTGattServiceListPut(const BTGattServiceList_t srv){
     }
     
     return isPut;
-    /*
-    if(isPut){
-        return eBTStatusSuccess;
-    } else {
-        return eBTStatusNoMem;
-    }
-    */
 }
 
 BTGattServiceList_t * prvBTGattServiceListGet(uint16_t serviceHandle){

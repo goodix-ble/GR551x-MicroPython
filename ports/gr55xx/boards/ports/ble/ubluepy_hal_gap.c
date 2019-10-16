@@ -150,7 +150,7 @@ bool gr_ubluepy_gap_start_services(mp_obj_t * p_services, uint8_t num_of_service
         for (uint8_t i = 0; i < num_of_services; i++) {
             ubluepy_service_obj_t * p_service = (ubluepy_service_obj_t *)p_services[i];
             
-            ret = gr_ubluepy_gatt_start_service(p_service);
+            ret = gr_ubluepy_start_service(p_service);
             if(!ret) {
                 return ret;
             }
@@ -160,9 +160,17 @@ bool gr_ubluepy_gap_start_services(mp_obj_t * p_services, uint8_t num_of_service
     return ret;
 }
 
-bool gr_ubluepy_gap_start_services_and_advertise(ubluepy_advertise_data_t * p_adv_params) {
+bool gr_ubluepy_gap_delete_service(mp_obj_t * p_service) {
+    bool ret = true;
+    gr_trace("+++ gr_ubluepy_gap_delete_service called \r\n");
+
+
+
+}
+
+bool gr_ubluepy_gap_start_advertise(ubluepy_advertise_data_t * p_adv_params) {
     bool ret;
-    gr_trace("+++ gr_ubluepy_gap_start_services_and_advertise called (%s) \r\n", p_adv_params->p_device_name);
+    gr_trace("+++ gr_ubluepy_gap_start_advertise called (%s) \r\n", p_adv_params->p_device_name);
     
     //1. start service 
 #if 0
@@ -171,7 +179,7 @@ bool gr_ubluepy_gap_start_services_and_advertise(ubluepy_advertise_data_t * p_ad
         for (uint8_t i = 0; i < p_adv_params->num_of_services; i++) {
             ubluepy_service_obj_t * p_service = (ubluepy_service_obj_t *)p_adv_params->p_services[i];
             
-            ret = gr_ubluepy_gatt_start_service(p_service);
+            ret = gr_ubluepy_start_service(p_service);
             if(!ret) {
                 return ret;
             }
