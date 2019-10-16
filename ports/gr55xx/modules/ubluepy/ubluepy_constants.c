@@ -32,6 +32,9 @@
 
 #include "modubluepy.h"
 
+/****************************************
+ * Constants of ADV Types
+ ****************************************/
 STATIC const mp_rom_map_elem_t ubluepy_constants_ad_types_locals_dict_table[] = {
     // GAP AD Types
     { MP_ROM_QSTR(MP_QSTR_AD_TYPE_FLAGS),                              MP_ROM_INT(0x01) },
@@ -72,10 +75,88 @@ STATIC MP_DEFINE_CONST_DICT(ubluepy_constants_ad_types_locals_dict, ubluepy_cons
 
 const mp_obj_type_t ubluepy_constants_ad_types_type = {
     { &mp_type_type },
-    .name = MP_QSTR_ad_types,
+    .name = MP_QSTR_AdTypes,
     .locals_dict = (mp_obj_dict_t*)&ubluepy_constants_ad_types_locals_dict
 };
 
+/***************************************************************
+ * Constants of Props used by Characteristic & Descriptor
+ *
+ * @brief GATT Characteristic property.
+ * @see BLUETOOTH SPECIFICATION Version 5.0 | Vol 3, Part G, 3.3.1.1 Characteristic Properties
+ ***************************************************************/
+STATIC const mp_rom_map_elem_t ubluepy_constants_charac_prop_locals_dict_table[] = {
+    //map to enum _ubluepy_prop_t
+    { MP_ROM_QSTR(MP_QSTR_PROP_NONE),           MP_ROM_INT(UBLUEPY_PROP_NONE) },
+    { MP_ROM_QSTR(MP_QSTR_PROP_BROADCAST),      MP_ROM_INT(UBLUEPY_PROP_BROADCAST) },
+    { MP_ROM_QSTR(MP_QSTR_PROP_READ),           MP_ROM_INT(UBLUEPY_PROP_READ) },
+    { MP_ROM_QSTR(MP_QSTR_PROP_WRITE_WO_RESP),  MP_ROM_INT(UBLUEPY_PROP_WRITE_WO_RESP) },
+    { MP_ROM_QSTR(MP_QSTR_PROP_WRITE),          MP_ROM_INT(UBLUEPY_PROP_WRITE) },
+    { MP_ROM_QSTR(MP_QSTR_PROP_NOTIFY),         MP_ROM_INT(UBLUEPY_PROP_NOTIFY) },
+    { MP_ROM_QSTR(MP_QSTR_PROP_INDICATE),       MP_ROM_INT(UBLUEPY_PROP_INDICATE) },
+    { MP_ROM_QSTR(MP_QSTR_PROP_AUTH_SIGNED_WR), MP_ROM_INT(UBLUEPY_PROP_AUTH_SIGNED_WR) },
+    { MP_ROM_QSTR(MP_QSTR_PROP_EXTENDED_PROP),  MP_ROM_INT(UBLUEPY_PROP_EXTENDED_PROP) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(ubluepy_constants_charac_prop_locals_dict, ubluepy_constants_charac_prop_locals_dict_table);
+
+const mp_obj_type_t ubluepy_constants_charac_prop_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_CharacProp,
+    .locals_dict = (mp_obj_dict_t*)&ubluepy_constants_charac_prop_locals_dict
+};
+
+/***************************************************************
+ * Constants of Perms used by Characteristic & Descriptor
+ *
+ * @brief GATT permissions.
+ * @see BLUETOOTH SPECIFICATION Version 5.0 | Vol 3, Part F, 3.2.5 Attribute Permissions
+ ***************************************************************/
+STATIC const mp_rom_map_elem_t ubluepy_constants_attr_perm_locals_dict_table[] = {
+    //map to enum _ubluepy_permission_t
+    { MP_ROM_QSTR(MP_QSTR_PERM_NONE),                   MP_ROM_INT(UBLUEPY_PERM_NONE) },
+    { MP_ROM_QSTR(MP_QSTR_PERM_READ),                   MP_ROM_INT(UBLUEPY_PERM_READ) },
+    { MP_ROM_QSTR(MP_QSTR_PERM_READ_ENCRYPTED),         MP_ROM_INT(UBLUEPY_PERM_READ_ENCRYPTED) },
+    { MP_ROM_QSTR(MP_QSTR_PERM_READ_ENCRYPTED_MITM),    MP_ROM_INT(UBLUEPY_PERM_READ_ENCRYPTED_MITM) },
+    { MP_ROM_QSTR(MP_QSTR_PERM_WRITE),                  MP_ROM_INT(UBLUEPY_PERM_WRITE) },
+    { MP_ROM_QSTR(MP_QSTR_PERM_WRITE_ENCRYPTED),        MP_ROM_INT(UBLUEPY_PERM_WRITE_ENCRYPTED) },
+    { MP_ROM_QSTR(MP_QSTR_PERM_WRITE_ENCRYPTED_MITM),   MP_ROM_INT(UBLUEPY_PERM_WRITE_ENCRYPTED_MITM) },
+    { MP_ROM_QSTR(MP_QSTR_PERM_WRITE_SIGNED),           MP_ROM_INT(UBLUEPY_PERM_WRITE_SIGNED) },
+    { MP_ROM_QSTR(MP_QSTR_PERM_WRITE_SIGNED_MITM),      MP_ROM_INT(UBLUEPY_PERM_WRITE_SIGNED_MITM) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(ubluepy_constants_attr_perm_locals_dict, ubluepy_constants_attr_perm_locals_dict_table);
+
+const mp_obj_type_t ubluepy_constants_attr_perm_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_AttrPerm,
+    .locals_dict = (mp_obj_dict_t*)&ubluepy_constants_attr_perm_locals_dict
+};
+
+/***************************************************************
+ * Constants of CC Descriptor
+ ***************************************************************/
+STATIC const mp_rom_map_elem_t ubluepy_constants_ccd_locals_dict_table[] = {
+    //map to enum _ubluepy_attr_t
+#if MICROPY_PY_UBLUEPY_PERIPHERAL
+    { MP_ROM_QSTR(MP_QSTR_ATTR_CCCD),           MP_ROM_INT(UBLUEPY_ATTR_CCCD) },
+#endif
+#if MICROPY_PY_UBLUEPY_CENTRAL
+    { MP_ROM_QSTR(MP_QSTR_ATTR_SCCD),           MP_ROM_INT(UBLUEPY_ATTR_SCCD) },
+#endif
+};
+
+STATIC MP_DEFINE_CONST_DICT(ubluepy_constants_ccd_locals_dict, ubluepy_constants_ccd_locals_dict_table);
+
+const mp_obj_type_t ubluepy_constants_ccd_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_Ccd,
+    .locals_dict = (mp_obj_dict_t*)&ubluepy_constants_ccd_locals_dict
+};
+
+/****************************************
+ * Constants of All
+ ****************************************/
 STATIC const mp_rom_map_elem_t ubluepy_constants_locals_dict_table[] = {
     // GAP events
     { MP_ROM_QSTR(MP_QSTR_EVT_GAP_CONNECTED),       MP_ROM_INT(16) },
@@ -86,14 +167,17 @@ STATIC const mp_rom_map_elem_t ubluepy_constants_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ADDR_TYPE_PUBLIC),        MP_ROM_INT(UBLUEPY_ADDR_TYPE_PUBLIC) },
     { MP_ROM_QSTR(MP_QSTR_ADDR_TYPE_RANDOM_STATIC), MP_ROM_INT(UBLUEPY_ADDR_TYPE_RANDOM_STATIC) },
 
-    { MP_ROM_QSTR(MP_QSTR_ad_types),                MP_ROM_PTR(&ubluepy_constants_ad_types_type) },
+    { MP_ROM_QSTR(MP_QSTR_AdTypes),                 MP_ROM_PTR(&ubluepy_constants_ad_types_type) },
+    { MP_ROM_QSTR(MP_QSTR_CharacProp),              MP_ROM_PTR(&ubluepy_constants_charac_prop_type) },
+    { MP_ROM_QSTR(MP_QSTR_AttrPerm),                MP_ROM_PTR(&ubluepy_constants_attr_perm_type) },
+    { MP_ROM_QSTR(MP_QSTR_Ccd),                     MP_ROM_PTR(&ubluepy_constants_ccd_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(ubluepy_constants_locals_dict, ubluepy_constants_locals_dict_table);
 
 const mp_obj_type_t ubluepy_constants_type = {
     { &mp_type_type },
-    .name = MP_QSTR_constants,
+    .name = MP_QSTR_Constants,
     .locals_dict = (mp_obj_dict_t*)&ubluepy_constants_locals_dict
 };
 

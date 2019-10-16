@@ -489,7 +489,7 @@ void gr_ble_gatt_handle_map_print(void){
     gr_trace("\r\n++++++++ Gatt Service Handle Map ++++++++\r\n");
     gr_trace("+++ Port  +++  Stack  +++  UUID +++\r\n");
     
-    for (int i=0; i< max; i++){
+    for (int i=0; i< max; i++) {
         if((xGattTable[i].type >= UBLUEPY_ATTR_TYPE_PRIMARY_SERVICE) && (xGattTable[i].type <= UBLUEPY_ATTR_TYPE_INCLUDED_SERVICE)) {
             stack_handle = gr_gatt_transto_ble_stack_handle(xGattTable[i].handle);
             gr_trace("+++ %-4d  +++  %-6d +++ (SERVICE    )%s \r\n", xGattTable[i].handle, stack_handle, prvFormatUUID(xGattTable[i]));

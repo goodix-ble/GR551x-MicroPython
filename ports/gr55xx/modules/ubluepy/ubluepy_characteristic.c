@@ -50,9 +50,9 @@ STATIC void ubluepy_characteristic_print(const mp_print_t *print, mp_obj_t o, mp
 STATIC mp_obj_t ubluepy_characteristic_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_uuid,  MP_ARG_REQUIRED| MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_props, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UBLUEPY_PROP_READ | UBLUEPY_PROP_WRITE} },
-        { MP_QSTR_attrs, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_props, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UBLUEPY_PROP_READ | UBLUEPY_PROP_WRITE} },        
         { MP_QSTR_perms, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UBLUEPY_PERM_NONE} },
+        { MP_QSTR_attrs, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
 
     // parse args
@@ -80,7 +80,11 @@ STATIC mp_obj_t ubluepy_characteristic_make_new(const mp_obj_type_t *type, size_
     }
 
     if (args[2].u_int > 0) {
-        s->attrs = (uint8_t)args[2].u_int;
+        s->perms = (uint8_t)args[2].u_int;
+    }
+
+    if (args[3].u_int > 0) {
+        s->attrs = (uint8_t)args[3].u_int;
     }
 
     // clear pointer to service
@@ -204,37 +208,6 @@ STATIC const mp_rom_map_elem_t ubluepy_characteristic_locals_dict_table[] = {
 #endif
     { MP_ROM_QSTR(MP_QSTR_uuid),                MP_ROM_PTR(&ubluepy_characteristic_get_uuid_obj) },
     { MP_ROM_QSTR(MP_QSTR_properties),          MP_ROM_PTR(&ubluepy_characteristic_get_properties_obj) },
-
-    //map to enum _ubluepy_prop_t
-    { MP_ROM_QSTR(MP_QSTR_PROP_NONE),           MP_ROM_INT(UBLUEPY_PROP_NONE) },
-    { MP_ROM_QSTR(MP_QSTR_PROP_BROADCAST),      MP_ROM_INT(UBLUEPY_PROP_BROADCAST) },
-    { MP_ROM_QSTR(MP_QSTR_PROP_READ),           MP_ROM_INT(UBLUEPY_PROP_READ) },
-    { MP_ROM_QSTR(MP_QSTR_PROP_WRITE_WO_RESP),  MP_ROM_INT(UBLUEPY_PROP_WRITE_WO_RESP) },
-    { MP_ROM_QSTR(MP_QSTR_PROP_WRITE),          MP_ROM_INT(UBLUEPY_PROP_WRITE) },
-    { MP_ROM_QSTR(MP_QSTR_PROP_NOTIFY),         MP_ROM_INT(UBLUEPY_PROP_NOTIFY) },
-    { MP_ROM_QSTR(MP_QSTR_PROP_INDICATE),       MP_ROM_INT(UBLUEPY_PROP_INDICATE) },
-    { MP_ROM_QSTR(MP_QSTR_PROP_AUTH_SIGNED_WR), MP_ROM_INT(UBLUEPY_PROP_AUTH_SIGNED_WR) },
-    { MP_ROM_QSTR(MP_QSTR_PROP_EXTENDED_PROP),  MP_ROM_INT(UBLUEPY_PROP_EXTENDED_PROP) },
-
-    //map to enum _ubluepy_permission_t
-    { MP_ROM_QSTR(MP_QSTR_PERM_NONE),                   MP_ROM_INT(UBLUEPY_PERM_NONE) },
-    { MP_ROM_QSTR(MP_QSTR_PERM_READ),                   MP_ROM_INT(UBLUEPY_PERM_READ) },
-    { MP_ROM_QSTR(MP_QSTR_PERM_READ_ENCRYPTED),         MP_ROM_INT(UBLUEPY_PERM_READ_ENCRYPTED) },
-    { MP_ROM_QSTR(MP_QSTR_PERM_READ_ENCRYPTED_MITM),    MP_ROM_INT(UBLUEPY_PERM_READ_ENCRYPTED_MITM) },
-    { MP_ROM_QSTR(MP_QSTR_PERM_WRITE),                  MP_ROM_INT(UBLUEPY_PERM_WRITE) },
-    { MP_ROM_QSTR(MP_QSTR_PERM_WRITE_ENCRYPTED),        MP_ROM_INT(UBLUEPY_PERM_WRITE_ENCRYPTED) },
-    { MP_ROM_QSTR(MP_QSTR_PERM_WRITE_ENCRYPTED_MITM),   MP_ROM_INT(UBLUEPY_PERM_WRITE_ENCRYPTED_MITM) },
-    { MP_ROM_QSTR(MP_QSTR_PERM_WRITE_SIGNED),           MP_ROM_INT(UBLUEPY_PERM_WRITE_SIGNED) },
-    { MP_ROM_QSTR(MP_QSTR_PERM_WRITE_SIGNED_MITM),      MP_ROM_INT(UBLUEPY_PERM_WRITE_SIGNED_MITM) },
-    
-    
-    //map to enum _ubluepy_attr_t
-#if MICROPY_PY_UBLUEPY_PERIPHERAL
-    { MP_ROM_QSTR(MP_QSTR_ATTR_CCCD),           MP_ROM_INT(UBLUEPY_ATTR_CCCD) },
-#endif
-#if MICROPY_PY_UBLUEPY_CENTRAL
-    { MP_ROM_QSTR(MP_QSTR_ATTR_SCCD),           MP_ROM_INT(UBLUEPY_ATTR_SCCD) },
-#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(ubluepy_characteristic_locals_dict, ubluepy_characteristic_locals_dict_table);
