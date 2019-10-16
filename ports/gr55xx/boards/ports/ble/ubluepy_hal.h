@@ -17,7 +17,7 @@ typedef void (*ble_drv_gatts_evt_callback_t)(mp_obj_t self, uint16_t event_id, u
 void gr_ubluepy_set_gap_event_handler(mp_obj_t obj, ble_drv_gap_evt_callback_t evt_handler);
 void gr_ubluepy_set_gatts_event_handler(mp_obj_t obj, ble_drv_gatts_evt_callback_t evt_handler);
 
-
+bool gr_ubluepy_gap_start_services(mp_obj_t * p_services, uint8_t num_of_services);
 bool gr_ubluepy_gap_start_services_and_advertise(ubluepy_advertise_data_t * p_adv_params);
 bool gr_ubluepy_gap_stop_advertise(void);
 

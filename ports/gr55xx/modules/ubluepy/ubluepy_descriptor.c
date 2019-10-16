@@ -56,7 +56,8 @@ STATIC mp_obj_t ubluepy_descriptor_make_new(const mp_obj_type_t *type, size_t n_
     enum { ARG_NEW_UUID };
 
     static const mp_arg_t allowed_args[] = {
-        { ARG_NEW_UUID, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_uuid, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_perms, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UBLUEPY_PERM_NONE} },
     };
 
     // parse args
@@ -66,9 +67,25 @@ STATIC mp_obj_t ubluepy_descriptor_make_new(const mp_obj_type_t *type, size_t n_
     ubluepy_descriptor_obj_t * s = m_new_obj(ubluepy_descriptor_obj_t);
     s->base.type = type;
 
-    mp_obj_t uuid_obj = args[ARG_NEW_UUID].u_obj;
+    mp_obj_t uuid_obj = args[0].u_obj;
+
+    if (uuid_obj == mp_const_none) {
+        mp_raise_ValueError("must provide UUID parameter");
+    }
     
-    s->p_uuid = MP_OBJ_TO_PTR(uuid_obj);
+    if (mp_obj_is_type(uuid_obj, &ubluepy_uuid_type)) {
+        s->p_uuid = MP_OBJ_TO_PTR(uuid_obj);
+    } else {
+        mp_raise_ValueError("Invalid UUID parameter");
+    }
+
+    if (args[1].u_int > 0) {
+        s->perms = (uint8_t)args[1].u_int;
+    }
+
+    s->handle                   = UBLUEPY_UNASSIGNED_HANDLE;
+    s->service_handle           = UBLUEPY_UNASSIGNED_HANDLE;
+    s->characteristic_handle    = UBLUEPY_UNASSIGNED_HANDLE;
 
     return MP_OBJ_FROM_PTR(s);
 }

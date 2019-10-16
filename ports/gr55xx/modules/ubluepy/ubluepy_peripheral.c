@@ -29,12 +29,19 @@
 #include "py/runtime.h"
 #include "py/objstr.h"
 #include "py/objlist.h"
+#include "py/mperrno.h"
 
 #include "mp_defs.h"
 #include "ubluepy_hal.h"
 
 #if MICROPY_PY_UBLUEPY
 
+STATIC void ubluepy_peripheral_check_ble_stack_status(void) {
+    if(!s_gr_ble_common_params_ins.is_ble_initialized) {
+        mp_raise_msg(&mp_type_Exception, "ble stack not enable, call ble.enable() first!");
+    }
+    return;
+}
 
 STATIC void ubluepy_peripheral_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     ubluepy_peripheral_obj_t * self = (ubluepy_peripheral_obj_t *)o;
@@ -167,13 +174,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_peripheral_set_conn_handler_obj, periph
 
 #if MICROPY_PY_UBLUEPY_PERIPHERAL
 
-/// \method advertise(device_name, [service=[service1, service2, ...]], [data=bytearray], [connectable=True])
-/// Start Services and advertising. Connectable advertisment type by default.
+/// \method startAdvertise(device_name, [data=bytearray], [connectable=True])
+/// Start the advertising. Connectable advertisment type by default.
 ///
 STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_device_name, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_services,    MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        //{ MP_QSTR_services,    MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_data,        MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_connectable, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
@@ -182,15 +189,18 @@ STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args,
 
     self->role = UBLUEPY_ROLE_PERIPHERAL;
 
+    //check ble stack
+    ubluepy_peripheral_check_ble_stack_status();
+
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_obj_t device_name_obj = args[0].u_obj;
-    mp_obj_t service_obj     = args[1].u_obj;
-    mp_obj_t data_obj        = args[2].u_obj;
-    mp_obj_t connectable_obj = args[3].u_obj;
+    //mp_obj_t service_obj     = args[1].u_obj;
+    mp_obj_t data_obj        = args[1].u_obj;
+    mp_obj_t connectable_obj = args[2].u_obj;
 
     ubluepy_advertise_data_t adv_data;
     memset(&adv_data, 0, sizeof(ubluepy_advertise_data_t));
@@ -202,15 +212,32 @@ STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args,
         adv_data.device_name_len = str_len;
     }
 
-    if (service_obj != mp_const_none) {
+    /*
+     * use services registered in advance by call addService(...)
+     * not use the service obj delivered by function-in params
+     */
+    {
+#if 0    
+        if (service_obj != mp_const_none) {
+            mp_obj_t * services = NULL;
+            mp_uint_t  num_services;
+            mp_obj_get_array(service_obj, &num_services, &services);
+
+            if (num_services > 0) {
+                adv_data.p_services      = services;
+                adv_data.num_of_services = num_services;
+            }
+        }
+#else
+        // For each service perform a characteristic discovery
         mp_obj_t * services = NULL;
         mp_uint_t  num_services;
-        mp_obj_get_array(service_obj, &num_services, &services);
-
+        mp_obj_get_array(self->service_list, &num_services, &services);
         if (num_services > 0) {
             adv_data.p_services      = services;
             adv_data.num_of_services = num_services;
         }
+#endif
     }
 
     if (data_obj != mp_const_none) {
@@ -240,7 +267,7 @@ STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args,
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ubluepy_peripheral_advertise_obj, 0, peripheral_advertise);
 
-/// \method advertise_stop()
+/// \method stopAdvertise()
 /// Stop advertisment if any onging advertisment.
 ///
 STATIC mp_obj_t peripheral_advertise_stop(mp_obj_t self_in) {
@@ -283,6 +310,27 @@ STATIC mp_obj_t peripheral_add_service(mp_obj_t self_in, mp_obj_t service) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_peripheral_add_service_obj, peripheral_add_service);
 
+/// \method removeService(Service)
+/// Remove service which is added by addService method from the Peripheral.
+///
+STATIC mp_obj_t peripheral_remove_service(mp_obj_t self_in, mp_obj_t service) {
+    ubluepy_peripheral_obj_t * self = MP_OBJ_TO_PTR(self_in);
+    ubluepy_service_obj_t    * p_service = MP_OBJ_TO_PTR(service);
+
+    // 1. check, if service is running or adv is going, cannot remove
+
+    // 2. remove
+    if(p_service != mp_const_none) {
+        //TODO: free the service resources in porting layer
+
+        p_service->p_periph = NULL;
+        mp_obj_list_remove(self->service_list, service);
+    }
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_peripheral_remove_service_obj, peripheral_remove_service);
+
 /// \method getServices()
 /// Return list with all service registered in the Peripheral.
 ///
@@ -292,6 +340,94 @@ STATIC mp_obj_t peripheral_get_services(mp_obj_t self_in) {
     return self->service_list;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_peripheral_get_services_obj, peripheral_get_services);
+
+
+/// \method startServices()
+/// start all services registered in the Peripheral.
+///
+STATIC mp_obj_t peripheral_start_services(mp_obj_t self_in) {
+    ubluepy_peripheral_obj_t *  self    = MP_OBJ_TO_PTR(self_in);
+    uint16_t        service_handle      = 0;
+    uint16_t        charac_handle       = 0;
+    bool            retval              = false;
+    mp_obj_t *      services            = NULL;
+    mp_uint_t       num_services        = 0;
+    mp_obj_t *      characs             = NULL;
+    mp_uint_t       num_chars           = 0;
+    mp_obj_t *      descs               = NULL;
+    mp_uint_t       num_descs           = 0;
+
+    //check ble stack
+    ubluepy_peripheral_check_ble_stack_status();
+
+    /**** 1 : add services to native porting *******/
+
+    num_services    = 0;
+    services        = NULL;
+    mp_obj_get_array(self->service_list, &num_services, &services);
+
+    for (uint8_t i = 0; i < num_services; i++) {
+        ubluepy_service_obj_t * s = (ubluepy_service_obj_t *)services[i];
+
+        // 1. register service
+        retval = gr_ubluepy_gatt_add_service(s);
+        if(!retval) {
+            mp_raise_OSError(MP_ENOMEM);
+        } else {
+            //update handle
+            s->start_handle = s->handle;
+        }
+
+        service_handle = s->handle;
+
+        // 2. register characteristics belongs to service       
+        num_chars   = 0; 
+        characs     = NULL;
+        mp_obj_get_array(s->char_list, &num_chars, &characs);
+        for(uint8_t j =0; j < num_chars; j++) {
+            ubluepy_characteristic_obj_t * c = (ubluepy_characteristic_obj_t *)characs[j];
+
+            c->service_handle = service_handle;
+            retval = gr_ubluepy_gatt_add_characteristic(c);
+
+            if (!retval) {
+                mp_raise_OSError(MP_ENOMEM);
+            }
+
+            charac_handle = c->handle;
+
+            // 3. register descriptors belongs to characteristic
+            descs     = NULL;
+            num_descs = 0;
+            mp_obj_get_array(c->desc_list, &num_descs, &descs);
+            for(uint8_t k =0; k < num_descs; k++) {
+                ubluepy_descriptor_obj_t * d = (ubluepy_descriptor_obj_t *)descs[k];
+                
+                d->service_handle           = service_handle;
+                d->characteristic_handle    = charac_handle;
+
+                retval = gr_ubluepy_gatt_add_descriptor(d);
+
+                if (!retval) {
+                    mp_raise_OSError(MP_ENOMEM);
+                }
+            }
+        }
+    }
+
+    /**** 2 : start the services in stack *******/
+    if((num_services > 0) &&  (services != NULL)) {
+        retval = gr_ubluepy_gap_start_services(services, num_services);
+
+        if(!retval) {
+            mp_raise_ValueError("start services failed");
+        }
+    }
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_peripheral_start_services_obj, peripheral_start_services);
+
 
 #if MICROPY_PY_UBLUEPY_CENTRAL
 
@@ -456,8 +592,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_peripheral_get_services_obj, peripheral
 STATIC const mp_rom_map_elem_t ubluepy_peripheral_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_withDelegate),           MP_ROM_PTR(&ubluepy_peripheral_with_delegate_obj) },
     { MP_ROM_QSTR(MP_QSTR_setNotificationHandler), MP_ROM_PTR(&ubluepy_peripheral_set_notif_handler_obj) },
-    { MP_ROM_QSTR(MP_QSTR_setConnectionHandler),   MP_ROM_PTR(&ubluepy_peripheral_set_conn_handler_obj) },
-    { MP_ROM_QSTR(MP_QSTR_getServices),            MP_ROM_PTR(&ubluepy_peripheral_get_services_obj) },
+    { MP_ROM_QSTR(MP_QSTR_setConnectionHandler),   MP_ROM_PTR(&ubluepy_peripheral_set_conn_handler_obj) },    
 #if MICROPY_PY_UBLUEPY_CENTRAL
     { MP_ROM_QSTR(MP_QSTR_connect),                MP_ROM_PTR(&ubluepy_peripheral_connect_obj) },
     #if 0
@@ -470,11 +605,18 @@ STATIC const mp_rom_map_elem_t ubluepy_peripheral_locals_dict_table[] = {
         { MP_ROM_QSTR(MP_QSTR_readCharacteristic),     MP_ROM_PTR(&ubluepy_peripheral_read_char_obj) },
     #endif // 0
 #endif // MICROPY_PY_UBLUEPY_CENTRAL
-#if MICROPY_PY_UBLUEPY_PERIPHERAL
-    { MP_ROM_QSTR(MP_QSTR_advertise),              MP_ROM_PTR(&ubluepy_peripheral_advertise_obj) },
-    { MP_ROM_QSTR(MP_QSTR_advertise_stop),         MP_ROM_PTR(&ubluepy_peripheral_advertise_stop_obj) },
+
+#if MICROPY_PY_UBLUEPY_PERIPHERAL || MICROPY_PY_UBLUEPY_BROADCASTER
+    { MP_ROM_QSTR(MP_QSTR_startAdvertise),              MP_ROM_PTR(&ubluepy_peripheral_advertise_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stopAdvertise),               MP_ROM_PTR(&ubluepy_peripheral_advertise_stop_obj) },
+#endif
+
+#if MICROPY_PY_UBLUEPY_PERIPHERAL    
     { MP_ROM_QSTR(MP_QSTR_disconnect),             MP_ROM_PTR(&ubluepy_peripheral_disconnect_obj) },
     { MP_ROM_QSTR(MP_QSTR_addService),             MP_ROM_PTR(&ubluepy_peripheral_add_service_obj) },
+    { MP_ROM_QSTR(MP_QSTR_removeService),          MP_ROM_PTR(&ubluepy_peripheral_remove_service_obj) },    
+    { MP_ROM_QSTR(MP_QSTR_getServices),            MP_ROM_PTR(&ubluepy_peripheral_get_services_obj) },
+    { MP_ROM_QSTR(MP_QSTR_startServices),          MP_ROM_PTR(&ubluepy_peripheral_start_services_obj) },
     #if 0
         { MP_ROM_QSTR(MP_QSTR_addCharacteristic),      MP_ROM_PTR(&ubluepy_peripheral_add_char_obj) },
         { MP_ROM_QSTR(MP_QSTR_addDescriptor),          MP_ROM_PTR(&ubluepy_peripheral_add_desc_obj) },
@@ -483,9 +625,7 @@ STATIC const mp_rom_map_elem_t ubluepy_peripheral_locals_dict_table[] = {
     #endif
 #endif
 
-#if MICROPY_PY_UBLUEPY_BROADCASTER
-    { MP_ROM_QSTR(MP_QSTR_advertise),              MP_ROM_PTR(&ubluepy_peripheral_advertise_obj) },
-#endif
+
 
 #if MICROPY_PY_UBLUEPY_OBSERVER
     // Nothing yet.

@@ -87,11 +87,16 @@ STATIC mp_obj_t ubluepy_characteristic_make_new(const mp_obj_type_t *type, size_
         s->attrs = (uint8_t)args[3].u_int;
     }
 
+    s->handle                   = UBLUEPY_UNASSIGNED_HANDLE;
+    s->service_handle           = UBLUEPY_UNASSIGNED_HANDLE;
+
     // clear pointer to service
     s->p_service = NULL;
 
     // clear pointer to char value data
     s->value_data = NULL;
+
+    s->desc_list = mp_obj_new_list(0, NULL);
 
     return MP_OBJ_FROM_PTR(s);
 }
@@ -195,7 +200,89 @@ STATIC mp_obj_t char_uuid(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_characteristic_get_uuid_obj, char_uuid);
 
 
+/// \method addDescriptor(Descriptor)
+/// Add Descriptor to the Characteristic.
+///
+STATIC mp_obj_t char_add_descriptor(mp_obj_t self_in, mp_obj_t descriptor) {
+    ubluepy_characteristic_obj_t * self   = MP_OBJ_TO_PTR(self_in);
+    ubluepy_descriptor_obj_t     * p_desc = MP_OBJ_TO_PTR(descriptor);
+
+    p_desc->p_charac                = self;
+    p_desc->characteristic_handle   = self->handle;
+
+    mp_obj_list_append(self->desc_list, descriptor);
+
+    return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_char_add_descriptor_obj, char_add_descriptor);
+
+/// \method getDescriptors()
+/// Return list with all descriptors registered in the Service.
+///
+STATIC mp_obj_t char_get_descriptors(mp_obj_t self_in) {
+    ubluepy_characteristic_obj_t * self = MP_OBJ_TO_PTR(self_in);
+
+    return self->desc_list;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_char_get_descriptors_obj, char_get_descriptors);
+
+/// \method getDescriptor(UUID)
+/// Return descriptor with the given UUID.
+///
+STATIC mp_obj_t char_get_descriptor(mp_obj_t self_in, mp_obj_t uuid) {
+    ubluepy_characteristic_obj_t * self   = MP_OBJ_TO_PTR(self_in);
+    ubluepy_uuid_obj_t    * p_uuid = MP_OBJ_TO_PTR(uuid);
+
+    // validate that there is an UUID object passed in as parameter
+    if (!(mp_obj_is_type(uuid, &ubluepy_uuid_type))) {
+        mp_raise_ValueError("Invalid UUID parameter");
+    }
+
+    mp_obj_t * descs     = NULL;
+    mp_uint_t  num_descs = 0;
+    mp_obj_get_array(self->desc_list, &num_descs, &descs);
+
+    for (uint8_t i = 0; i < num_descs; i++) {
+        ubluepy_descriptor_obj_t * p_desc = (ubluepy_descriptor_obj_t *)descs[i];
+
+        bool type_match = p_desc->p_uuid->type == p_uuid->type;
+        bool uuid_match = ((uint16_t)(*(uint16_t *)&p_desc->p_uuid->value[0]) ==
+                           (uint16_t)(*(uint16_t *)&p_uuid->value[0]));
+
+        if (type_match && uuid_match) {
+            return MP_OBJ_FROM_PTR(p_desc);
+        }
+    }
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_char_get_descriptor_obj, char_get_descriptor);
+
+
+/// \method removeDescriptor(Descriptor)
+/// Remove Descriptor from the Characteristic.
+///
+STATIC mp_obj_t char_remove_descriptor(mp_obj_t self_in, mp_obj_t descriptor) {
+    ubluepy_characteristic_obj_t * self     = MP_OBJ_TO_PTR(self_in);
+    ubluepy_descriptor_obj_t    * p_desc    = MP_OBJ_TO_PTR(descriptor);
+
+    if(p_desc != mp_const_none) {
+        p_desc->p_charac = NULL;
+        mp_obj_list_remove(self->desc_list, descriptor);
+    }
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_char_remove_descriptor_obj, char_remove_descriptor);
+
+
 STATIC const mp_rom_map_elem_t ubluepy_characteristic_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_addDescriptor),       MP_ROM_PTR(&ubluepy_char_add_descriptor_obj) },
+    { MP_ROM_QSTR(MP_QSTR_getDescriptor),       MP_ROM_PTR(&ubluepy_char_get_descriptor_obj) },
+    { MP_ROM_QSTR(MP_QSTR_getDescriptors),      MP_ROM_PTR(&ubluepy_char_get_descriptors_obj) },
+    { MP_ROM_QSTR(MP_QSTR_removeDescriptor),    MP_ROM_PTR(&ubluepy_char_remove_descriptor_obj) },
+
     { MP_ROM_QSTR(MP_QSTR_read),                MP_ROM_PTR(&ubluepy_characteristic_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_write),               MP_ROM_PTR(&ubluepy_characteristic_write_obj) },
 #if 0

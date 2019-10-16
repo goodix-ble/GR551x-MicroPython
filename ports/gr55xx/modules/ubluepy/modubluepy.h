@@ -82,6 +82,9 @@ extern const mp_obj_type_t ubluepy_scan_entry_type;
 extern const mp_obj_type_t ubluepy_constants_type;
 extern const mp_obj_type_t ubluepy_constants_ad_types_type;
 
+#define UBLUEPY_UNASSIGNED_HANDLE       (0)
+#define UBLUEPY_INVALID_HANDLE          (0xffff)
+
 typedef enum {
     UBLUEPY_UUID_16_BIT = 1,
     UBLUEPY_UUID_128_BIT
@@ -171,34 +174,39 @@ typedef struct _ubluepy_peripheral_obj_t {
 
 typedef struct _ubluepy_service_obj_t {
     mp_obj_base_t              base;
-    uint16_t                   handle;
+    uint16_t                   handle;              //myself handle
     ubluepy_service_type_t     type;
     ubluepy_uuid_obj_t       * p_uuid;
     ubluepy_peripheral_obj_t * p_periph;
-    mp_obj_t                   char_list;
+    mp_obj_t                   char_list;           //save characteristics belongs to this service
     uint16_t                   start_handle;
     uint16_t                   end_handle;
 } ubluepy_service_obj_t;
 
 typedef struct _ubluepy_characteristic_obj_t {
     mp_obj_base_t           base;
-    uint16_t                handle;
+    uint16_t                handle;                 //myself handle
     ubluepy_uuid_obj_t    * p_uuid;
     uint16_t                service_handle;
     uint16_t                user_desc_handle;
     uint16_t                cccd_handle;
-    uint16_t                sccd_handle;    
+    uint16_t                sccd_handle;
+    mp_obj_t                desc_list;          //save descriptors belongs to this charac
     ubluepy_attr_t          attrs;
     ubluepy_prop_t          props;
     ubluepy_permission_t    perms;
-    ubluepy_service_obj_t * p_service;
+    ubluepy_service_obj_t * p_service;          //belong to which service
     mp_obj_t                value_data;
 } ubluepy_characteristic_obj_t;
 
 typedef struct _ubluepy_descriptor_obj_t {
     mp_obj_base_t           base;
-    uint16_t                handle;
-    ubluepy_uuid_obj_t    * p_uuid;
+    uint16_t                handle;                 //myself handle
+    ubluepy_uuid_obj_t    * p_uuid;    
+    ubluepy_permission_t    perms;
+    uint16_t                service_handle;         //belongs to which service
+    uint16_t                characteristic_handle;  //belongs to which characteristic handle
+    ubluepy_characteristic_obj_t * p_charac;        //belongs to which characteristic ptr
 } ubluepy_descriptor_obj_t;
 
 typedef struct _ubluepy_delegate_obj_t {

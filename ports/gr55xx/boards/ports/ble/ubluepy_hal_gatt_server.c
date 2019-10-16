@@ -245,11 +245,98 @@ bool gr_ubluepy_gatt_add_characteristic(ubluepy_characteristic_obj_t * charac) {
     return ret;
 }
 
+bool gr_ubluepy_gatt_add_descriptor(ubluepy_descriptor_obj_t * p_desc) {
 
+    bool ret        = true;
+    attm_desc_t     attm;
+    attm_desc_128_t attm128;    
+    uint16_t        perm = 0;
 
+    if( xGattTableSize == GR_BLE_GATT_MAX_ENTITIES - 1 )
+    {
+        gr_trace("+++ no memory for characteristic\r\n");
+        ret = false;
+    }
+    else
+    {        
+        ubluepy_prop_t x_properties =   UBLUEPY_PROP_BROADCAST      |
+                                        UBLUEPY_PROP_READ           |
+                                        UBLUEPY_PROP_WRITE_WO_RESP  |
+                                        UBLUEPY_PROP_WRITE          |
+                                        UBLUEPY_PROP_NOTIFY         |
+                                        UBLUEPY_PROP_INDICATE       |
+                                        UBLUEPY_PROP_AUTH_SIGNED_WR |
+                                        UBLUEPY_PROP_EXTENDED_PROP;
 
-bool gr_ubluepy_gatt_add_descriptor(ubluepy_descriptor_obj_t * desc) {
+        gr_transfer_mpy_props_to_goodix_props(x_properties, p_desc->perms, &perm);
 
+        /*check is CCCD ?*/
+        if( ( ( p_desc->p_uuid->type == UBLUEPY_UUID_128_BIT ) && ( p_desc->p_uuid->value_128b[2] == 0x29) && ( p_desc->p_uuid->value_128b[3] == 0x02 )) ||
+            ( ( p_desc->p_uuid->type == UBLUEPY_UUID_16_BIT  ) && ( p_desc->p_uuid->value[1]      == 0x29) && ( p_desc->p_uuid->value[0]      == 0x02 )) ) {
+        
+            attm.perm           = perm;
+            attm.ext_perm       = ATT_VAL_LOC_USER | ATT_UUID_TYPE_SET(UUID_TYPE_16);
+            attm.max_size       = GR_BLE_GATTS_VAR_ATTR_LEN_MAX;
+            attm.uuid           = 0x2902;
+                
+            xGattTable[ xGattTableSize ].uuid_type          = UBLUEPY_UUID_16_BIT;
+            xGattTable[ xGattTableSize ].properties.attm    = attm;
+        } else if(p_desc->p_uuid->type == UBLUEPY_UUID_16_BIT){
+
+            attm.perm           = perm;
+            attm.ext_perm       = ATT_VAL_LOC_USER | ATT_UUID_TYPE_SET(UUID_TYPE_16);
+            attm.max_size       = GR_BLE_GATTS_VAR_ATTR_LEN_MAX;
+            attm.uuid           = (p_desc->p_uuid->value[1] << 8 ) | p_desc->p_uuid->value[0];
+            
+            xGattTable[ xGattTableSize ].uuid_type          = UBLUEPY_UUID_16_BIT;
+            xGattTable[ xGattTableSize ].properties.attm    = attm;
+        } else if(p_desc->p_uuid->type == UBLUEPY_UUID_128_BIT){
+
+            attm128.perm        = perm;
+            attm128.ext_perm    = ATT_VAL_LOC_USER | ATT_UUID_TYPE_SET(UUID_TYPE_128);;
+            attm128.max_size    = GR_BLE_GATTS_VAR_ATTR_LEN_MAX;
+            memcpy(&attm128.uuid[0], &p_desc->p_uuid->value_128b[0], 16);
+            
+            xGattTable[ xGattTableSize ].uuid_type          = UBLUEPY_UUID_128_BIT;
+            xGattTable[ xGattTableSize ].properties.attm128 = attm128;
+        }
+
+        xGattTable[ xGattTableSize ].type = UBLUEPY_ATTR_TYPE_DESCRIPTOR;
+        xGattTable[ xGattTableSize ].parent_handle  = UINT16_MAX;
+        xGattTable[ xGattTableSize ].service_handle = p_desc->service_handle;
+        xGattTable[ xGattTableSize ].raw_properties = 0;
+        xGattTable[ xGattTableSize ].raw_permissions= p_desc->perms;
+
+        for( int16_t i = ( int16_t ) xGattTableSize - 1; i >= 0; --i )
+        {
+            //find parent Characteristic, must find in reverse order
+            if( ( xGattTable[ i ].type == UBLUEPY_ATTR_TYPE_CHARACTERISTIC_VAL ) && ( xGattTable[ i ].parent_handle == p_desc->service_handle ) )
+            {
+                //set Characteristic's handle as descr's parent handle 
+                xGattTable[ xGattTableSize ].parent_handle = xGattTable[ i ].handle;
+                break;
+            }
+        }
+
+        if( xGattTable[ xGattTableSize ].parent_handle == UINT16_MAX )
+        {
+            gr_trace("+++ invalid parent handle for descriptor\r\n");
+            ret = false;
+        }
+        else
+        {
+            //xGattTable[ xGattTableSize ].uuid = ble_uuid;
+            xGattTable[ xGattTableSize ].handle = xGattTableSize == 0 ? GR_BLE_GATT_PORTING_LAYER_START_HANDLE : xGattTable[ xGattTableSize - 1 ].handle + 1; 
+            //prvBTGattValueHandlePush(xGattTable[ xGattTableSize ].handle, GR_BLE_GATTS_VAR_ATTR_LEN_MAX);
+            xGattTableSize += 1;
+            
+            ret = true;
+            gr_trace( "Descriptor Added to HAL table with handle %d   \r\n", xGattTable[ xGattTableSize - 1 ].handle );
+        }
+    
+    }
+
+    return ret;
 }
 
 
@@ -474,7 +561,7 @@ static char * prvFormatUUID(BTGattEntity_t gatt){
         }
         
     } else if(gatt.uuid_type == UBLUEPY_UUID_16_BIT){
-        sprintf(&tbuff[0], "%04x", gatt.properties.attm.uuid);
+        sprintf(&tbuff[0], "0x%04x", gatt.properties.attm.uuid);
     }
     
     return &tbuff[0];
