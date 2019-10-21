@@ -51,7 +51,7 @@ STATIC mp_obj_t ubluepy_characteristic_make_new(const mp_obj_type_t *type, size_
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_uuid,  MP_ARG_REQUIRED| MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_props, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UBLUEPY_PROP_READ | UBLUEPY_PROP_WRITE} },        
-        { MP_QSTR_perms, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UBLUEPY_PERM_NONE} },
+        { MP_QSTR_perms, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UBLUEPY_PERM_READ | UBLUEPY_PERM_WRITE} },
         { MP_QSTR_attrs, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
 

@@ -39,7 +39,7 @@ mp_obj_t ble_obj_enable(void) {
     
     if(!s_gr_ble_common_params_ins.is_ble_initialized){
         gr_ble_stack_init();
-        gr_ubluepy_init();
+        //gr_ubluepy_init();
         gr_trace("enable the ble stack...\r\n");
     } else {
         gr_trace("ble stack enabled already...\r\n");
@@ -68,6 +68,29 @@ mp_obj_t ble_obj_enabled(void) {
     return MP_OBJ_NEW_SMALL_INT(enabled);
 }
 
+/// \method startadv()
+/// test function, start the adv test
+mp_obj_t ble_obj_start_adv(void) {
+    if(s_gr_ble_common_params_ins.is_ble_initialized) {
+        gr_ubluepy_gap_start_adv_test();
+    }
+
+    return mp_const_none;
+}
+
+
+/// \method stopadv()
+/// test function, stop the adv test
+mp_obj_t ble_obj_stop_adv(void) {
+    uint32_t x_err = 0;
+    if(s_gr_ble_gap_params_ins.is_adv_started) {        
+        x_err = ble_gap_adv_stop(0);
+        gr_trace( "+++ ble_obj_stop_adv  ret: %d  ",  x_err);
+    }
+    
+    return mp_const_none;
+}
+
 /// \method address()
 /// Return device address as text string.
 mp_obj_t ble_obj_address(void) {
@@ -94,6 +117,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(ble_obj_enable_obj, ble_obj_enable);
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(ble_obj_disable_obj, ble_obj_disable);
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(ble_obj_enabled_obj, ble_obj_enabled);
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(ble_obj_address_obj, ble_obj_address);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(ble_obj_start_adv_obj, ble_obj_start_adv);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(ble_obj_stop_adv_obj, ble_obj_stop_adv);
 
 STATIC const mp_rom_map_elem_t ble_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ble) },
@@ -101,6 +126,8 @@ STATIC const mp_rom_map_elem_t ble_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_disable),  MP_ROM_PTR(&ble_obj_disable_obj) },
     { MP_ROM_QSTR(MP_QSTR_enabled),  MP_ROM_PTR(&ble_obj_enabled_obj) },
     { MP_ROM_QSTR(MP_QSTR_address),  MP_ROM_PTR(&ble_obj_address_obj) },
+    { MP_ROM_QSTR(MP_QSTR_startadv),  MP_ROM_PTR(&ble_obj_start_adv_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stopadv),  MP_ROM_PTR(&ble_obj_stop_adv_obj) },
 };
 
 

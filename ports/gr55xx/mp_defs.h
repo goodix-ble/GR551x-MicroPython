@@ -15,6 +15,6 @@
 
 #define TRUE                        1u
 #define FALSE                       0u
-#define MP_GR5515_STACK_SIZE        CSTACK_HEAP_SIZE
+#define MP_GR5515_STACK_SIZE        (CSTACK_HEAP_SIZE >> 1)
 
 #endif /*__GR55xx_MP_DEFS_H__*/

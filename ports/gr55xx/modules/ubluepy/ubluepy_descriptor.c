@@ -57,7 +57,7 @@ STATIC mp_obj_t ubluepy_descriptor_make_new(const mp_obj_type_t *type, size_t n_
 
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_uuid, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_perms, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UBLUEPY_PERM_NONE} },
+        { MP_QSTR_perms, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UBLUEPY_PERM_READ | UBLUEPY_PERM_WRITE} },
     };
 
     // parse args

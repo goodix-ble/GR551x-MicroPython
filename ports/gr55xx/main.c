@@ -103,7 +103,7 @@ soft_reset:
     
     // Make MicroPython's stack limit somewhat smaller than full stack available
 #if MICROPY_STACK_CHECK > 0u
-    mp_stack_set_limit(MP_GR5515_STACK_SIZE - 2*1024);
+    mp_stack_set_limit(MP_GR5515_STACK_SIZE - 1024);
 #endif
     mp_gr5515_init();
     
@@ -112,6 +112,12 @@ soft_reset:
 #if MICROPY_ENABLE_GC
     gc_init(heap, heap + sizeof(heap));
 #endif
+
+#if MICROPY_ENABLE_PYSTACK
+    static mp_obj_t pystack[512];
+    mp_pystack_init(pystack, &pystack[MP_ARRAY_SIZE(pystack)]);
+#endif
+
     mp_init();
     mp_obj_list_init(mp_sys_path, 0);
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)

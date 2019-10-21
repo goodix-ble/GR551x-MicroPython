@@ -2,11 +2,17 @@
 #include <alloca.h>
 
 
-#define MICROPY_HEAP_SIZE                   (64*1024)
+#define MICROPY_HEAP_SIZE                   (48*1024)
 #define MICROPY_ENABLE_COMPILER             (1)
-#define MICROPY_STACK_CHECK                 (1)
 #define MICROPY_PY_UTIME_MP_HAL             (1)
 #define MICROPY_USE_INTERNAL_PRINTF         (0)
+
+#define MICROPY_MALLOC_USES_ALLOCATED_SIZE  (1)
+#define MICROPY_MEM_STATS                   (1)
+#define MICROPY_STACK_CHECK                 (1)
+#define MICROPY_ENABLE_PYSTACK              (1)
+#define MICROPY_PY_MICROPYTHON_MEM_INFO     (1)
+#define MICROPY_PY_MICROPYTHON_STACK_USE    (1)
 
 
 /********************************************************************
@@ -105,7 +111,6 @@
 #define MICROPY_COMP_CONST                  (0)
 #define MICROPY_COMP_DOUBLE_TUPLE_ASSIGN    (0)
 #define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN    (0)
-#define MICROPY_MEM_STATS                   (0)
 #define MICROPY_DEBUG_PRINTERS              (0)
 #define MICROPY_ENABLE_GC                   (1)
 #define MICROPY_GC_ALLOC_THRESHOLD          (0)

@@ -243,9 +243,10 @@ SRC_ASM = startup_gr55xx.s
 # set CFLAGS
 # -DNDEBUG - close debug & assert
 CFLAGS += $(INC) $(INC_GR)
-CFLAGS += -O0 -DGR5515_SK 
-CFLAGS += -mfloat-abi=softfp -mfpu=fpv4-sp-d16  -mthumb-interwork  -mthumb -mcpu=cortex-m4
-CFLAGS += -ffunction-sections -fdata-sections -std=gnu99 -ggdb3
+CFLAGS += -DGR5515_SK
+# CFLAGS += -O0 -std=gnu99 -ggdb3
+CFLAGS += -ffunction-sections -fdata-sections 
+CFLAGS += -mfloat-abi=softfp -mfpu=fpv4-sp-d16 -mthumb-interwork -mthumb -mcpu=cortex-m4
 CFLAGS += -DFFCONF_H=\"ports/gr55xx/boards/ports/ffconf.h\"
 
 # set LDFLAGS

@@ -54,12 +54,12 @@ void mp_gr5515_init(void)
     hal_flash_init();
     mp_hal_log_uart_init();
     mp_gr5515_log_assert_init();
-    //nvds_init(NVDS_START_ADDR, NVDS_NUM_SECTOR);
+    nvds_init(NVDS_START_ADDR, NVDS_NUM_SECTOR);
     SYS_SET_BD_ADDR(s_bd_addr);
     
     
     //pwr_mgmt_init(pwr_table);
-    //pwr_mgmt_mode_set(PMR_MGMT_ACTIVE_MODE);
+    pwr_mgmt_mode_set(PMR_MGMT_ACTIVE_MODE);
     
     /* enable sdk log*/
 #if 1

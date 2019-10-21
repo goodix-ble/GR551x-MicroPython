@@ -49,6 +49,8 @@ Q(enable)
 Q(disable)
 Q(enabled)
 Q(address)
+Q(startadv)
+Q(stopadv)
 
 /*********************************** ubluepy module *********************************/
 Q(ubluepy)

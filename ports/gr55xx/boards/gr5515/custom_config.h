@@ -111,13 +111,13 @@
 // <h> ble resource configuration
 //   <o> Support maximum number of BLE profile  <1-64>
 //      <i>CFG_MAX_PRF_NB
-#define CFG_MAX_PRF_NB          (4)           
+#define CFG_MAX_PRF_NB          (10)           
 //   <o> Support maximum number of bonded devices  <1-10>
 //      <i>CFG_MAX_BOND_DEV_NUM
-#define CFG_MAX_BOND_DEV_NUM    (4)          
+#define CFG_MAX_BOND_DEV_NUM    (10)          
 //   <o> Support maximum number of BLE link  <1-10>
 //      <i>CFG_MAX_CONNECTIONS
-#define CFG_MAX_CONNECTIONS     (4)          
+#define CFG_MAX_CONNECTIONS     (10)          
 // </h>
 
 #define GR551xx_C1

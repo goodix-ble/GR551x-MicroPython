@@ -143,6 +143,7 @@ __asm void HardFault_Handler (void)
 
 void HardFault_Handler (void) 
 {
+    __BKPT(0);
    while (1);
 }
 
@@ -156,6 +157,7 @@ void HardFault_Handler (void)
  */
 void MemManage_Handler(void)
 {
+  __BKPT(0);
     while (1);
 }
 
@@ -167,6 +169,7 @@ void MemManage_Handler(void)
  */
 void BusFault_Handler(void)
 {
+  __BKPT(0);
     while (1);
 }
 
@@ -178,6 +181,7 @@ void BusFault_Handler(void)
  */
 void UsageFault_Handler(void)
 {
+  __BKPT(0);
     while (1);
 }
 

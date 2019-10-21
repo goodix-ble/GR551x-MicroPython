@@ -184,7 +184,11 @@ static void app_gap_dev_info_get_cb(uint8_t status, const gap_dev_info_get_t *p_
  */
 static void app_gap_adv_start_cb(uint8_t inst_idx, uint8_t status)
 {
-    gr_trace("Adverting started idx: %d, status: (0X%02X). \r\n", inst_idx, status); 
+
+    gr_trace("+++ Adverting started idx: %d, status: (0X%02X). \r\n", inst_idx, status); 
+    if (BLE_SUCCESS == status){
+        s_gr_ble_gap_params_ins.is_adv_started = true;
+    }
 #if 0    
     static GR_CB_MSG_BASIC_T     s_adv_msg; 
     GR_CALLBACK_MSG_T            * msg = (GR_CALLBACK_MSG_T*) gr_ble_cb_msg_alloc_mem();

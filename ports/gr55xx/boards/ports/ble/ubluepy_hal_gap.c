@@ -29,6 +29,14 @@ bool gr_ubluepy_gap_start_adv(ubluepy_advertise_data_t * p_adv_params) {
     uint8_t *   adv_name        = NULL;
     uint8_t     adv_name_len    = 0;    
     sdk_err_t   s_err           = 0;
+
+    /*************
+     * print 
+     *************/
+    gr_trace("+++ adv param: device - %s, len = %d \r\n", p_adv_params->p_device_name, p_adv_params->device_name_len);
+    gr_trace("+++ adv param: service num- %d \r\n", p_adv_params->num_of_services);
+    gr_trace("+++ adv param: data len - %d \r\n", p_adv_params->data_len);
+    gr_trace("+++ adv param: connectable - %d \r\n", p_adv_params->connectable);
     
     memset(&adv_data[0], 0, GR_BLE_GAP_ADV_DEFAULT_SIZE);
     
@@ -189,8 +197,8 @@ bool gr_ubluepy_gap_start_advertise(ubluepy_advertise_data_t * p_adv_params) {
     //2. start adv
     ret = gr_ubluepy_gap_start_adv(p_adv_params);    
 
-    uint32_t patch_enable_flag_addr = 0x300041b4;
-    printf("+++ patch_enable_flag: 0x%x \r\n", *((uint32_t *)0x300041b4));
+    uint32_t patch_enable_flag_addr = 0x300041d8;
+    printf("+++ patch_enable_flag: 0x%x \r\n", *((uint32_t *)0x300041d8));
 
     
     return ret;
@@ -200,4 +208,21 @@ bool gr_ubluepy_gap_stop_advertise(void) {
     gr_trace("+++ gr_ubluepy_gap_stop_advertise called \r\n");
     
     return true;
+}
+
+
+bool gr_ubluepy_gap_start_adv_test(void) {
+    ubluepy_advertise_data_t  adv_params;
+
+    memset(&adv_params, 0 ,sizeof(ubluepy_advertise_data_t));
+
+    adv_params.p_device_name = "micro_p";
+    adv_params.device_name_len = 7;
+    adv_params.p_services = NULL;
+    adv_params.num_of_services = 0;
+    adv_params.p_data = NULL;
+    adv_params.data_len = 0;
+    adv_params.connectable = true;
+
+    return gr_ubluepy_gap_start_adv(&adv_params);
 }
