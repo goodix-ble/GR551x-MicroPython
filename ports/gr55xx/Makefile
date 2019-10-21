@@ -29,6 +29,7 @@ INC_GR += -I./boards
 INC_GR += -I./boards/gr5515
 INC_GR += -I./boards/gr5515/system
 INC_GR += -I./boards/drivers
+INC_GR += -I./GR551x_SDK_V0_94/build/config
 INC_GR += -I./GR551x_SDK_V0_94/components/boards
 INC_GR += -I./GR551x_SDK_V0_94/components/drivers_ext/gr551x
 INC_GR += -I./GR551x_SDK_V0_94/components/sdk
@@ -294,7 +295,7 @@ all: $(BUILD)/$(TARGET_APP).bin
 
 $(BUILD)/$(TARGET_APP).bin: $(BUILD)/$(TARGET_NAME).bin
 	$(ECHO) "update binary file ..."
-	$(TOOL_PATH)/ble_tools.exe --cfg=./boards/gr5515/custom_config.h --mode=gen --bin=$(BUILD)/$(TARGET_NAME).bin --outdir=$(BUILD) --app_name=$(TARGET_APP)
+	$(TOOL_PATH)/ble_tools.exe --cfg=./GR551x_SDK_V0_94/build/config/custom_config.h --mode=gen --bin=$(BUILD)/$(TARGET_NAME).bin --outdir=$(BUILD) --app_name=$(TARGET_APP)
 	rm -rf $(BUILD)/info.* $(BUILD)/header.* $(BUILD)/*.tmp $(BUILD)/linker.lds $(BUILD)/$(TARGET_NAME).bin
     
 $(BUILD)/$(TARGET_NAME).bin: $(BUILD)/$(TARGET_NAME).axf
