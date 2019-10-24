@@ -240,7 +240,7 @@ static void samples_read_att_cb(uint8_t conn_idx, const gatts_read_req_cb_t *p_p
     {
         case SAMPLES_IDX_TX_CFG:
             cfm.length = sizeof(uint16_t);
-            cfm.value = (uint8_t *)(&s_samples_env[i].tx_ntf_cfg[conn_idx]);
+            cfm.value = (uint8_t *)s_samples_env[i].tx_ntf_cfg[conn_idx];
             break;
         
         default:

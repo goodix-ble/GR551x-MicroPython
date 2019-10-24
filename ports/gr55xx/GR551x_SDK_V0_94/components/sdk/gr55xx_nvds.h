@@ -49,8 +49,10 @@ enum NVDS_STATUS
     NVDS_SPACE_NOT_ENOUGH,      /**< NVDS space is not enough. */
     NVDS_LENGTH_OUT_OF_RANGE,   /**< NVDS length out of range. */
     NVDS_INVALID_PARA,          /**< NVDS invalid params. */
-    NVDS_INVALID_SECTORS,         /**< NVDS invalid sector. */
-    NVDS_COMPACT_FAILED         /**< NVDS failed to compact sectors. */
+    NVDS_INVALID_START_ADDR,    /**< NVDS invalid start address. */
+    NVDS_INVALID_SECTORS,       /**< NVDS invalid sector. */
+    NVDS_COMPACT_FAILED,        /**< NVDS failed to compact sectors. */
+    NVDS_STORAGE_ACCESS_FAILED  /**< NVDS failed to access storage. */
 };
 /** @} */
 

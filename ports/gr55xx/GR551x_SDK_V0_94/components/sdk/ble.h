@@ -127,6 +127,36 @@ void ble_hci_uart_register(uint8_t id, hci_uart_call_t *api);
 
 /**
  *****************************************************************************************
+ * @brief Register BLE idle time notification callback function.
+ *
+ * @param[in] callback:  function pointer of BLE idle time notification function.
+ * @note        param[in] of callback: hs - the idle time of BLE in half slot(312.5us)
+ *                  callback will be called by BLE ISR to notify the rest idle time if some BLE activities were here.
+ *                  It should be realized as simlpe as you can.
+ *                  It's not suitable for ISO activities.
+ *****************************************************************************************
+ */
+void ble_idle_time_notify_cb_register(void (*callback)(uint32_t hs));
+
+/**
+ *****************************************************************************************
+ * @brief Register BLE activity start time notification callback function.
+ *
+ * @param[in] callback:  function pointer of BLE activity start time notification function.
+ * @note        param[in] of callback: e_role - the role of activity, @ref gap_tx_power_role_t for possible roles.
+ *                  param[in] of callback: index: The index parameter is interpreted on role
+ *                    -If role is @ref GAP_ACTIVITY_ROLE_ADV, it's the index of Advertising 
+ *                    -If role is @ref GAP_ACTIVITY_ROLE_CON, it's the index of Connection
+ *                    -For all other roles, it should be ignored
+ *                  callback will be called by BLE ISR when the ble activity starts very time.
+ *                  It should be realized as simlpe as you can.
+ *                  It's not suitable for ISO activities.
+ *****************************************************************************************
+ */
+void ble_activity_start_notify_cb_register(void (*callback)(gap_activity_role_t e_role,  uint8_t index));
+
+/**
+ *****************************************************************************************
  * @brief Change the RF TX mode of LP or ULP.
 
  * @param[in] rf_tx_mode:    Refer to ble_rf_tx_mode_t.

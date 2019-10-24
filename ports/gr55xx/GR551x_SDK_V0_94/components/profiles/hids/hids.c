@@ -108,17 +108,21 @@ static const attm_desc_t hids_attr_tab[HIDS_IDX_NB] =
     //01 HID Information Characteristic - Declaration
     [HIDS_IDX_HID_INFO_CHAR] = {BLE_ATT_DECL_CHARACTERISTIC, READ_PERM_UNSEC, 0, 0},
     //02 HID Information Characteristic - Value
-    [HIDS_IDX_HID_INFO_VAL]  = {BLE_ATT_CHAR_HID_INFO,       READ_PERM(AUTH), ATT_VAL_LOC_STACK, sizeof(hids_hid_info_t)},
+    [HIDS_IDX_HID_INFO_VAL]  = {BLE_ATT_CHAR_HID_INFO,       READ_PERM(AUTH),
+                                ATT_VAL_LOC_STACK, sizeof(hids_hid_info_t)},
 
     //03 HID Control Point Characteristic - Declaration
-    [HIDS_IDX_CTRL_POINT_CHAR] = {BLE_ATT_DECL_CHARACTERISTIC, READ_PERM_UNSEC,      0, 0},
+    [HIDS_IDX_CTRL_POINT_CHAR] = {BLE_ATT_DECL_CHARACTERISTIC, READ_PERM_UNSEC,
+                                  0, 0},
     //04 HID Control Point Characteristic - Value
-    [HIDS_IDX_CTRL_POINT_VAL]  = {BLE_ATT_CHAR_HID_CTNL_PT,    WRITE_CMD_PERM(AUTH), ATT_VAL_LOC_STACK, sizeof(uint8_t)},
+    [HIDS_IDX_CTRL_POINT_VAL]  = {BLE_ATT_CHAR_HID_CTNL_PT,    WRITE_CMD_PERM(AUTH),
+                                  ATT_VAL_LOC_STACK, sizeof(uint8_t)},
 
     //05 Report Map Characteristic - Declaration
     [HIDS_IDX_REPORT_MAP_CHAR] = {BLE_ATT_DECL_CHARACTERISTIC, READ_PERM_UNSEC, 0, 0},
     //06 Report Map Characteristic - Value
-    [HIDS_IDX_REPORT_MAP_VAL]  = {BLE_ATT_CHAR_REPORT_MAP,     READ_PERM(AUTH), ATT_VAL_LOC_STACK, REPORT_MAP_MAX_SIZE},
+    [HIDS_IDX_REPORT_MAP_VAL]  = {BLE_ATT_CHAR_REPORT_MAP,     READ_PERM(AUTH),
+                                  ATT_VAL_LOC_STACK, REPORT_MAP_MAX_SIZE},
 
     //07 Input Report Characteristic - Declaration
     [HIDS_IDX_INPUT_REPORT_CHAR_1] = {BLE_ATT_DECL_CHARACTERISTIC, READ_PERM_UNSEC, 0, 0},
@@ -129,7 +133,8 @@ static const attm_desc_t hids_attr_tab[HIDS_IDX_NB] =
     [HIDS_IDX_INPUT_REPORT_CCCD_1] = {BLE_ATT_DESC_CLIENT_CHAR_CFG, READ_PERM(AUTH) | WRITE_REQ_PERM(AUTH),
                                       ATT_VAL_LOC_USER, 0},
     //10 Input Report Characteristic - Descriptor: Report Reference
-    [HIDS_IDX_INPUT_REPORT_REF_1]  = {BLE_ATT_DESC_REPORT_REF, READ_PERM(AUTH), ATT_VAL_LOC_STACK, sizeof(hids_report_ref_t)},
+    [HIDS_IDX_INPUT_REPORT_REF_1]  = {BLE_ATT_DESC_REPORT_REF, READ_PERM(AUTH),
+                                      ATT_VAL_LOC_STACK, sizeof(hids_report_ref_t)},
 
 #if INPUT_REPORT_COUNT > 1
     //07 Input Report Characteristic - Declaration
@@ -141,7 +146,8 @@ static const attm_desc_t hids_attr_tab[HIDS_IDX_NB] =
     [HIDS_IDX_INPUT_REPORT_CCCD_2] = {BLE_ATT_DESC_CLIENT_CHAR_CFG, READ_PERM(AUTH) | WRITE_REQ_PERM(AUTH),
                                       ATT_VAL_LOC_USER, 0},
     //10 Input Report Characteristic - Descriptor: Report Reference
-    [HIDS_IDX_INPUT_REPORT_REF_2]  = {BLE_ATT_DESC_REPORT_REF, READ_PERM(AUTH), ATT_VAL_LOC_STACK, sizeof(hids_report_ref_t)},
+    [HIDS_IDX_INPUT_REPORT_REF_2]  = {BLE_ATT_DESC_REPORT_REF, READ_PERM(AUTH),
+                                      ATT_VAL_LOC_STACK, sizeof(hids_report_ref_t)},
 #endif
 
     //11 Output Report Characteristic - Declaration
@@ -150,7 +156,8 @@ static const attm_desc_t hids_attr_tab[HIDS_IDX_NB] =
     [HIDS_IDX_OUTPUT_REPORT_VAL]  = {BLE_ATT_CHAR_REPORT, READ_PERM(AUTH) | WRITE_REQ_PERM(AUTH) | WRITE_CMD_PERM(AUTH),
                                      ATT_VAL_LOC_STACK, HIDS_OUTPUT_REPORT_MAX_LEN},
     //13 Output Report Characteristic - Descriptor: Report Reference
-    [HIDS_IDX_OUTPUT_REPORT_REF]  = {BLE_ATT_DESC_REPORT_REF, READ_PERM(AUTH), ATT_VAL_LOC_STACK, sizeof(hids_report_ref_t)},
+    [HIDS_IDX_OUTPUT_REPORT_REF]  = {BLE_ATT_DESC_REPORT_REF, READ_PERM(AUTH),
+                                     ATT_VAL_LOC_STACK, sizeof(hids_report_ref_t)},
 
     //14 Feature Report Characteristic - Declaration
     [HIDS_IDX_FEATURE_REPORT_CHAR] = {BLE_ATT_DECL_CHARACTERISTIC, READ_PERM_UNSEC, 0, 0},
@@ -158,7 +165,8 @@ static const attm_desc_t hids_attr_tab[HIDS_IDX_NB] =
     [HIDS_IDX_FEATURE_REPORT_VAL]  = {BLE_ATT_CHAR_REPORT, READ_PERM(AUTH) | WRITE_REQ_PERM(AUTH),
                                       ATT_VAL_LOC_STACK, HIDS_FEATURE_REPORT_MAX_LEN},
     //16 Feature Report Characteristic - Descriptor: Report Reference
-    [HIDS_IDX_FEATURE_REPORT_REF]  = {BLE_ATT_DESC_REPORT_REF, READ_PERM(AUTH), ATT_VAL_LOC_STACK, sizeof(hids_report_ref_t)},
+    [HIDS_IDX_FEATURE_REPORT_REF]  = {BLE_ATT_DESC_REPORT_REF, READ_PERM(AUTH),
+                                      ATT_VAL_LOC_STACK, sizeof(hids_report_ref_t)},
 
     //17 Boot Keyboard Input Report Characteristic - Declaration
     [HIDS_IDX_BOOT_KB_IN_RPT_CHAR] = {BLE_ATT_DECL_CHARACTERISTIC, READ_PERM_UNSEC, 0, 0},
@@ -220,10 +228,10 @@ static hids_env_t s_hids_env;
  *****************************************************************************************
  */
 static sdk_err_t hids_init(void);
+static sdk_err_t hids_input_report_send(uint16_t length, uint8_t *p_data, uint8_t cccd_idx, uint8_t value_idx);
 static void      hids_write_att_cb(uint8_t conn_idx, const gatts_write_req_cb_t *p_param);
 static void      hids_read_att_cb(uint8_t conn_idx, const gatts_read_req_cb_t *p_param);
 static void      hids_cccd_set_cb(uint8_t conn_idx, uint16_t handle, uint16_t cccd_value);
-static sdk_err_t hids_input_report_send(uint16_t length, uint8_t *p_data, uint8_t cccd_idx, uint8_t value_idx);
 static void      hids_on_connect(uint8_t conn_idx);
 static void      hids_on_disconnect(uint8_t conn_idx, uint8_t reason);
 
@@ -284,7 +292,8 @@ static sdk_err_t hids_init(void)
                                     s_hids_env.hids_init.included_srv.inc_srv_num : MAX_INC_SRVC_NUM;
 
     // Add included services
-    for (uint8_t i = 0; i < gatts_db.inc_srvc_num; i++) {
+    for (uint8_t i = 0; i < gatts_db.inc_srvc_num; i++)
+    {
         gatts_db.inc_srvc_handle[i] = s_hids_env.hids_init.included_srv.inc_srv_hdl_ptr[i];
     }
 
@@ -321,11 +330,12 @@ static sdk_err_t hids_init(void)
             handle = prf_find_handle_by_idx(HIDS_IDX_REPORT_MAP_VAL,
                                             s_hids_env.start_hdl,
                                             (uint8_t *)&s_hids_env.hids_init.char_mask);
-            ble_gatts_value_set(handle, s_hids_env.hids_init.report_map.map_len, 0,
-s_hids_env.hids_init.report_map.p_map);
+            ble_gatts_value_set(handle, s_hids_env.hids_init.report_map.map_len,
+                                0, s_hids_env.hids_init.report_map.p_map);
         }
 
-        // Mandatory to support at least on Report Type if the Report Characteristic is supported.
+        // Mandatory to support at least on Report Type if the Report
+        // Characteristic is supported.
         // Initialize Input Report
         handle = prf_find_handle_by_idx(HIDS_IDX_INPUT_REPORT_REF_1,
                                         s_hids_env.start_hdl,
@@ -362,8 +372,8 @@ s_hids_env.hids_init.report_map.p_map);
                                         (uint8_t *)&s_hids_env.hids_init.char_mask);
         if (PRF_INVALID_HANDLE != handle)
         {
-            ble_gatts_value_set(handle, sizeof(s_hids_env.hids_init.feature_report_ref), 0,
-                                (uint8_t *)&s_hids_env.hids_init.feature_report_ref);
+            ble_gatts_value_set(handle, sizeof(s_hids_env.hids_init.feature_report_ref),
+                                0, (uint8_t *)&s_hids_env.hids_init.feature_report_ref);
         }
 
         // Mandatory for HID Devices supporting Boot Protocol Mode
@@ -453,20 +463,22 @@ static sdk_err_t hids_on_control_point_write(const gatts_write_req_cb_t *p_param
         hids_evt_t evt;
         uint8_t value = p_param->value[0];
 
-        switch (value) {
-        case HIDS_CONTROL_POINT_SUSPEND:
-            evt.evt_type = HIDS_EVT_HOST_SUSP;
-            break;
+        switch (value)
+        {
+            case HIDS_CONTROL_POINT_SUSPEND:
+                evt.evt_type = HIDS_EVT_HOST_SUSP;
+                break;
 
-        case HIDS_CONTROL_POINT_EXIT_SUSPEND:
-            evt.evt_type = HIDS_EVT_HOST_EXIT_SUSP;
-            break;
+            case HIDS_CONTROL_POINT_EXIT_SUSPEND:
+                evt.evt_type = HIDS_EVT_HOST_EXIT_SUSP;
+                break;
 
-        default:
-            return SDK_ERR_APP_ERROR;
+            default:
+                return SDK_ERR_APP_ERROR;
         }
 
-        error_code = ble_gatts_value_set(p_param->handle, sizeof(uint8_t), 0, &value);
+        error_code = ble_gatts_value_set(p_param->handle, sizeof(uint8_t), 0,
+                                         &value);
 
         if (BLE_SUCCESS == error_code && s_hids_env.hids_init.evt_handler)
         {
@@ -513,7 +525,8 @@ static sdk_err_t hids_on_protocol_mode_write(const gatts_write_req_cb_t *p_param
                 return 0x80;
         }
 
-        error_code = ble_gatts_value_set(p_param->handle, sizeof(uint8_t), 0, &value);
+        error_code = ble_gatts_value_set(p_param->handle, sizeof(uint8_t), 0,
+                                         &value);
 
         if (BLE_SUCCESS == error_code && s_hids_env.hids_init.evt_handler)
         {
@@ -535,7 +548,7 @@ static sdk_err_t hids_on_protocol_mode_write(const gatts_write_req_cb_t *p_param
  *****************************************************************************************
  */
 static sdk_err_t hids_on_report_cccd_write(const gatts_write_req_cb_t *p_param,
-                                             uint8_t idx)
+                                           uint8_t idx)
 {
     sdk_err_t error_code = BLE_SUCCESS;
 
@@ -601,7 +614,7 @@ static sdk_err_t hids_on_report_value_write(const gatts_write_req_cb_t *p_param,
     sdk_err_t error_code;
 
     error_code = ble_gatts_value_set(p_param->handle, p_param->length,
-                                                  p_param->offset, p_param->value);
+                                     p_param->offset, p_param->value);
     if (BLE_SUCCESS == error_code && s_hids_env.hids_init.evt_handler)
     {
         hids_evt_t evt;
@@ -655,13 +668,14 @@ static sdk_err_t hids_on_report_value_write(const gatts_write_req_cb_t *p_param,
 static void hids_read_att_cb(uint8_t conn_idx, const gatts_read_req_cb_t *p_param)
 {
     gatts_read_cfm_t cfm;
-    uint8_t          idx = prf_find_idx_by_handle(p_param->handle,
-                                                  s_hids_env.start_hdl, HIDS_IDX_NB,
-                                                  (uint8_t *)&s_hids_env.hids_init.char_mask);
+    uint8_t          idx;
 
     cfm.handle = p_param->handle;
     cfm.status = BLE_SUCCESS;
 
+    idx = prf_find_idx_by_handle(p_param->handle, s_hids_env.start_hdl,
+                                 HIDS_IDX_NB,
+                                 (uint8_t *)&s_hids_env.hids_init.char_mask);
     switch(idx)
     {
         case HIDS_IDX_INPUT_REPORT_CCCD_1:
@@ -704,15 +718,17 @@ static void hids_read_att_cb(uint8_t conn_idx, const gatts_read_req_cb_t *p_para
  * @param[in] p_param:  Pointer to the parameters of the write request.
  *****************************************************************************************
  */
-static void hids_write_att_cb(uint8_t conn_idx, const gatts_write_req_cb_t *p_param)
+static void hids_write_att_cb(uint8_t conn_idx,
+                              const gatts_write_req_cb_t *p_param)
 {
     gatts_write_cfm_t cfm;
-    uint8_t           idx = prf_find_idx_by_handle(p_param->handle,
-                                                   s_hids_env.start_hdl, HIDS_IDX_NB,
-                                                   (uint8_t *)&s_hids_env.hids_init.char_mask);
+    uint8_t           idx;
 
     cfm.handle = p_param->handle;
 
+    idx = prf_find_idx_by_handle(p_param->handle, s_hids_env.start_hdl,
+                                 HIDS_IDX_NB,
+                                 (uint8_t *)&s_hids_env.hids_init.char_mask);
     switch (idx)
     {
         case HIDS_IDX_CTRL_POINT_VAL:
@@ -760,20 +776,19 @@ static void hids_write_att_cb(uint8_t conn_idx, const gatts_write_req_cb_t *p_pa
  * @param[in]: cccd_value: The value of cccd attribute.
  *****************************************************************************************
  */
-static void hids_cccd_set_cb(uint8_t conn_idx, uint16_t handle, uint16_t cccd_value)
+static void hids_cccd_set_cb(uint8_t conn_idx, uint16_t handle,
+                             uint16_t cccd_value)
 {
-    hids_evt_t  evt;
+    hids_evt_t evt;
+    uint8_t    idx;
 
     if (!prf_is_cccd_value_valid(cccd_value))
     {
         return;
     }
 
-    uint8_t idx = prf_find_idx_by_handle(handle, 
-                                         s_hids_env.start_hdl,
-                                         HIDS_IDX_NB,
-                                         (uint8_t *)&s_hids_env.hids_init.char_mask);
-
+    idx = prf_find_idx_by_handle(handle, s_hids_env.start_hdl, HIDS_IDX_NB,
+                                 (uint8_t *)&s_hids_env.hids_init.char_mask);
     switch (idx) 
     {
         case HIDS_IDX_INPUT_REPORT_CCCD_1:
@@ -807,7 +822,8 @@ static void hids_cccd_set_cb(uint8_t conn_idx, uint16_t handle, uint16_t cccd_va
     }
 }
 
-static sdk_err_t hids_input_report_send(uint16_t length, uint8_t *p_data, uint8_t cccd_idx, uint8_t value_idx)
+static sdk_err_t hids_input_report_send(uint16_t length, uint8_t *p_data,
+                                        uint8_t cccd_idx, uint8_t value_idx)
 {
     sdk_err_t   error_code = SDK_ERR_DISCONNECTED;
 
@@ -951,8 +967,8 @@ sdk_err_t   hids_output_report_get(uint16_t length, uint8_t *p_output_report)
     sdk_err_t error_code = BLE_ATT_ERR_INVALID_HANDLE;
     uint16_t  buf_len    = length;
     uint16_t  handle     = prf_find_handle_by_idx(HIDS_IDX_OUTPUT_REPORT_VAL,
-                                                    s_hids_env.start_hdl,
-                                                    (uint8_t*)&s_hids_env.hids_init.char_mask);
+                                                  s_hids_env.start_hdl,
+                                                  (uint8_t*)&s_hids_env.hids_init.char_mask);
 
     if (handle != PRF_INVALID_HANDLE)
     {

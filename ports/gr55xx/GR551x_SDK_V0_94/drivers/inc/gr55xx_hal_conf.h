@@ -78,6 +78,7 @@ extern "C" {
 #define HAL_ISO7816_MODULE_ENABLED      /**< Enable ISO7816 module driver      */
 #define HAL_CGC_MODULE_ENABLED          /**< Enable CGC module driver          */
 #define HAL_RNG_MODULE_ENABLED          /**< Enable RNG module driver          */
+#define HAL_COMP_MODULE_ENABLED         /**< Enable COMP module driver         */
 
 /* ########################### System Configuration ######################### */
 /**
@@ -201,6 +202,10 @@ extern "C" {
 #ifdef HAL_RNG_MODULE_ENABLED
 #include "gr55xx_hal_rng.h"
 #endif /* HAL_RNG_MODULE_ENABLED */
+
+#ifdef HAL_COMP_MODULE_ENABLED
+#include "gr55xx_hal_comp.h"
+#endif /* HAL_COMP_MODULE_ENABLED */
 
 /* Exported macro ------------------------------------------------------------*/
 #ifdef  USE_FULL_ASSERT

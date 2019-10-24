@@ -1,11 +1,11 @@
 /**
- *******************************************************************************
+ *****************************************************************************************
  *
  * @file wechat.c
  *
- * @brief wechat Profile implementation.
+ * @briefWeChat Service API Implementation.
  *
- *******************************************************************************
+ *****************************************************************************************
  * @attention
   #####Copyright (c) 2019 GOODIX
   All rights reserved.
@@ -32,130 +32,129 @@
   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
   POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************
+ *****************************************************************************************
  */
 
 /*
-* INCLUDE FILES
-********************************************************************************
-*/
+ * INCLUDE FILES
+ *****************************************************************************************
+ */
 #include "wechat.h"
 #include "ble_prf_types.h"
 #include "ble_prf_utils.h"
 #include "utility.h"
-#include "epb_MmBp.h"
-#include "ble_wechat_util.h"
-#include "app_timer.h"
-#include "airsync.h"
-
-/*
- * DEFINES
- *******************************************************************************
- */
-#define WECHAT_PRIMARY_SERVICE                                      0xFEE7
-#define BLE_UUID_WECHAT_WRITE_CHARACTERISTICS                       0xFEC7
-#define BLE_UUID_WECHAT_INDICATE_CHARACTERISTICS                    0xFEC8
-#define BLE_UUID_WECHAT_READ_CHARACTERISTICS                        0xFEC9
-#define WECHAT_PEDOMETER_MEASUREMENT                                0xFEA1
-#define WECHAT_TARGET                                               0xFEA2
-#define WECHAT_LOCAL_MAC                                            0xFEC9
 
 /*
  * ENUMERATIONS
- *******************************************************************************
+ *****************************************************************************************
  */
-/**@brief Heart Rate Service Attributes Indexes. */
-enum hrs_attr_idx_t
+/**@brief WeChat Service Attributes Indexes. */
+enum wechat_attr_idx_t
 {
     WECHAT_IDX_SVC,
-    WECHAT_IDX_PEDO_CHAR,
-    WECHAT_IDX_PEDO_VAL,
-    WECHAT_IDX_PEDO_CFG,
+
+    WECHAR_IDX_AIRSYNC_WRITE_CHAR,
+    WECHAR_IDX_AIRSYNC_WRITE_VAL,
+
+    WECHAR_IDX_AIRSYNC_INDICATE_CHAR,
+    WECHAR_IDX_AIRSYNC_INDICATE_VAL,
+    WECHAR_IDX_AIRSYNC_INDICATE_CFG,
+
+    WECHAR_IDX_AIRSYNC_READ_CHAR,
+    WECHAR_IDX_AIRSYNC_READ_VAL,
+
+    WECHAT_IDX_PEDO_MEAS_CHAR,
+    WECHAT_IDX_PEDO_MEAS_VAL,
+    WECHAT_IDX_PEDO_MEAS_CFG,
+
     WECHAT_IDX_TARGET_CHAR,
     WECHAT_IDX_TARGET_VAL,
     WECHAT_IDX_TARGET_CFG,
-    WECHAT_IDX_MAC_CHAR,
-    WECHAT_IDX_MAC_VAL,
-
-    WECHAR_AIRSYNC_WRITE_CHAR,
-    WECHAR_AIRSYNC_WRITE_VAL,
-    WECHAR_AIRSYNC_INDICATE_CHAR,
-    WECHAR_AIRSYNC_INDICATE_VAL,
-    WECHAR_AIRSYNC_INDICATE_CFG,
-    WECHAR_AIRSYNC_READ_CHAR,
-    WECHAR_AIRSYNC_READ_VAL,
 
     WECHAT_IDX_NB,
 };
 
 /*
+ * STRUCTURES
+ *****************************************************************************************
+ */
+/**@brief WeChat service environment variable. */
+struct wechat_env_t
+{
+    wechat_evt_handler_t  evt_handler;                                  /**< WeChat Service event handler. */
+    uint16_t              start_hdl;                                    /**< WeChat Service start handle. */
+    wechat_pedo_meas_t    pedo_meas;                                    /**< WeChat pedometer measurement value. */
+    wechat_pedo_target_t  pedo_target;                                  /**< WeChat pedometer target value. */
+    uint8_t               dev_mac[GAP_ADDR_LEN];                       /**< WeChat device mac address. */
+    uint16_t              airsync_ind_cfg[WECHAT_CONNECTION_MAX];       /**< Indication configuration for Airsync. */
+    uint16_t              pedo_meas_ntf_cfg[WECHAT_CONNECTION_MAX];     /**< Notification configuration for pedometer measurement. */
+    uint16_t              pedo_target_ind_cfg[WECHAT_CONNECTION_MAX];   /**< Indication configuration for pedometer target. */
+};
+
+/*
 * LOCAL FUNCTION DECLARATION
-********************************************************************************
+*****************************************************************************************
 */
-static sdk_err_t wechat_db_init(void);
+static sdk_err_t wechat_init(void);
 static void      wechat_read_att_cb(uint8_t conn_idx, const gatts_read_req_cb_t *p_param);
 static void      wechat_write_att_cb(uint8_t conn_idx, const gatts_write_req_cb_t *p_param);
+static void      wechat_gatts_cmpl_cb(uint8_t conn_idx, uint8_t status, const ble_gatts_ntf_ind_t *p_ntf_ind);
 static void      wechat_cccd_set_cb(uint8_t conn_idx, uint16_t handle, uint16_t cccd_value);
-static void      wechat_app_gatts_cmpl_cb(uint8_t conn_idx, uint8_t status, const ble_gatts_ntf_ind_t *p_ntf_ind);
+static uint8_t   wechat_pedo_meas_encode(uint8_t *p_buff, wechat_pedo_meas_t *p_pedo_meas);
+static uint8_t   wechat_pedo_target_encode(uint8_t *p_buff, wechat_pedo_target_t *p_pedo_target);
+static void      wechat_pedo_target_set(const uint8_t *p_data, uint8_t length);
+static sdk_err_t wechat_indicate_data_chunk(uint8_t conn_idx);
+
 /*
  * LOCAL VARIABLE DEFINITIONS
- *******************************************************************************
+ *****************************************************************************************
  */
-
-static data_info      s_send_data;
-static wechat_env_t  *s_p_wechat_env;
-static CURR_PEDO_t    s_pedo_struct;
-static TARGET_t       s_target_struct;
+static struct wechat_env_t  s_wechat_env;
+static wechat_data_t        s_ind_data;
+static const uint16_t       s_char_mask = 0x3FFF;
 
 static const attm_desc_t wechat_attr_tab[WECHAT_IDX_NB] =
 {
-    // Heart Rate Service Declaration
-    [WECHAT_IDX_SVC]          = {WECHAT_PRIMARY_SERVICE, READ_PERM_UNSEC, 0, 0},
+    [WECHAT_IDX_SVC]          = {BLE_ATT_DECL_PRIMARY_SERVICE, READ_PERM_UNSEC, 0, 0},
 
-    [WECHAT_IDX_PEDO_CHAR]    = {BLE_ATT_DECL_CHARACTERISTIC, READ_PERM_UNSEC, 0, 0},
-    [WECHAT_IDX_PEDO_VAL]     = {WECHAT_PEDOMETER_MEASUREMENT, READ_PERM_UNSEC | NOTIFY_PERM_UNSEC, ATT_VAL_LOC_USER, 10},
-    [WECHAT_IDX_PEDO_CFG]     = {BLE_ATT_DESC_CLIENT_CHAR_CFG, READ_PERM_UNSEC | WRITE_REQ_PERM_UNSEC, 0, 0},
+    [WECHAR_IDX_AIRSYNC_WRITE_CHAR] = {BLE_ATT_DECL_CHARACTERISTIC, READ_PERM_UNSEC, 0, 0},
+    [WECHAR_IDX_AIRSYNC_WRITE_VAL]  = {WECHAT_WRITE_CHAR_UUID, WRITE_REQ_PERM_UNSEC, ATT_VAL_LOC_USER, WECHAT_DATA_LEN},
+
+    [WECHAR_IDX_AIRSYNC_INDICATE_CHAR] = {BLE_ATT_DECL_CHARACTERISTIC, READ_PERM_UNSEC, 0, 0},
+    [WECHAR_IDX_AIRSYNC_INDICATE_VAL]  = {WECHAT_INDICATE_CHAR_UUID, INDICATE_PERM_UNSEC, ATT_VAL_LOC_USER, WECHAT_DATA_LEN},
+    [WECHAR_IDX_AIRSYNC_INDICATE_CFG]  = {BLE_ATT_DESC_CLIENT_CHAR_CFG, READ_PERM_UNSEC | WRITE_REQ_PERM_UNSEC, 0, 0},
+
+    [WECHAR_IDX_AIRSYNC_READ_CHAR] = {BLE_ATT_DECL_CHARACTERISTIC, READ_PERM_UNSEC, 0, 0},
+    [WECHAR_IDX_AIRSYNC_READ_VAL]  = {WECHAT_READ_CHAR_UUID, READ_PERM_UNSEC, ATT_VAL_LOC_USER, 6},
+
+    [WECHAT_IDX_PEDO_MEAS_CHAR]    = {BLE_ATT_DECL_CHARACTERISTIC, READ_PERM_UNSEC, 0, 0},
+    [WECHAT_IDX_PEDO_MEAS_VAL]     = {WECHAT_PEDOMETER_MEASUREMENT, READ_PERM_UNSEC | NOTIFY_PERM_UNSEC, ATT_VAL_LOC_USER, WECHAT_DATA_LEN},
+    [WECHAT_IDX_PEDO_MEAS_CFG]     = {BLE_ATT_DESC_CLIENT_CHAR_CFG, READ_PERM_UNSEC | WRITE_REQ_PERM_UNSEC, 0, 0},
 
     [WECHAT_IDX_TARGET_CHAR]  = {BLE_ATT_DECL_CHARACTERISTIC, READ_PERM_UNSEC, 0, 0},
-    [WECHAT_IDX_TARGET_VAL]   = {WECHAT_TARGET, READ_PERM_UNSEC | INDICATE_PERM_UNSEC | WRITE_REQ_PERM_UNSEC, ATT_VAL_LOC_USER, 10},
+    [WECHAT_IDX_TARGET_VAL]   = {WECHAT_TARGET, READ_PERM_UNSEC | INDICATE_PERM_UNSEC | WRITE_REQ_PERM_UNSEC, ATT_VAL_LOC_USER, WECHAT_DATA_LEN},
     [WECHAT_IDX_TARGET_CFG]   = {BLE_ATT_DESC_CLIENT_CHAR_CFG, READ_PERM_UNSEC | WRITE_REQ_PERM_UNSEC, 0, 0},
-
-    [WECHAT_IDX_MAC_CHAR]     = {BLE_ATT_DECL_CHARACTERISTIC, READ_PERM_UNSEC, 0, 0},
-    [WECHAT_IDX_MAC_VAL]      = {WECHAT_LOCAL_MAC, READ_PERM_UNSEC, ATT_VAL_LOC_USER, 20},
-
-    [WECHAR_AIRSYNC_WRITE_CHAR]    = {BLE_ATT_DECL_CHARACTERISTIC, READ_PERM_UNSEC, 0, 0},
-    [WECHAR_AIRSYNC_WRITE_VAL]     = {BLE_UUID_WECHAT_WRITE_CHARACTERISTICS, WRITE_REQ_PERM_UNSEC, ATT_VAL_LOC_USER, 32},
-
-    [WECHAR_AIRSYNC_INDICATE_CHAR]  = {BLE_ATT_DECL_CHARACTERISTIC, READ_PERM_UNSEC, 0, 0},
-    [WECHAR_AIRSYNC_INDICATE_VAL]   = {BLE_UUID_WECHAT_INDICATE_CHARACTERISTICS, INDICATE_PERM_UNSEC, ATT_VAL_LOC_USER, 128},
-    [WECHAR_AIRSYNC_INDICATE_CFG]   = {BLE_ATT_DESC_CLIENT_CHAR_CFG, READ_PERM_UNSEC | WRITE_REQ_PERM_UNSEC, 0, 0},
-
-    [WECHAR_AIRSYNC_READ_CHAR]    = {BLE_ATT_DECL_CHARACTERISTIC, READ_PERM_UNSEC, 0, 0},
-    [WECHAR_AIRSYNC_READ_VAL]     = {BLE_UUID_WECHAT_READ_CHARACTERISTICS, READ_PERM_UNSEC, ATT_VAL_LOC_USER, 6},
-
-
 };
 
-
-/**@brief wechat interface required by profile manager. */
+/**@brief WeChat interface required by profile manager. */
 static ble_prf_manager_cbs_t wechat_mgr_cbs =
 {
-    (prf_init_func_t)wechat_db_init,
+    (prf_init_func_t)wechat_init,
     NULL,
     NULL
 };
 
-/**@brief wechat GATT server Callbacks. */
+/**@brief WeChat GATT server Callbacks. */
 static gatts_prf_cbs_t wechat_gatts_cbs =
 {
     wechat_read_att_cb,
     wechat_write_att_cb,
     NULL,
-    wechat_app_gatts_cmpl_cb,
+    wechat_gatts_cmpl_cb,
     wechat_cccd_set_cb
 };
 
-/**@brief wechat Information. */
+/**@brief WeChat Information. */
 static const prf_server_info_t wechat_prf_info =
 {
     .max_connection_nb = WECHAT_CONNECTION_MAX,
@@ -167,84 +166,92 @@ static const prf_server_info_t wechat_prf_info =
  * LOCAL FUNCTION DEFINITIONS
  *******************************************************************************
  */
-/**@brief Initialize wechat service, and create DB in ATT.
+/**
+ *****************************************************************************************
+ *@brief Initialize WeChat service and create database in ATT.
  *
- * @return status code to know if service initialization succeed or not.
+ * @return Error code to know if profile initialization succeed or not.
+ *****************************************************************************************
  */
-
-static const uint16_t s_char_mask = 0xFFFF;
-static sdk_err_t wechat_db_init(void)
+static sdk_err_t wechat_init(void)
 {
-    const uint8_t wechat_svc_uuid[] = BLE_ATT_16_TO_16_ARRAY(WECHAT_PRIMARY_SERVICE);
+    // The start hanlde must be set with PRF_INVALID_HANDLE to be allocated automatically by BLE Stack.
+    uint16_t          start_hdl         = PRF_INVALID_HANDLE;
+    const uint8_t     wechat_svc_uuid[] = BLE_ATT_16_TO_16_ARRAY(WECHAT_SERVICE_UUID);
+    sdk_err_t         error_code;
     gatts_create_db_t gatts_db;
-    uint16_t start_hdl = PRF_INVALID_HANDLE; /* The start hanlde is an in/out
-                                              * parameter of ble_gatts_srvc_db_create().
-                                              * It must be set with PRF_INVALID_HANDLE
-                                              * to be allocated automatically by BLE Stack.*/
 
     memset(&gatts_db, 0, sizeof(gatts_db));
 
-    gatts_db.shdl = &start_hdl;
-    gatts_db.uuid = wechat_svc_uuid;
-    gatts_db.attr_tab_cfg  = (uint8_t *)&s_char_mask;
-    gatts_db.max_nb_attr   = WECHAT_IDX_NB;
-    gatts_db.srvc_perm     = 0;
-    gatts_db.attr_tab_type = SERVICE_TABLE_TYPE_16;
+    gatts_db.shdl                 = &start_hdl;
+    gatts_db.uuid                 = wechat_svc_uuid;
+    gatts_db.attr_tab_cfg         = (uint8_t *)&s_char_mask;
+    gatts_db.max_nb_attr          = WECHAT_IDX_NB;
+    gatts_db.srvc_perm            = 0;
+    gatts_db.attr_tab_type        = SERVICE_TABLE_TYPE_16;
     gatts_db.attr_tab.attr_tab_16 = wechat_attr_tab;
 
-    sdk_err_t   status = ble_gatts_srvc_db_create(&gatts_db);
+    error_code = ble_gatts_srvc_db_create(&gatts_db);
 
-    if (SDK_SUCCESS == status)
+    if (SDK_SUCCESS == error_code)
     {
-        s_p_wechat_env->start_hdl = *gatts_db.shdl;
+        s_wechat_env.start_hdl = *gatts_db.shdl;
     }
 
-    return status;
+    return error_code;
 }
 
-
-/**@brief Handles reception of the attribute info request message.
+/**
+ *****************************************************************************************
+ * @brief Handles reception of the attribute info request message.
  *
- * @param[in] conidx  Connection index.
- * @param[in] p_param Pointer to the parameters of the read request.
+ * @param[in] conn_idx: Connection index
+ * @param[in] p_param:  The parameters of the read request.
+ *****************************************************************************************
  */
-static void   wechat_read_att_cb(uint8_t conidx, const gatts_read_req_cb_t *p_param)
+static void wechat_read_att_cb(uint8_t conn_idx, const gatts_read_req_cb_t *p_param)
 {
-    uint8_t handle = p_param->handle;
-    uint8_t tab_index = prf_find_idx_by_handle(handle, s_p_wechat_env->start_hdl,
-                        WECHAT_IDX_NB,
-                        (uint8_t *)&s_char_mask);
-
     gatts_read_cfm_t cfm;
+    uint8_t          encode_data[WECHAT_DATA_LEN];
+    uint8_t          handle = p_param->handle;
+    uint8_t          tab_index = prf_find_idx_by_handle(handle,
+                                                        s_wechat_env.start_hdl,
+                                                        WECHAT_IDX_NB,
+                                                        (uint8_t *)&s_char_mask);
+
     cfm.handle = handle;
     cfm.status = BLE_SUCCESS;
 
     switch (tab_index)
     {
-        case WECHAT_IDX_PEDO_VAL:
-            cfm.length = sizeof (s_target_struct);
-            cfm.value  = (uint8_t *)&s_pedo_struct;
-            s_pedo_struct.flag = 0x1;
-            s_pedo_struct.step_count[0] = 0x6A;
-            s_pedo_struct.step_count[1] = 0x04;
-            s_pedo_struct.step_count[2] = 0x01;
+        case WECHAR_IDX_AIRSYNC_INDICATE_CFG:
+            cfm.length = sizeof(uint16_t);
+            cfm.value  = (uint8_t *)&s_wechat_env.airsync_ind_cfg[conn_idx];
             break;
 
+        case WECHAR_IDX_AIRSYNC_READ_VAL:
+            cfm.length = GAP_ADDR_LEN;
+            cfm.value  = s_wechat_env.dev_mac;
+            break;
+
+        case WECHAT_IDX_PEDO_MEAS_VAL:
+            cfm.length = wechat_pedo_meas_encode(encode_data, &s_wechat_env.pedo_meas);
+            cfm.value  = encode_data;
+            break;                   
+
+        case WECHAT_IDX_PEDO_MEAS_CFG:
+            cfm.length = sizeof(uint16_t);
+            cfm.value  = (uint8_t *)&s_wechat_env.pedo_meas_ntf_cfg[conn_idx];
+            break;
+       
         case WECHAT_IDX_TARGET_VAL:
-            cfm.length = sizeof (s_target_struct);
-            cfm.value  = (uint8_t *)&s_target_struct;
-            s_target_struct.flag = 0x1;
-            s_target_struct.step_count[0] = 0x4a;
-            s_target_struct.step_count[1] = 0x48;
-            s_target_struct.step_count[2] = 0x00;
-            break;
+            cfm.length = wechat_pedo_target_encode(encode_data, &s_wechat_env.pedo_target);
+            cfm.value  = encode_data;
+            break; 
 
-        case WECHAT_IDX_MAC_VAL:
-            cfm.length = 6;
-            cfm.value  = (uint8_t *)s_p_wechat_env->device_mac;
-            break;
-
-        case WECHAR_AIRSYNC_READ_VAL:
+        case WECHAT_IDX_TARGET_CFG:
+            cfm.length = sizeof(uint16_t);
+            cfm.value  = (uint8_t *)&s_wechat_env.pedo_target_ind_cfg[conn_idx];
             break;
 
         default:
@@ -253,102 +260,71 @@ static void   wechat_read_att_cb(uint8_t conidx, const gatts_read_req_cb_t *p_pa
             break;
     }
 
-    ble_gatts_read_cfm(conidx, &cfm);
+    ble_gatts_read_cfm(conn_idx, &cfm);
 }
-
-
-/**@brief Return data up once a second
- *
- */
-//static void pedo_timeout_handler(uint8_t timer_id)
-//{
-//    gatts_noti_ind_t hr_noti;
-//    hr_noti.type   = BLE_GATT_NOTIFICATION;
-//    hr_noti.handle = prf_find_handle_by_idx(WECHAT_IDX_PEDO_VAL,
-//                                            s_p_wechat_env->start_hdl,
-//                                            (uint8_t *)&s_char_mask);
-//    hr_noti.length = 4;
-//    hr_noti.value  = (uint8_t *)&s_pedo_struct;
-
-//    s_pedo_struct.flag = 0x1;
-//    s_pedo_struct.step_count[0] = 0x00;
-//    s_pedo_struct.step_count[1] = 0x10;
-//    s_pedo_struct.step_count[2] = 0x00;
-//    ble_gatts_noti_ind(0, &hr_noti);
-//}
-
-/**@brief Synchronize current target values.
- *
- */
-//static void target_timeout_handler(uint8_t timer_id)
-//{
-//    gatts_noti_ind_t hr_noti;
-//    hr_noti.type   = BLE_GATT_INDICATION;
-//    hr_noti.handle = prf_find_handle_by_idx(WECHAT_IDX_TARGET_VAL,
-//                                            s_p_wechat_env->start_hdl,
-//                                            (uint8_t *)&s_char_mask);
-//    hr_noti.length = 4;
-//    hr_noti.value  = (uint8_t *)&s_target_struct;
-
-//    s_target_struct.flag = 0x1;
-//    s_target_struct.step_count[0] = 0x4a;
-//    s_target_struct.step_count[1] = 0x48;
-//    s_target_struct.step_count[2] = 0x00;
-//    ble_gatts_noti_ind(0, &hr_noti);
-//}
-
 
 /**
  *******************************************************************************
  * @brief Handles reception of the write request.
  *
- * @param[in] conidx  Connection index.
- * @param[in] p_param Pointer to the parameters of the write request.
+ * @param[in] conn_idx:  Connection index.
+ * @param[in] p_param:   Pointer to the parameters of the write request.
  *******************************************************************************
  */
-static void   wechat_write_att_cb(uint8_t conidx, const gatts_write_req_cb_t *p_param)
+static void wechat_write_att_cb(uint8_t conn_idx, const gatts_write_req_cb_t *p_param)
 {
-    uint16_t handle = p_param->handle;
-    uint8_t tab_index = prf_find_idx_by_handle(handle, s_p_wechat_env->start_hdl,
-                        WECHAT_IDX_NB,
-                        (uint8_t *)&s_char_mask);
-    uint16_t   cccd_value;
-    gatts_write_cfm_t cfm;
+    uint16_t             handle     = p_param->handle;
+    uint16_t             cccd_value = 0;
+    uint8_t              tab_index  = 0;
+    wechat_evt_t         event;
+    gatts_write_cfm_t    cfm;
+
+    tab_index  = prf_find_idx_by_handle(handle, 
+                                        s_wechat_env.start_hdl,
+                                        WECHAT_IDX_NB,
+                                        (uint8_t *)&s_char_mask);
     cfm.handle = handle;
+    cfm.status = BLE_SUCCESS;
+
+    event.conn_idx = conn_idx;
+    event.evt_type = WECHAT_EVT_INVALID;
 
     switch (tab_index)
     {
-        /* for pedometer data notify configuration */
-        case WECHAT_IDX_PEDO_CFG:
-            cccd_value = le16toh(&p_param->value[0]);
-
-            s_p_wechat_env->pedo_ntf_cfg = cccd_value;
-            cfm.status = BLE_SUCCESS;
+        case WECHAR_IDX_AIRSYNC_WRITE_VAL:
+            event.evt_type          = WECHAT_EVT_AIRSYNC_DATA_RECIEVE;
+            event.param.data.p_data = p_param->value;
+            event.param.data.length = p_param->length;
             break;
 
-        /* for pedometer target notify configuration */
-        case WECHAT_IDX_TARGET_CFG:
-            cccd_value = le16toh(&p_param->value[0]);
-
-            s_p_wechat_env->target_ntf_cfg = cccd_value;
-            cfm.status = BLE_SUCCESS;
+        case WECHAR_IDX_AIRSYNC_INDICATE_CFG:
+            cccd_value     = le16toh(&p_param->value[0]);
+            event.evt_type = (PRF_CLI_START_IND == cccd_value ?\
+                              WECHAT_EVT_AIRSYNC_IND_ENABLE :\
+                              WECHAT_EVT_AIRSYNC_IND_DISABLE);
+            s_wechat_env.airsync_ind_cfg[conn_idx] = cccd_value;
             break;
 
-        /* for pedometer target value */
+        case WECHAT_IDX_PEDO_MEAS_CFG:
+            cccd_value     = le16toh(&p_param->value[0]);
+            event.evt_type = (PRF_CLI_START_NTF == cccd_value ?\
+                              WECHAT_EVT_PEDO_MEAS_NTF_ENABLE :\
+                              WECHAT_EVT_PEDO_MEAS_NTF_DISABLE);
+            s_wechat_env.pedo_meas_ntf_cfg[conn_idx] = cccd_value;
+            break;  
+     
         case WECHAT_IDX_TARGET_VAL:
-            cfm.status = BLE_SUCCESS;
+            wechat_pedo_target_set(p_param->value, p_param->length);
+            event.evt_type          = WECHAT_EVT_PEDO_TARGET_UPDATE;
+            memcpy(&event.param.pedo_target, &s_wechat_env.pedo_target, sizeof(wechat_pedo_target_t));
             break;
 
-        /* for AIRSYNC indicate configuration */
-        case WECHAR_AIRSYNC_INDICATE_CFG:
-            cfm.status = BLE_SUCCESS;
-            set_next_step(WECHAT_AIRSYNC_REQ_AUTH);
-            break;
-
-        /* for AIRSYNC write value */
-        case WECHAR_AIRSYNC_WRITE_VAL:
-            cfm.status = BLE_SUCCESS;
-            ble_wechat_process_received_data(p_param->value, p_param->length);
+        case WECHAT_IDX_TARGET_CFG:
+            cccd_value     = le16toh(&p_param->value[0]);
+            event.evt_type = (PRF_CLI_START_IND == cccd_value ?\
+                              WECHAT_EVT_PEDO_TARGET_IND_ENABLE :\
+                              WECHAT_EVT_PEDO_TARGET_IND_DISABLE);
+            s_wechat_env.pedo_target_ind_cfg[conn_idx] = cccd_value;
             break;
 
         default:
@@ -356,7 +332,12 @@ static void   wechat_write_att_cb(uint8_t conidx, const gatts_write_req_cb_t *p_
             break;
     }
 
-    ble_gatts_write_cfm(conidx, &cfm);
+    ble_gatts_write_cfm(conn_idx, &cfm);
+
+    if (WECHAT_EVT_INVALID != event.evt_type &&  s_wechat_env.evt_handler)
+    {
+        s_wechat_env.evt_handler(&event);
+    }
 }
 
 /**
@@ -370,101 +351,299 @@ static void   wechat_write_att_cb(uint8_t conidx, const gatts_write_req_cb_t *p_
  */
 static void wechat_cccd_set_cb(uint8_t conn_idx, uint16_t handle, uint16_t cccd_value)
 {
+    uint8_t      tab_index = 0;
+    wechat_evt_t event;
+
+    event.conn_idx = conn_idx;
+    event.evt_type = WECHAT_EVT_INVALID;
+
     if (!prf_is_cccd_value_valid(cccd_value))
     {
         return;
     }
 
-    uint8_t tab_index = prf_find_idx_by_handle(handle, s_p_wechat_env->start_hdl,
-                        WECHAT_IDX_NB,
-                        (uint8_t *)&s_char_mask);
+    tab_index = prf_find_idx_by_handle(handle, s_wechat_env.start_hdl,
+                                       WECHAT_IDX_NB,
+                                       (uint8_t *)&s_char_mask);
 
     switch (tab_index)
     {
-        /* for pedometer data notify configuration */
-        case WECHAT_IDX_PEDO_CFG:
-            s_p_wechat_env->pedo_ntf_cfg = cccd_value;
+        case WECHAR_IDX_AIRSYNC_INDICATE_CFG:
+            event.evt_type = (PRF_CLI_START_IND == cccd_value ?\
+                              WECHAT_EVT_AIRSYNC_IND_ENABLE :\
+                              WECHAT_EVT_AIRSYNC_IND_DISABLE);
+            s_wechat_env.airsync_ind_cfg[conn_idx] = cccd_value;
             break;
 
-        /* for pedometer target notify configuration */
+        case WECHAT_IDX_PEDO_MEAS_CFG:
+            event.evt_type = (PRF_CLI_START_NTF == cccd_value ?\
+                              WECHAT_EVT_PEDO_MEAS_NTF_ENABLE :\
+                              WECHAT_EVT_PEDO_MEAS_NTF_DISABLE);
+            s_wechat_env.pedo_meas_ntf_cfg[conn_idx] = cccd_value;
+            break;  
+
         case WECHAT_IDX_TARGET_CFG:
-            s_p_wechat_env->target_ntf_cfg = cccd_value;
+            event.evt_type = (PRF_CLI_START_IND == cccd_value ?\
+                              WECHAT_EVT_PEDO_TARGET_IND_ENABLE :\
+                              WECHAT_EVT_PEDO_TARGET_IND_DISABLE);
+            s_wechat_env.pedo_target_ind_cfg[conn_idx] = cccd_value;
             break;
 
         default:
             break;
     }
-}
 
-static int ble_wechat_indicate_data_chunk(void)
-{
-    uint16_t chunk_len = 0;
-    chunk_len = s_send_data.len - s_send_data.offset;
-    chunk_len = chunk_len > BLE_WECHAT_MAX_DATA_LEN ? BLE_WECHAT_MAX_DATA_LEN : chunk_len;
-
-    if (chunk_len == 0)
+    if (WECHAT_EVT_INVALID != event.evt_type &&  s_wechat_env.evt_handler)
     {
-        s_send_data.data = NULL;
-        s_send_data.len = 0;
-        s_send_data.offset = 0;
-        return 0;
+        s_wechat_env.evt_handler(&event);
     }
-
-    gatts_noti_ind_t wec_noti;
-    wec_noti.type   = BLE_GATT_INDICATION;
-    wec_noti.handle = prf_find_handle_by_idx(WECHAR_AIRSYNC_INDICATE_VAL,
-                                             s_p_wechat_env->start_hdl,
-                                             (uint8_t *)&s_char_mask);
-    wec_noti.length = chunk_len;
-    wec_noti.value  = s_send_data.data + s_send_data.offset;
-    ble_gatts_noti_ind(0, &wec_noti);
-
-    s_send_data.offset += chunk_len;
-    return 1;
 }
 
 /**
- *******************************************************************************
- * @brief The interface sends several subpackages that are split up to the
- *        client in succession.
+ *****************************************************************************************
+ * @brief Handles reception of the complete event.
  *
- * @param[in] p_data : Pointer to the parameters of the write request.
- * @param[in] length : data length
- *
- * @return If the request was consumed or not.
- *******************************************************************************
+ * @param[in] conn_idx: Connection index.
+ * @param[in] p_param:  Pointer to the parameters of the complete event.
+ *****************************************************************************************
  */
-int ble_wechat_indicate_data(uint8_t *p_data, uint32_t length)
+static void wechat_gatts_cmpl_cb(uint8_t conn_idx, uint8_t status, const ble_gatts_ntf_ind_t *p_ntf_ind)
 {
-    if (p_data == NULL || length == 0)
-    {
-        return 0;
-    }
+    uint8_t tab_index;
 
-    s_send_data.data = p_data;
-    s_send_data.len = length;
-    s_send_data.offset = 0;
-    return (ble_wechat_indicate_data_chunk());
-}
+    tab_index = prf_find_idx_by_handle(p_ntf_ind->handle, s_wechat_env.start_hdl,
+                                       WECHAT_IDX_NB,
+                                       (uint8_t *)&s_char_mask);
 
-static void wechat_app_gatts_cmpl_cb(uint8_t conidx, uint8_t status,
-                                    const ble_gatts_ntf_ind_t *p_ntf_ind)
-{
-    if (p_ntf_ind->type == BLE_GATT_INDICATION)
+    if (WECHAR_IDX_AIRSYNC_INDICATE_VAL == tab_index)
     {
-        ble_wechat_indicate_data_chunk();
+        wechat_indicate_data_chunk(conn_idx);
     }
 }
 
-sdk_err_t wechat_service_add(wechat_env_t *p_wecchat_env)
+/**
+ *****************************************************************************************
+ * @brief Encode WeChat pedometer measurement value.
+ *
+ * @param[in] p_buff:       Pointer to encode buffer.
+ * @param[in] p_pedo_meas:  Pointer to pedometer measurement value.
+ *
+ * @return Length of encoded.
+ *****************************************************************************************
+ */
+static uint8_t wechat_pedo_meas_encode(uint8_t *p_buff, wechat_pedo_meas_t *p_pedo_meas)
 {
-    if (NULL == p_wecchat_env)
+    uint8_t encode_length = 0;
+
+    p_buff[encode_length++] = p_pedo_meas->flag;
+
+    // Encode step count
+    if (p_pedo_meas->flag & WECHAT_PEDO_FLAG_STEP_COUNT_BIT)
+    {
+        p_buff[encode_length++] = p_pedo_meas->step_count[0];
+        p_buff[encode_length++] = p_pedo_meas->step_count[1];
+        p_buff[encode_length++] = p_pedo_meas->step_count[2];
+    }
+
+    // Encode step distance
+    if (p_pedo_meas->flag & WECHAT_PEDO_FLAG_STEP_DISTENCE_BIT)
+    {
+        p_buff[encode_length++] = p_pedo_meas->step_dist[0];
+        p_buff[encode_length++] = p_pedo_meas->step_dist[1];
+        p_buff[encode_length++] = p_pedo_meas->step_dist[2];
+    }
+
+    // Encode step calorie
+    if (p_pedo_meas->flag & WECHAT_PEDO_FLAG_STEP_CALORIE_BIT)
+    {
+        p_buff[encode_length++] = p_pedo_meas->step_calorie[0];
+        p_buff[encode_length++] = p_pedo_meas->step_calorie[1];
+        p_buff[encode_length++] = p_pedo_meas->step_calorie[2];
+    }
+
+    return encode_length;
+}
+
+/**
+ *****************************************************************************************
+ * @brief Encode WeChat pedometer target value.
+ *
+ * @param[in] p_buff:       Pointer to encode buffer.
+ * @param[in] p_pedo_meas:  Pointer to pedometer target value.
+ *
+ * @return Length of encoded.
+ *****************************************************************************************
+ */
+static uint8_t wechat_pedo_target_encode(uint8_t *p_buff, wechat_pedo_target_t *p_pedo_target)
+{
+    uint8_t encode_length = 0;
+
+    if (p_pedo_target->flag & WECHAT_PEDO_FLAG_STEP_COUNT_BIT)
+    {
+        p_buff[encode_length++] = p_pedo_target->flag;
+        p_buff[encode_length++] = p_pedo_target->step_count[0];
+        p_buff[encode_length++] = p_pedo_target->step_count[1];
+        p_buff[encode_length++] = p_pedo_target->step_count[2];
+    }
+
+    return encode_length;
+}
+
+/**
+ *****************************************************************************************
+ * @brief Set wechat pedometer target value.
+ *
+ * @param[in] p_data:  Pointer to data.
+ * @param[in] length:  Length to data.
+ *****************************************************************************************
+ */
+static void wechat_pedo_target_set(const uint8_t *p_data, uint8_t length)
+{
+    if (p_data[0] & WECHAT_PEDO_FLAG_STEP_COUNT_BIT && WECHAT_PEDO_TARGET_VAL_LEN == length)
+    {
+        s_wechat_env.pedo_target.flag          = WECHAT_PEDO_FLAG_STEP_COUNT_BIT;
+        s_wechat_env.pedo_target.step_count[0] = p_data[1];
+        s_wechat_env.pedo_target.step_count[1] = p_data[2];
+        s_wechat_env.pedo_target.step_count[2] = p_data[3];
+    }
+    else
+    {
+        return;
+    }
+}
+
+/**
+ *****************************************************************************************
+ * @brief Handle WeChat Airsync data indicate.
+ *
+ * @param[in] conn_idx: Connection index.
+ *
+ * @return Result of handle.
+ *****************************************************************************************
+ */
+static sdk_err_t wechat_indicate_data_chunk(uint8_t conn_idx)
+{
+    uint16_t         chunk_len = 0;
+    gatts_noti_ind_t wechat_ind;
+    sdk_err_t        error_code;
+
+    chunk_len = s_ind_data.length - s_ind_data.offset;
+    chunk_len = chunk_len > WECHAT_DATA_LEN ? WECHAT_DATA_LEN : chunk_len;
+
+    if (0 == chunk_len)
+    {
+        s_ind_data.p_data = NULL;
+        s_ind_data.length = 0;
+        s_ind_data.offset = 0;
+
+        return SDK_SUCCESS;
+    }
+
+    wechat_ind.type   = BLE_GATT_INDICATION;
+    wechat_ind.handle = prf_find_handle_by_idx(WECHAR_IDX_AIRSYNC_INDICATE_VAL,
+                                               s_wechat_env.start_hdl,
+                                               (uint8_t *)&s_char_mask);
+    wechat_ind.length = chunk_len;
+    wechat_ind.value  = (uint8_t *)s_ind_data.p_data + s_ind_data.offset;
+
+    error_code = ble_gatts_noti_ind(conn_idx, &wechat_ind);
+
+    if (SDK_SUCCESS == error_code)
+    {
+        s_ind_data.offset += chunk_len;
+    }
+
+    return error_code;
+}
+
+/*
+ * GLOBAL FUNCTION DEFINITIONS
+ *****************************************************************************************
+ */
+sdk_err_t wechat_service_init(wechat_init_t *p_wechat_init)
+{
+    if (NULL == p_wechat_init)
     {
         return SDK_ERR_POINTER_NULL;
     }
 
-    s_p_wechat_env = p_wecchat_env;
+    s_wechat_env.evt_handler               = p_wechat_init->evt_handler;
+    s_wechat_env.pedo_meas.flag            = WECHAT_PEDO_FLAG_ALL_SUP_BIT;
+    s_wechat_env.pedo_target.flag          = WECHAT_PEDO_FLAG_STEP_COUNT_BIT;
+    s_wechat_env.pedo_target.step_count[0] = LO_UINT32_T(p_wechat_init->step_count_target);
+    s_wechat_env.pedo_target.step_count[1] = L2_UINT32_T(p_wechat_init->step_count_target);
+    s_wechat_env.pedo_target.step_count[2] = L3_UINT32_T(p_wechat_init->step_count_target);
+    memcpy(s_wechat_env.dev_mac, p_wechat_init->p_dev_mac, GAP_ADDR_LEN);
 
     return ble_server_prf_add(&wechat_prf_info);
+}
+
+sdk_err_t wechat_airsync_data_indicate(uint8_t conn_idx, uint8_t *p_data, uint16_t length)
+{
+    if (NULL == p_data || 0 == length)
+    {
+        return SDK_ERR_INVALID_PARAM;
+    }
+
+    s_ind_data.p_data = p_data;
+    s_ind_data.length = length;
+    s_ind_data.offset = 0;
+
+    return wechat_indicate_data_chunk(conn_idx);
+}
+
+sdk_err_t wechat_pedo_measurement_send(uint8_t conn_idx, wechat_pedo_meas_t *p_pedo_meas)
+{
+    gatts_noti_ind_t pedo_meas_ntf;
+    uint8_t          encode_data[WECHAT_DATA_LEN];
+    uint8_t          encode_len = 0;
+    sdk_err_t        error_code = SDK_ERR_NTF_DISABLED;
+
+    if (NULL == p_pedo_meas)
+    {
+        return SDK_ERR_POINTER_NULL;
+    }
+
+    memcpy(&s_wechat_env.pedo_meas, p_pedo_meas, sizeof(wechat_pedo_meas_t));
+
+    encode_len = wechat_pedo_meas_encode(encode_data, &s_wechat_env.pedo_meas);
+
+    if (s_wechat_env.pedo_meas_ntf_cfg[conn_idx] & PRF_CLI_START_NTF)
+    {
+        pedo_meas_ntf.type   = BLE_GATT_NOTIFICATION;
+        pedo_meas_ntf.handle = prf_find_handle_by_idx(WECHAT_IDX_PEDO_MEAS_VAL,
+                                                      s_wechat_env.start_hdl,
+                                                      (uint8_t *)&s_char_mask);
+        pedo_meas_ntf.length = encode_len;
+        pedo_meas_ntf.value  = encode_data;
+
+        error_code  = ble_gatts_noti_ind(conn_idx, &pedo_meas_ntf);
+    }
+
+    return error_code;
+}
+
+sdk_err_t wechat_pedo_target_send(uint8_t conn_idx)
+{
+    gatts_noti_ind_t pedo_target_ind;
+    uint8_t          encode_data[WECHAT_DATA_LEN];
+    uint8_t          encode_len = 0;
+    sdk_err_t        error_code = SDK_ERR_IND_DISABLED;
+
+    encode_len = wechat_pedo_target_encode(encode_data, &s_wechat_env.pedo_target);
+
+    if (s_wechat_env.pedo_target_ind_cfg[conn_idx] & PRF_CLI_START_IND)
+    {
+        pedo_target_ind.type   = BLE_GATT_INDICATION;
+        pedo_target_ind.handle = prf_find_handle_by_idx(WECHAT_IDX_TARGET_VAL,
+                                                        s_wechat_env.start_hdl,
+                                                        (uint8_t *)&s_char_mask);
+        pedo_target_ind.length = encode_len;
+        pedo_target_ind.value  = encode_data;
+
+        error_code  = ble_gatts_noti_ind(conn_idx, &pedo_target_ind);
+    }
+
+    return error_code;
 }
 

@@ -47,6 +47,10 @@
 #define GAP_ADDR_LEN             0x06 /**< The length of address. */
 #define GAP_INVALID_CONN_INDEX   0xFF /**< Invalid connection index. */
 
+#if defined(GR551xx_D0)
+#define GAP_MIN_IQ_SAMPLE_NUM    0x09
+#define GAP_MAX_IQ_SAMPLE_NUM    0x52
+#endif
 
 
 /**@defgroup BLE_GAP_ADDR_TYPES GAP Address types
@@ -148,6 +152,41 @@ typedef enum
     GAP_OPCODE_LEPSM_UNREGISTER,    /**< LEPSM unregister operation. */
 } gap_psm_manager_op_id_t;
 
+
+#if defined(GR551xx_D0)
+
+/**
+ * @brief Type of constant tone extension.
+ */
+typedef enum
+{
+    GAP_CET_AOA,      /**< Allow AoA Constant Tone Extension Response. */
+    GAP_CET_AOD_1US,  /**< Allow AoD Constant Tone Extension Response with 1 ¦Ìs slots. */
+    GAP_CET_AOD_2US   /**< Allow AoD Constant Tone Extension Response with 2 ¦Ìs slots. */
+} gap_cte_type_t;
+
+/**
+ * @brief Type of switching and sampling slots 
+ */
+typedef enum
+{
+    GAP_SLOT_1US = 0x01,      /**< Switching and sampling slots are 1us each. */
+    GAP_SLOT_2US,      /**< Switching and sampling slots are 2us each. */
+} gap_switching_sampling_type_t;
+
+/**
+ * @brief Status of IQ report packet
+ */
+typedef enum
+{
+    GAP_CRC_OK,                      /**< CRC was correct. */
+    GAP_CRC_ERR1,                    /**< CRC was incorrect and the Length and CTETime fields of the packet were used to determine sampling points. */
+    GAP_CRC_ERR2,                    /**< CRC was incorrect but the Controller has determined the position and length of the Constant Tone Extension in some other way. */
+    GAP_INSUFFI_RESOURCE = 0xFF     /**< Insufficient resources to sample (data_channel_idx, cte_type, and slot_dur invalid). */
+} gap_iq_report_status_t;
+
+#endif
+
 /** @} */
 
 
@@ -242,6 +281,17 @@ typedef struct
     uint16_t rx_path_comp; /**< RF RX path compensation. */
 } gap_dev_rf_path_comp_ind_t;
 
+#if defined(GR551xx_D0)
+/** @brief antenna information. */
+typedef struct
+{
+    uint8_t     supp_switching_sampl_rates;  /**< Supported switching sampling rates bit field (@see enum gap_switch_sampling_rate). */
+    uint8_t     antennae_num;                /**< Number of antennae, range 0x01 to 0x4B. */
+    uint8_t     max_switching_pattern_len;   /**< Max length of switching pattern (number of antenna IDs in the pattern), range 0x02 to 0x4B. */
+    uint8_t     max_cte_len;                 /**< Max CTE length, range 0x02 to 0x14. */
+} gap_antenna_inf_t;
+#endif
+
 /** @brief Device info. */
 typedef union
 {
@@ -254,6 +304,10 @@ typedef union
     gap_max_adv_data_len_ind_t  max_adv_data_len;       /**< Maximum advertising data length info. */
     gap_dev_tx_power_t          dev_tx_power;           /**< Device TX power info. */
     gap_dev_rf_path_comp_ind_t  dev_rf_path_comp;       /**< RF path compensation values. */
+
+    #if defined(GR551xx_D0)
+    gap_antenna_inf_t           dev_antenna_inf;        /**< Device antenna information. */
+    #endif
 } gap_dev_info_t;
 
 /** @brief Get device info operation struct. */
@@ -278,13 +332,10 @@ typedef struct
     uint8_t      adv_sid;       /**< Advertising SID. */
     uint8_t      clk_acc;       /**< Advertiser clock accuracy. @see enum gapm_clk_acc. */
     gap_bdaddr_t bd_addr;       /**< Advertiser address. */
-#if defined(GR551xx_C0) || defined(GR551xx_C2)
     uint16_t sync_hdl;          /**< Sync handle. */
-#endif
 
 #if defined(GR551xx_D0)
-    uint16_t sync_hdl;    /**< Sync handle. */
-    uint16_t serv_data;   /**< Service data. */
+    uint16_t serv_data;         /**< Service data. */
 #endif
 
 } gap_sync_established_ind_t;
@@ -311,18 +362,18 @@ typedef struct
 /** @brief  Name of peer device indication. */
 typedef struct
 {
-    gap_addr_t  peer_addr;              /**<  Peer device bd address. */
-    uint8_t     addr_type;              /**<  Peer device address type. */
-    uint8_t     name_len;               /**<  Peer device name length. */
-    uint8_t     name[__ARRAY_EMPTY];    /**<  Peer device name. */
+    gap_addr_t  peer_addr;              /**< Peer device bd address. */
+    uint8_t     addr_type;              /**< Peer device address type. */
+    uint8_t     name_len;               /**< Peer device name length. */
+    uint8_t     name[__ARRAY_EMPTY];    /**< Peer device name. */
 } gap_peer_name_ind_t;
 
 /** @brief Connection parameter used to update connection parameters. */
 typedef struct
 {
-    uint16_t interval; /**<  Connection interval. Range: 0x0006 to 0x0C80. Unit: 1.25 ms. Time range: 7.5 ms to 4 s. */
-    uint16_t latency;  /**<  Latency for the connection in number of connection events. Range: 0x0000 to 0x01F3. */
-    uint16_t time_out; /**< Supervision timeout for the LE link. Range: 0x000A to 0x0C80. Unit: 10 ms. Time range: 100 ms to 32 s. */
+    uint16_t interval;           /**< Connection interval. Range: 0x0006 to 0x0C80. Unit: 1.25 ms. Time range: 7.5 ms to 4 s. */
+    uint16_t latency;            /**< Latency for the connection in number of connection events. Range: 0x0000 to 0x01F3. */
+    uint16_t sup_timeout;        /**< Supervision timeout for the LE link. Range: 0x000A to 0x0C80. Unit: 10 ms. Time range: 100 ms to 32 s. */
 } gap_conn_update_cmp_t;
 
 /** @brief The parameter of connection. */
@@ -346,7 +397,7 @@ typedef  struct
                                   Range: 0x0006 to 0x0C80, unit: 1.25 ms, time range: 7.5 ms to 4 s.*/
      uint16_t slave_latency; /**< Slave latency for the connection in number of connection events. Range: 0x0000 to 0x01F3. */
      uint16_t sup_timeout;   /**< Supervision timeout for the LE link. range: 0x000A to 0x0C80, unit: 10 ms, Time range: 100 ms to 32 s. */
-     uint16_t ce_len;/**< The length of connection event needed for this LE connection.  Range: 0x0002 to 0xFFFF , Unit:0.625 ms, Time Range: 1.25 ms to 40.9 s. */
+     uint16_t ce_len;        /**< The length of connection event needed for this LE connection.  Range: 0x0002 to 0xFFFF , Unit:0.625 ms, Time Range: 1.25 ms to 40.9 s. */
 } gap_conn_update_param_t;
 
 /** @brief  Connection complete info. */
@@ -453,13 +504,72 @@ typedef struct
     uint16_t max_rx_time;   /**<  The maximum time that the local Controller will take to RX. */
 } gap_le_pkt_size_ind_t;
 
+/**@brief The Structure for BLE Connection Arrangement. */
+typedef struct ble_con_plan_tag
+{
+    uint16_t conn_idx;     /**< Connection Index. */
+    uint32_t interval;     /**< Connection Interval (in 625us). */
+    uint32_t offset;       /**< Connection Offset (in 625us). */
+    uint32_t duration;     /**< Connection Duration (in 625us). */
+}ble_con_plan_tag;
 
 /** @brief Set preference slave event duration */
 typedef struct
 {
     uint16_t duration; /**< Preferred event duration. */
-    uint8_t single_tx; /**< Slave transmits a single packet per connection event (False/True). */
-}gapc_set_pref_slave_evt_dur_param_t;
+    uint8_t  single_tx; /**< Slave transmits a single packet per connection event (False/True). */
+} gapc_set_pref_slave_evt_dur_param_t;
+
+#if defined(GR551xx_D0)
+
+/** @brief Set connection CTE transmit parameters info. */
+typedef struct
+{
+    uint8_t cte_type;     /**< The type of cte, see @ref gap_cte_type_t. */
+    uint8_t num_antenna;  /**< The number of Antenna IDs in the pattern, range 0x02 to 0x4B. */
+    uint8_t *antenna_id;  /**< List of Antenna IDs in the pattern. */
+} gapc_set_conn_cte_trans_param_t;
+
+/** @brief Set connection CTE receive parameters info. */
+typedef struct
+{
+    bool    sampling_enable; /**< Wheter to sample IQ from the CTE. */
+    uint8_t slot_durations;  /**< The slot for sample IQ from the CTE, see @ref gap_switching_sampling_type_t. */
+    uint8_t num_antenna;     /**< The number of Antenna IDs in the pattern, range 0x02 to 0x4B. */
+    uint8_t *antenna_id;     /**< List of Antenna IDs in the pattern. */
+} gapc_set_conn_cte_rcv_param_t;
+
+/** @brief Set connection CTE Request enable info. */
+typedef struct
+{
+    uint16_t cte_req_interval;    /**< Defines whether the cte request procedure is initiated only once or periodically.
+                                       0x0000: initiate the Constant Tone Extension Request procedure once.
+                                       0x0001 to 0xFFFF: requested interval for initiating the cte request procedure in number of connection events. */
+    uint8_t  cte_req_len;         /**< Minimum length of the cte being requested in 8us units, range 0x02 to 0x14. */
+    uint8_t  cte_req_type;        /**< The type for requested cte, see @ref gap_cte_type_t. */
+} gapc_set_conn_cte_req_enable_t;
+
+/** @brief Connection IQ Report info. */
+typedef struct
+{
+    uint8_t  rx_phy;                          /**< Rx phy (0x01: 1M | 0x02: 2M), see @ref BLE_GAP_PHYS. */
+    uint8_t  data_channel_idx;                /**< Data channel index, range 0x00 to 0x24. */
+    int16_t  rssi;                            /**< RSSI units: 0.1 dBm, range -1270 to +200. */
+    uint8_t  rssi_antenna_id;                 /**< RSSI antenna ID. */
+    uint8_t  cte_type;                        /**< CTE type (0: GAP_CET_AOA | 1: GAP_CET_AOD_1US | 2: GAP_CET_AOD_2US), @see enum gap_cte_type_t. */
+    uint8_t  slot_dur;                        /**< Slot durations (1: GAP_SLOT_1US | 2: GAP_SLOT_2US), see @ref gap_switching_sampling_type_t. */
+    uint8_t  pkt_status;                      /**< Packet status, @see enum gap_iq_report_status_t. */
+    uint16_t con_evt_cnt;                     /**< Connection event counter. */
+    uint8_t  nb_samples;                      /**< Number of samples. 0x00: no samples provided (only permitted if pkt_status is 0xFF),
+                                                   0x09 to 0x52: total number of sample pairs. */
+    int8_t i_sample[GAP_MAX_IQ_SAMPLE_NUM];   /**< The list of i samples for the reported PDU. */
+    int8_t q_sample[GAP_MAX_IQ_SAMPLE_NUM];   /**< The list of q samples for the reported PDU. */
+} gapc_conn_iq_report_t;
+
+#endif
+
+/** @brief BLE initialization completed callback function for application. */
+typedef void (*app_ble_init_cmp_cb_t)(void);
 
 /** @brief The gap callback function struct. */
 typedef struct
@@ -738,6 +848,28 @@ typedef struct
      ****************************************************************************************
      */    
     void (*app_rslv_addr_read_cb)(uint8_t status, const gap_rslv_addr_read_t *p_read_rslv_addr);
+
+#if defined(GR551xx_D0)
+    /**
+     ****************************************************************************************
+     * @brief This callback function will be called when an connection IQ report received.
+     * @param[in]  conn_idx:                     The connection index.
+     * @param[in]  p_conn_iq_report:             The connection IQ report info. See @ref gapc_conn_iq_report_t.
+     * @retval void
+     ****************************************************************************************
+     */
+    void (*app_conn_iq_report_cb)(uint8_t conn_idx, const gapc_conn_iq_report_t *p_conn_iq_report);
+
+    /**
+     ****************************************************************************************
+     * @brief This callback function will be called when an connectionless IQ report received.
+     * @param[in]  per_sync_idx:                 The index of the periodic syncronization instance.
+     * @param[in]  p_connless_iq_report:         The connectionless IQ report info. See @ref gapc_connless_iq_report_t.
+     * @retval void
+     ****************************************************************************************
+     */
+    void (*app_connless_iq_report_cb)(uint8_t per_sync_idx, const gapc_connless_iq_report_t *p_connless_iq_report);
+#endif
 }gap_cb_fun_t;
 
 /** @} */
@@ -777,6 +909,20 @@ uint16_t ble_gap_disconnect(uint8_t conn_idx);
  ****************************************************************************************
  */
 uint16_t ble_gap_conn_param_update (uint8_t conn_idx, const gap_conn_update_param_t *p_conn_param);
+
+/**
+ *****************************************************************************************
+ * @brief Consult BLE Connection Activity Plan Situation function.
+ * @note  This function should be called when connection established and no periodic advertising existed.
+ *
+ * @param[out] p_act_num:        Pointer to the number of existed connection activities.
+ * @param[out] p_conn_plan_arr:  Pointer to the global array stored planned connection activities.
+ *                               
+ * @retval ::SDK_SUCCESS: Operation is Success.
+ * @retval ::SDK_ERR_POINTER_NULL: Invalid pointer supplied.
+ *****************************************************************************************
+ */
+uint16_t ble_gap_con_plan_consult(uint8_t *p_act_num, ble_con_plan_tag **p_conn_plan_arr);
 
 /**
  ****************************************************************************************
@@ -864,15 +1010,15 @@ uint16_t ble_gap_conn_info_get(uint8_t conn_idx, gap_get_conn_info_op_t opcode);
  */
 uint16_t ble_gap_peer_info_get(uint8_t conn_idx, gap_get_peer_info_op_t opcode);
 
-#ifdef GR551xx_D0
+#if defined(GR551xx_D0)
 /**
  ****************************************************************************************
  * @brief Send synchronization information about the periodic advertising in an advertising set to a connected device.
  *
  * @note Need to get the feature of peer device before invoke this function. 
  *
- * @param[in] conn_idx: The index of connection.
- * @param[in] per_adv_idx: The index of per adv.
+ * @param[in] conn_idx:     The index of connection.
+ * @param[in] per_adv_idx:  The index of per adv.
  * @param[in] service_data: Identify the periodic advertisement to the peer device.
  *
  * @retval ::SDK_SUCCESS: Operation is Success.
@@ -884,19 +1030,76 @@ uint16_t ble_gap_per_adv_set_info_trans(uint8_t conn_idx, uint8_t per_adv_idx, u
 
 /**
  ****************************************************************************************
- * @brief send synchronization information about the periodic advertising identified by the sync_hdl parameter to a connected device..
+ * @brief Send synchronization information about the periodic advertising identified by the sync_hdl parameter to a connected device.
  *
- * @param[in] conn_idx: The index of connection.
- * @param[in] sync_hdl: Identifying the periodic advertising.
- * @param[in] service_data: Identify the periodic advertisement to the peer device.
+ * @param[in] conn_idx:      The index of connection.
+ * @param[in] per_sync_idx:  The index of the periodic syncronization instance.
+ * @param[in] service_data:  Identify the periodic advertisement to the peer device.
+ *
  * @retval ::SDK_SUCCESS: Operation is Success.
- *
  * @retval ::SDK_ERR_INVALID_PARAM: Invalid parameter supplied.
  * @retval ::SDK_ERR_INVALID_CONN_IDX: Invalid connection index supplied.
  * @retval ::SDK_ERR_NO_RESOURCES: Not enough resources.
  ****************************************************************************************
  */
-uint16_t ble_gap_per_adv_sync_trans(uint8_t conn_idx, uint16_t sync_hdl, uint16_t service_data);
+uint16_t ble_gap_per_adv_sync_trans(uint8_t conn_idx, uint8_t per_sync_idx, uint16_t service_data);
+
+/**
+ ****************************************************************************************
+ * @brief Set connection CTE transmit parameters.
+ *
+ * @param[in] conn_idx:  The index of connection.
+ * @param[in] param:     Set connection CTE transmit parameters info, see @ref gapc_set_conn_cte_trans_param_t.
+ *
+ * @retval ::SDK_SUCCESS: Operation is Success.
+ * @retval ::SDK_ERR_INVALID_PARAM: Invalid parameter supplied.
+ * @retval ::SDK_ERR_INVALID_CONN_IDX: Invalid connection index supplied.
+ ****************************************************************************************
+ */
+uint16_t ble_gap_conn_cte_trans_param_set(uint8_t conn_idx, gapc_set_conn_cte_trans_param_t *param);
+
+/**
+ ****************************************************************************************
+ * @brief Set connection CTE receive parameters.
+ *
+ * @param[in] conn_idx:  The index of connection.
+ * @param[in] param:     Set connection CTE receive parameters info, see @ref gapc_set_conn_cte_rcv_param_t.
+
+ * @retval ::SDK_SUCCESS: Operation is Success.
+ * @retval ::SDK_ERR_INVALID_PARAM: Invalid parameter supplied.
+ * @retval ::SDK_ERR_INVALID_CONN_IDX: Invalid connection index supplied.
+ ****************************************************************************************
+ */
+uint16_t ble_gap_conn_cte_recv_param_set(uint8_t conn_idx, gapc_set_conn_cte_rcv_param_t *param);
+
+/**
+ ****************************************************************************************
+ * @brief Set connection CTE request enable.
+ *
+ * @param[in] conn_idx:     The index of connection.
+ * @param[in] enable_flag:  Wheter to request the cte for the connection. If enable_flag is set to false, the param shall be NULL.
+ * @param[in] param:        Set connection CTE request enable info, see @ref gapc_set_conn_cte_req_enable_t.
+
+ * @retval ::SDK_SUCCESS: Operation is Success.
+ * @retval ::SDK_ERR_INVALID_PARAM: Invalid parameter supplied.
+ * @retval ::SDK_ERR_INVALID_CONN_IDX: Invalid connection index supplied.
+ ****************************************************************************************
+ */
+uint16_t ble_gap_conn_cte_req_enable_set(uint8_t conn_idx, bool enable_flag, gapc_set_conn_cte_req_enable_t *param);
+
+/**
+ ****************************************************************************************
+ * @brief Set connection CTE response enable.
+ *
+ * @param[in] conn_idx:     The index of connection.
+ * @param[in] enable_flag:  Wheter to response the cte req for the connection.
+
+ * @retval ::SDK_SUCCESS: Operation is Success.
+ * @retval ::SDK_ERR_INVALID_CONN_IDX: Invalid connection index supplied.
+ ****************************************************************************************
+ */
+uint16_t ble_gap_conn_cte_rsp_enable_set(uint8_t conn_idx, bool enable_flag);
+
 #endif
 /** @} */
 

@@ -177,14 +177,20 @@ static sdk_err_t lls_init(void)
  */
 static void lls_on_connect(uint8_t conn_idx)
 {
+    lls_evt_t   evt;
+    sdk_err_t   ret;
+
     if (s_lls_env.lls_init.evt_handler)
     {
-        lls_evt_t evt;
+        evt.evt_type = LLS_EVT_LINK_LOSS_ALERT;
 
-        evt.evt_type    = LLS_EVT_LINK_LOSS_ALERT;
-        evt.alert_level = LLS_ALERT_LEVEL_NO_ALERT;
-        /* Inform Application the link is (re)connected */
-        s_lls_env.lls_init.evt_handler(&evt);
+        ret = lls_alert_level_get(&evt.alert_level);
+
+        if (SDK_SUCCESS == ret && s_lls_env.lls_init.evt_handler)
+        {
+            /* Inform Application the link is (re)connected */
+            s_lls_env.lls_init.evt_handler(&evt);
+        }
     }
 }
 
@@ -203,12 +209,13 @@ static void lls_on_disconnect(uint8_t conn_idx, uint8_t reason)
     {
         /* Link loss detected, inform application */
         lls_evt_t evt;
+        sdk_err_t ret;
 
         evt.evt_type = LLS_EVT_LINK_LOSS_ALERT;
 
-        sdk_err_t   ret = lls_alert_level_get(&evt.alert_level);
+        ret = lls_alert_level_get(&evt.alert_level);
 
-        if (BLE_SUCCESS == ret)
+        if (SDK_SUCCESS == ret)
         {
             if (s_lls_env.lls_init.evt_handler)
             {

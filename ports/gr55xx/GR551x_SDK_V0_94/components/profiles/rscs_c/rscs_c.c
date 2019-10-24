@@ -292,6 +292,11 @@ static void rscs_c_srvc_browse_cb(uint8_t conn_idx, uint8_t status, const ble_ga
     rscs_c_evt.conn_idx = conn_idx;
     rscs_c_evt.evt_type = RSCS_C_EVT_DISCOVERY_FAIL;
 
+    if(BLE_GATT_ERR_BROWSE_NO_ANY_MORE == status)
+    {
+        return;
+    }
+
     if (BLE_SUCCESS == status)
     {
         uuid_disc = p_browse_srvc->uuid[0] | p_browse_srvc->uuid[1] << 8;

@@ -240,6 +240,11 @@ static void pass_c_srvc_browse_cb(uint8_t conn_idx, uint8_t status, const ble_ga
 
     pass_c_evt.conn_idx = conn_idx;
     pass_c_evt.evt_type = PASS_C_EVT_DISCOVERY_FAIL;
+ 
+    if(BLE_GATT_ERR_BROWSE_NO_ANY_MORE == status)
+    {
+        return;
+    }
 
     if (BLE_SUCCESS == status)
     {

@@ -58,6 +58,7 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "gr55xx_ll_xqspi.h"
+#include "gr55xx_hal_xqspi.h"
 #include "gr55xx_hal_def.h"
 
 /* Exported types ------------------------------------------------------------*/

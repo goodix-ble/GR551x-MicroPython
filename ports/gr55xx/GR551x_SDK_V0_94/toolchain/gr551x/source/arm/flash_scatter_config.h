@@ -43,7 +43,7 @@
 
 #ifdef ROM_RUN_IN_FLASH
 #ifdef SUPPORT_FOR_AUDIO
-    #define RAM_SIZE            0x0001D000
+    #define RAM_SIZE            0x00020000
 #else
     #define RAM_SIZE            0x00036000
 #endif

@@ -34,7 +34,7 @@
   POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************************
  */
- 
+
 /*
  * DEFINES
  *****************************************************************************************
@@ -54,9 +54,19 @@
 // <o>APP log print
 //          <0=> DISABLE
 //          <1=> ENABLE
-#define APP_LOG_ENABLE          1   
+#define APP_LOG_ENABLE          1
 
-// <o> The start address of NVDS 
+// <o>DTM test support
+//          <0=> DISABLE
+//          <1=> ENABLE
+#define DTM_TEST_ENABLE         0
+
+// <o>BLE DFU support
+//          <0=> DISABLE
+//          <1=> ENABLE
+#define DFU_ENABLE              1
+
+// <o> The start address of NVDS
 //  <i>Default: 0x0107E000
 #define NVDS_START_ADDR         0x010FC000
 
@@ -68,11 +78,11 @@
 //  <i>Default: 0x8000
 #define CSTACK_HEAP_SIZE        0x8000        //<Call Stack Size.
 
-// <o> RAM size of Application 
+// <o> RAM size of Application
 //  <i>Default: 0x00030000
 #define APP_RAM_SIZE            0x00030000    //<RAM size of Application reserved. */
 
-// <o> Code size of Application 
+// <o> Code size of Application
 //  <i>Default: 0x00800000
 #define APP_MAX_CODE_SIZE       0x00800000    //<MAX size of Application reserved. */
 // </h>
@@ -81,10 +91,10 @@
 // <h>boot info configuration
 // <o> Code load address
 //  <i>Default:  0x01002000
-#define APP_CODE_LOAD_ADDR      0x01002000    
+#define APP_CODE_LOAD_ADDR      0x01002000
 // <o> Code run address
 //  <i>Default:  0x01002000
-#define APP_CODE_RUN_ADDR       0x01002000                  
+#define APP_CODE_RUN_ADDR       0x01002000
 
 //<ol.0..5> System clock
 //          <0=> 64MHZ
@@ -93,36 +103,62 @@
 //          <3=> 24MHZ
 //          <4=> 16MHZ
 //          <5=> 32MHZ-CPLL
-//  <i>Default:  0 
+//  <i>Default:  0
 //  <i>(0:64Mhz, 1:48Mhz, 2:16Mhz(xo), 3:24Mhz, 4:16Mhz, 5:32Mhz(cpll))
 #define SYSTEM_CLOCK            0             /**<System clock(0:64Mhz, 1:48Mhz, 2:16Mhz(xo), 3:24Mhz, 4:16Mhz, 5:32Mhz(cpll)) */
 
+//   <o> External clock accuracy used in the LL to compute timing  <1-500>
+//      <i>CFG_LF_ACCURACY_PPM
+#define CFG_LF_ACCURACY_PPM     (500)
 
 // <o>Delay time for Boot startup
 //                      <0=> Not Delay
 //                      <1=> Delay 1s
-#define BOOT_LONG_TIME          1             
+#define BOOT_LONG_TIME          1
 
 
 #define VERSION                 1             /**<Code version.16bits */
+
+// <o>Dap boot mode
+//                      <0=> DISABLE
+//                      <1=> ENABLE
+#define DAP_BOOT_ENABLE         1
+
 // </h>
 
 
 // <h> ble resource configuration
 //   <o> Support maximum number of BLE profile  <1-64>
 //      <i>CFG_MAX_PRF_NB
-#define CFG_MAX_PRF_NB          (10)           
+#define CFG_MAX_PRF_NB          (10)
 //   <o> Support maximum number of bonded devices  <1-10>
 //      <i>CFG_MAX_BOND_DEV_NUM
-#define CFG_MAX_BOND_DEV_NUM    (10)          
+#define CFG_MAX_BOND_DEV_NUM    (4)
 //   <o> Support maximum number of BLE link  <1-10>
 //      <i>CFG_MAX_CONNECTIONS
-#define CFG_MAX_CONNECTIONS     (10)          
+#define CFG_MAX_CONNECTIONS     (10)
 // </h>
 
-#define GR551xx_C1
+#define GR551xx_C0
+
+//CHIP version define start
+// C1 is the same with C0 except RF
+#if defined(GR551xx_C1)
+#endif
+
+#if defined(GR551xx_C0)
 #define CFG_PATCH_BY_FPB
+#endif
+
+#if defined(GR551xx_C2)
 #define CFG_ISO_SUPPORT   // modularize the iso in ble_tool
+#define ROM_RUN_IN_FLASH
+#endif
+
+#if defined(GR551xx_D0)
+
+#endif
+//CHIP version define end
 
 // <<< end of configuration section >>>
 #endif //__CUSTOM_CONFIG_H__

@@ -38,8 +38,8 @@ void platform_init(void)
     nvds_init(NVDS_START_ADDR, NVDS_NUM_SECTOR);
     system_io_leakage_protect(&io_table);
 	
-    //platform_clock_init(RTC_OSC_CLK, CFG_LF_ACCURACY_PPM, 0);
-    platform_clock_init(1, 20, 0);
+    platform_clock_init(RTC_OSC_CLK, CFG_LF_ACCURACY_PPM, 0);
+    //platform_clock_init(1, 20, 0);
     platform_sdk_init();
     return;
 }

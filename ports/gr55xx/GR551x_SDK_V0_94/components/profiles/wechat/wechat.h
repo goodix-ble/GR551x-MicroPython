@@ -1,11 +1,11 @@
 /**
- *******************************************************************************
+ *****************************************************************************************
  *
  * @file wechat.h
  *
- * @brief wechat Service API.
+ * @brief WeChat Service API.
  *
- *******************************************************************************
+ *****************************************************************************************
  * @attention
   #####Copyright (c) 2019 GOODIX
   All rights reserved.
@@ -43,9 +43,21 @@
 /**
  * @defgroup BLE_SDK_WECHAT Wechat (WECHAT)
  * @{
- * @brief WECHAT Interface module.
+ * @brief Definitions and prototypes for the WeChat interface.
  *
- * @details 
+ * @details The Wechat Service contains two modules: WeChat Airsync Protocol and Wechat
+ *          Pedometer Protocol.
+ *
+ *          WeChat Airsync Protocol opens the data link between the device and the vendor server,
+ *          which supportssending data from the device to the vendor's server, as well as the vendor's
+ *          data to the device. The protocol also opens the data link between the device and the Wechat server.
+ *          The data format between the device and the Wechat server is stipulated by Wechat, such as login,
+ *          new message notification, etc.
+ *
+ *          Wechat Pedometer Protocol is based on GATT protocol, which requires less hardware
+ *          capability of the device, and the manufacturer does not need a back-end server (that is,
+ *          only need to develop the device) to dock with Wechat. It allows pedometers to connect to Wechat
+ *          and transmit steps, kilometers, calories, moving targets, etc.
  */
 
 #ifndef __WECHART_H__
@@ -61,78 +73,168 @@
  * @{
  */
 #define WECHAT_CONNECTION_MAX               (10 < CFG_MAX_CONNECTIONS ?\
-                                             10 : CFG_MAX_CONNECTIONS)   /**< Maximum number of WECHAT connections.*/
+                                             10 : CFG_MAX_CONNECTIONS)   /**< Maximum number of Wechat connections. */
+#define WECHAT_DATA_LEN                      20                          /**< Maximum length of Wechat Data. */
+#define WECHAT_PEDO_TARGET_VAL_LEN           0x04                        /**< Maximum length of wechat pedometer target value. */
+#define WECHAT_PEDO_STEP_COUNT_MAX           0xFFFFFF                    /**< Maximum value of wechat pedometer step count. */
+
+/**
+ * @defgroup WECHAT_UUID WECHAT Service and Characteristic UUID
+ * @{
+ * @brief WeChat Service, Airsync and Pedometer Characteristic UUID.
+ */
+#define WECHAT_SERVICE_UUID                 0XFEE7                       /**< Wechat Service UUID. */
+#define WECHAT_WRITE_CHAR_UUID              0XFEC7                       /**< Wechat Airsync Write Characteristic UUID. */
+#define WECHAT_INDICATE_CHAR_UUID           0XFEC8                       /**< Wechat Airsync Indication Characteristic UUID. */
+#define WECHAT_READ_CHAR_UUID               0XFEC9                       /**< Wechat Airsync Read Characteristic UUID. */
+#define WECHAT_PEDOMETER_MEASUREMENT        0XFEA1                       /**< Wechat Current Pedometer Measurement Characteristic UUID. */
+#define WECHAT_TARGET                       0XFEA2                       /**< Wechat Pedometer Target Characteristic UUID. */
+/** @} */
+
+/**
+ * @defgroup WECHAT_PEDO_FLAG WECHAT pedeometer measurement flag
+ * @{
+ * @brief WeChat pedeometer measurement flag bits.
+ */
+#define WECHAT_PEDO_FLAG_STEP_COUNT_BIT     0X01                       /**< Wechat pedometer measurement step count flag bit. */
+#define WECHAT_PEDO_FLAG_STEP_DISTENCE_BIT  0X02                       /**< Wechat pedometer measurement step distance flag bit. */
+#define WECHAT_PEDO_FLAG_STEP_CALORIE_BIT   0X04                       /**< Wechat pedometer measurement step calorie flag bit. */
+#define WECHAT_PEDO_FLAG_ALL_SUP_BIT        0X07                       /**< Wechat pedometer measurement all flag bit. */
+/** @} */
 /** @} */
 
 /**
  * @defgroup WECHAT_ENUM Enumerations
  * @{
  */
-/**@brief wechat Service environment variable. */
-typedef struct
+/**@brief WeChat Service event type.*/
+typedef enum
 {
-    uint8_t  char_mask;
-    uint16_t start_hdl;
-    uint16_t pedo_ntf_cfg;
-    uint16_t target_ntf_cfg;
-    uint8_t  device_mac[6];
-} wechat_env_t;
-
-/**@brief wechat pedometer environment variable. */
-typedef struct
-{
-    char flag;
-    char step_count[3];
-    char step_dist[3];
-    char step_calorie[3];
-
-} CURR_PEDO_t;
-
-/**@brief wechat target environment variable. */
-typedef struct
-{
-    char flag;
-    char step_count[3];
-} TARGET_t;
-
-/**@brief wechat data environment variable. */
-typedef struct
-{
-    uint8_t *data;
-    uint16_t len;
-    uint16_t offset;
-} data_info;
-
+    WECHAT_EVT_INVALID,                    /**< WeChat invalid event. */
+    WECHAT_EVT_AIRSYNC_IND_ENABLE,         /**< WeChat Airsync indication has been enabled. */
+    WECHAT_EVT_AIRSYNC_IND_DISABLE,        /**< WeChat Airsync indication has been disabled. */
+    WECHAT_EVT_PEDO_MEAS_NTF_ENABLE,       /**< WeChat Pedometer measurement notification has been enabled. */
+    WECHAT_EVT_PEDO_MEAS_NTF_DISABLE,      /**< WeChat Pedometer measurement notification has been disabled. */
+    WECHAT_EVT_PEDO_TARGET_IND_ENABLE,     /**< WeChat Pedometer target indicaiton has been enabled. */
+    WECHAT_EVT_PEDO_TARGET_IND_DISABLE,    /**< WeChat Pedometer target indicaiton has been disabled. */
+    WECHAT_EVT_PEDO_TARGET_UPDATE,         /**< WeChat Pedometer target has been updated. */
+    WECHAT_EVT_AIRSYNC_DATA_RECIEVE,       /**< Recieved Airsync data. */
+} wechat_evt_type_t;
 /** @} */
 
 /**
- * @defgroup wechat Functions
+ * @defgroup WECHAT_STRUCT Structures
+ * @{
+ */
+/**@brief WeChat current pedometer measurement variable. */
+typedef struct
+{
+    uint8_t flag;                 /**< Flag for WeChat current pedometer measurement. */
+    uint8_t step_count[3];        /**< Step counts of pedometer measurement. */
+    uint8_t step_dist[3];         /**< Step distance of pedometer measurement. */
+    uint8_t step_calorie[3];      /**< Step Calorie of pedometer measurement. */
+} wechat_pedo_meas_t;
+
+/**@brief WeChat pedometer target variable. */
+typedef struct
+{
+    uint8_t flag;                /**< Flag for WeChat pedometer target. */
+    uint8_t step_count[3];       /**< Target of step pedometer counts. */
+} wechat_pedo_target_t;
+
+/**@brief WeChat service data. */
+typedef struct 
+{
+    const uint8_t   *p_data;     /**< Pointer to data. */
+    uint16_t         length;     /**< Length of data. */
+    uint16_t         offset;     /**< Offset of data. */
+} wechat_data_t;
+
+/**@brief WeChat Service event.*/
+typedef struct
+{
+    uint8_t            conn_idx;              /** The index of connection. */
+    wechat_evt_type_t  evt_type;              /**< Event type. */
+    union
+    {
+        wechat_pedo_target_t  pedo_target;    /**< Pedometer target set value. */
+        wechat_data_t         data;           /**< Data of Airsync. */
+    } param;                                  /**< Parameter of wechat airsync event. */
+} wechat_evt_t;
+/** @} */
+
+/**
+ * @defgroup WECHAT_TYPEDEF Typedefs
+ * @{
+ */
+/**@brief WeChat Service event handler type.*/
+typedef void (*wechat_evt_handler_t)(wechat_evt_t *p_evt);
+/** @} */
+
+/**
+ * @defgroup WECHAT_STRUCT Structures
+ * @{
+ */
+/**@brief WeChat Service Init variable. */
+typedef struct
+{
+    wechat_evt_handler_t  evt_handler;            /**< Wechat Service event handler. */
+    uint32_t              step_count_target;      /**< Wechat pedometer step count target value. */
+    uint8_t              *p_dev_mac;              /**< Pointer to wechat device mac address. */
+} wechat_init_t;
+/** @} */
+
+/**
+ * @defgroup WECHAT_FUNCTION Functions
  * @{
  */
 /**
  *****************************************************************************************
- * @brief Add a wechat Service instance in the DB.
+ * @brief Initialize a WeChat Service instance and add in the DB.
  *
- * @param[in] wechat_env_t Pointer to a wechat Service environment variable.
+ * @param[in] p_wechat_init: Pointer to wechat init value.
  *
  * @return Result of service initialization.
  *****************************************************************************************
  */
-sdk_err_t wechat_service_add(wechat_env_t *p_wechat_env);
+sdk_err_t wechat_service_init(wechat_init_t *p_wechat_init);
 
 /**
  *****************************************************************************************
- * @brief The interface sends several subpackages that are split up to the client in succession.
+ * @brief WeChat Service Airsync indicate data.
  *
- * @param[in] p_data : Pointer to the parameters of the write request.
- * @param[in] length : data length
+ * @param[in] conn_idx: The index of connection.
+ * @param[in] p_data:   Pointer to data.
+ * @param[in] length:   Length of data.
  *
- * @return If the request was consumed or not.
+ * @return Result of indicaition.
  *****************************************************************************************
  */
-int ble_wechat_indicate_data(uint8_t *p_data, uint32_t length);
-/** @} */
+sdk_err_t wechat_airsync_data_indicate(uint8_t conn_idx, uint8_t *p_data, uint16_t length);
 
+/**
+ *****************************************************************************************
+ * @brief Send WeChat pedometer measurement information.
+ *
+ * @param[in] conn_idx: The index of connection.
+ * @param[in] p_pedo_meas: Pointer to pedometer measurement.
+ *
+ * @return Result of send.
+ *****************************************************************************************
+ */
+sdk_err_t wechat_pedo_measurement_send(uint8_t conn_idx, wechat_pedo_meas_t *p_pedo_meas);
+
+/**
+ *****************************************************************************************
+ * @brief Send WeChat pedometer target value.
+ *
+ * @param[in] conn_idx: Connection index.
+ *
+ * @return Length of send.
+ *****************************************************************************************
+ */
+sdk_err_t wechat_pedo_target_send(uint8_t conn_idx);
+/** @} */
 #endif
 /** @} */
 /** @} */

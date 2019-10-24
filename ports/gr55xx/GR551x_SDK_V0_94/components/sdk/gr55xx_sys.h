@@ -57,6 +57,21 @@ typedef void (*timer_callback_t)(uint8_t timer_id);
 
 /**@brief Printf callback type. */
 typedef int (*vprintf_callback_t) (const char *fmt, __va_list argp); 
+
+/**@brief Low power clock update function type. */
+typedef void (*void_func_t)(void);
+
+/**@briefUser context save before deep sleep function type. */
+typedef void (*sys_context_func_t)(void);
+
+/**@brief Error assert callback type. */
+typedef void (*assert_err_cb_t)(const char *expr, const char *file, int line);
+
+/**@brief Parameter assert callback type. */
+typedef void (*assert_param_cb_t)(int param0, int param1, const char *file, int line);
+
+/**@brief Warning assert callback type. */
+typedef void (*assert_warn_cb_t)(int param0, int param1, const char *file, int line);
 /** @} */ 
 
 /** @addtogroup GR55XX_SYS_ENUMERATIONS Enumerations
@@ -81,6 +96,14 @@ typedef struct
     uint16_t build;                         /**< Build number*/
     uint32_t commit_id;                     /**< commit ID*/
 }sdk_version_t;
+
+/**@brief Assert callbacks.*/
+typedef struct 
+{
+    assert_err_cb_t   assert_err_cb;
+    assert_param_cb_t assert_param_cb;
+    assert_warn_cb_t  assert_warn_cb;
+}sys_assert_cb_t;
 
 /**@brief Link RX information define. */
 typedef struct
@@ -203,6 +226,15 @@ void sys_context_save(void);
 
 /**
  *****************************************************************************************
+ * @brief Load system context.
+ *
+ * @note This function is used to load system context after the system goes to deep sleep.
+ *****************************************************************************************
+ */
+void restore_sys_context(void);
+
+/**
+ *****************************************************************************************
  * @brief Save system registers.
  *
  * @note This function is used to save system register before the system goes to deep sleep.
@@ -222,14 +254,6 @@ void sys_regs_save(volatile uint32_t *p_address, uint32_t value);
  *****************************************************************************************
  */
 void sys_context_checksum_gen(void);
-
-/**
- *****************************************************************************************
- * @brief Function pointer for user context save before deep sleep .
- * 
- *****************************************************************************************
- */
-typedef void (*sys_context_func_t)(void);
 
 /**
  *****************************************************************************************
@@ -333,6 +357,17 @@ uint16_t sys_device_uid_get(uint8_t *p_device_uid);
 
 /**
  *****************************************************************************************
+ * @brief Get the LP gain offset 2M information.
+ *
+ * @param[out] p_offset: the offset of LP gain.
+ * @return 0:  Operation is OK.
+ *         1:  the chip's parameter is incorrect.
+ *****************************************************************************************
+ */
+uint16_t sys_device_lp_gain_offset_2m_get(uint8_t *p_offset);
+
+/**
+ *****************************************************************************************
  * @brief Get the RAM size information.
  *
  * @param[out] p_sram_size: The pointer to enumeration of @ref sram_size_t.
@@ -410,70 +445,61 @@ uint8_t sys_msg_usage_ratio_get(void);
  * @brief Get link quality info
  *
  * @param[in]      conn_idx:  Connect index.
- * @param[in/out]  rx_info:   RX detailed information
+ * @param[in\out]  rx_info:   RX detailed information
  *
  * @return Current connect index link quality.
  ****************************************************************************************
  */
-uint8_t get_link_quality(uint8_t conn_idx, link_rx_info_t* rx_info);
+uint8_t sys_link_quality_get(uint8_t conn_idx, link_rx_info_t* rx_info);
 
 /**
  ****************************************************************************************
  * @brief Clear link quality info.
  *
- * @param[in]      conn_idx:  Connect index.
+ * @param[in] conn_idx:  Connect index.
  ****************************************************************************************
  */
-void clear_link_quality(uint8_t conn_idx);
+void sys_link_quality_clear(uint8_t conn_idx);
 
 /**
- *****************************************************************************************
- * @brief Function pointer for low power clock update function.
- * 
- *****************************************************************************************
- */
-typedef void (*void_func_t)(void);
-/**
  ****************************************************************************************
- * @brief register low power clock update function.
+ * @brief Register low power clock update function.
  *
  * @param[in]  func_update_lpclk: function pointer to update_lpclk
  ****************************************************************************************
  */
-void register_lpclk_update(void_func_t func_update_lpclk);
-
-
-/**
- ****************************************************************************************
- * @brief Get low power clk frequence.
- ****************************************************************************************
- */
-uint32_t get_lpclk_freq(void);
+void sys_lpclk_update_func_register(void_func_t func_update_lpclk);
 
 /**
  ****************************************************************************************
- * @brief Set low power clk frequence.
- * @param[in] user_lpclk: user low power clk frequence.
+ * @brief Get low power CLK frequency.
+ *
+ * This function is used to get the low power clock frequency
+ *
+ * @return Low power CLK frequency.
  ****************************************************************************************
  */
-void set_lpclk_freq(uint32_t user_lpclk);
+uint32_t sys_lpclk_get(void);
 
 /**
  ****************************************************************************************
- * @brief Get low power clk period.
+ * @brief Get low power CLK period.
+ *
+ * This function is used to get the low power CLK period.
+ *
+ * @return Low power CLK period.
  ****************************************************************************************
  */
-uint32_t get_lpclk_period(void);
+uint32_t sys_lpper_get(void);
 
 /**
- ****************************************************************************************
- * @brief Set low power clk period.
- * @param[in] user_lpclk_period: user low power clk period.
- ****************************************************************************************
+ *****************************************************************************************
+ * @brief Register assert callbacks.
+ *
+ * @param[in] p_assert_cb: Pointer to assert callbacks.
+ *****************************************************************************************
  */
-void set_lpclk_period(uint32_t user_lpclk_period);
-
-
+void sys_assert_cb_register(sys_assert_cb_t *p_assert_cb);
 /** @} */
 #endif
 

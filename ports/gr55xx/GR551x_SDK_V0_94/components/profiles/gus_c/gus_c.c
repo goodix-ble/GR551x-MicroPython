@@ -217,6 +217,11 @@ static void gus_c_srvc_browse_cb(uint8_t conn_idx, uint8_t status, const ble_gat
     gus_c_evt.conn_idx = conn_idx;
     gus_c_evt.evt_type = GUS_C_EVT_DISCOVERY_FAIL;
 
+    if(BLE_GATT_ERR_BROWSE_NO_ANY_MORE == status)
+    {
+        return;
+    }
+
     if (BLE_SUCCESS == status)
     {
         if (16 == p_browse_srvc->uuid_len && 0 == memcmp(p_browse_srvc->uuid, s_gus_uuid, 16))

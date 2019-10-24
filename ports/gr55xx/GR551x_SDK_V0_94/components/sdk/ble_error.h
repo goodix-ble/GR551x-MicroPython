@@ -150,6 +150,8 @@
 #define BLE_GATT_ERR_ATTRIBUTE_CLIENT_MISSING       0x54        /**< No attribute client defined. */
 #define BLE_GATT_ERR_ATTRIBUTE_SERVER_MISSING       0x55        /**< No attribute server defined. */
 #define BLE_GATT_ERR_INVALID_PERM                   0x56        /**< Permission set in service/attribute is invalid. */
+#define BLE_GATT_ERR_BROWSE_NO_ANY_MORE             0x57        /**< GATT browse no any more contents. */
+
 
 /**@brief LL Specific Error. */
 #define BLE_LL_ERR_UNKNOWN_HCI_COMMAND              0x91        /**< Unknown HCI Command. */

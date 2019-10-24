@@ -89,12 +89,3 @@ __WEAK void hal_exflash_msp_deinit(exflash_handle_t *p_exflash)
 }
 
 #endif /* HAL_EXFLASH_MODULE_ENABLED */
-
-
-
-/*
-unsigned int get_patch_rep_addr (unsigned int func){
-
-  return 0;
-}
-*/

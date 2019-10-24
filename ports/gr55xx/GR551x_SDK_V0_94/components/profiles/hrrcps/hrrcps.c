@@ -257,7 +257,7 @@ static void   hrrcps_write_att_cb(uint8_t conn_idx, const gatts_write_req_cb_t *
     {
         case HRRCPS_IDX_HRR_CTRL_PT_VAL:
             if ((HRRCPS_CTRL_PT_SCAN_HRS > p_param->value[0]) || \
-                (HRRCPS_CTRL_PT_RSCS_NTF_DISABLE < p_param->value[0]))
+                (HRRCPS_CTRL_PT_RSCS_DISCONN < p_param->value[0]))
             {
                 cfm.status = 0x80;
             }
@@ -341,6 +341,14 @@ static void hrrcps_ctrl_pt_handler(uint8_t conn_idx, hrrcps_ctrl_pt_id_t ctrl_pt
         
         case HRRCPS_CTRL_PT_RSCS_NTF_DISABLE:
             event.evt_type = HRRCPS_EVT_DISABLE_RSCS_NTF;
+            break;
+
+        case HRRCPS_CTRL_PT_HRS_DISCONN:
+            event.evt_type = HRRCPS_EVT_DISCONN_HRS_LINK;
+            break;
+
+        case HRRCPS_CTRL_PT_RSCS_DISCONN:
+            event.evt_type = HRRCPS_EVT_DISCONN_RSCS_LINK;
             break;
 
         default:

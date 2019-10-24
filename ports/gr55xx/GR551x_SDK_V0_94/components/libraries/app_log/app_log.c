@@ -213,7 +213,7 @@ bool app_log_init(app_log_init_t *p_log_init)
     app_log_port_init();
 
     memcpy(&s_app_log_env.app_log_init, p_log_init, sizeof(app_log_init_t));
-    
+
     return true;
 }
 

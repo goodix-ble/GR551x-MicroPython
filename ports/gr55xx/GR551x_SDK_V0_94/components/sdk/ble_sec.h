@@ -34,11 +34,12 @@
 /**@defgroup SEC_AUTH_FLAG  SEC Auth Flag
 * @{ 
 */
-#define AUTH_NONE               0         /**< No auth requirement. */
-#define AUTH_BOND              (1 << 0)   /**< Bond flag. */
-#define AUTH_MITM              (1 << 2)   /**< MITM flag. */
-#define AUTH_SEC_CON           (1 << 3)   /**< Security connection flag. By default, it is set to True by BLE Stack, and user configuration is invalid.*/
-#define AUTH_KEY_PRESS_NOTIFY  (1 << 4)   /**< Key press notify flag. */
+#define AUTH_NONE               0                 /**< No auth requirement. */
+#define AUTH_BOND              (1 << 0)           /**< Bond flag. */
+#define AUTH_MITM              (1 << 2)           /**< MITM flag. */
+#define AUTH_SEC_CON           (1 << 3)           /**< Security connection flag. */
+#define AUTH_KEY_PRESS_NOTIFY  (1 << 4)           /**< Key press notify flag. */
+#define AUTH_ALL               (AUTH_BOND | AUTH_MITM | AUTH_SEC_CON | AUTH_KEY_PRESS_NOTIFY)
 /**@} */
 
 /**@defgroup SEC_KEY_DIST_FLAG  SEC Key Distribution Flag
@@ -48,7 +49,9 @@
 #define KDIST_ENCKEY   (1 << 0)      /**< Distribute encryption and master identification info. */
 #define KDIST_IDKEY    (1 << 1)      /**< Distribute identity and address info. */
 #define KDIST_SIGNKEY  (1 << 2)      /**< Distribute signing info. */
-#define KDIST_ENCCODE  (1 << 4)      /**< Distribute encryption code. */
+#define KDIST_ENCCODE  (1 << 4)      /**< Distribute encryption code, only used for iso bis. */
+#define KDIST_ALL      (KDIST_ENCKEY | KDIST_IDKEY | KDIST_SIGNKEY)
+
 /**@} */
 /**@} */
 

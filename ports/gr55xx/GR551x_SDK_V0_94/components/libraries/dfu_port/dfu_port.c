@@ -100,10 +100,12 @@ static void dfu_spi_flash_init(uint8_t cs_pin, uint8_t cs_mux, uint8_t spi_group
 {
     const spi_flash_io_t spi_io[4] = {DEFAULT_SPIM_GROUP0, DEFAULT_SPIM_GROUP1,\
                                       DEFAULT_SPIM_GROUP2, DEFAULT_SPIM_GROUP3};
-    const uint32_t gpio_pin[] = {GPIO_PIN_0,GPIO_PIN_1,GPIO_PIN_2,GPIO_PIN_3,GPIO_PIN_4,GPIO_PIN_5,GPIO_PIN_6,GPIO_PIN_7,\
-                                 GPIO_PIN_8,GPIO_PIN_9,GPIO_PIN_10,GPIO_PIN_11,GPIO_PIN_12,GPIO_PIN_13,GPIO_PIN_14,GPIO_PIN_15};
-    const uint32_t gpio_pin_mux[] = {GPIO_MUX_0,GPIO_MUX_1,GPIO_MUX_2,GPIO_MUX_3,GPIO_MUX_4,GPIO_MUX_5,GPIO_MUX_6,GPIO_MUX_7,\
-                                     GPIO_MUX_8};
+    const uint32_t gpio_pin[] = {APP_GPIO_PIN_0,APP_GPIO_PIN_1,APP_GPIO_PIN_2,APP_GPIO_PIN_3,APP_GPIO_PIN_4,APP_GPIO_PIN_5,APP_GPIO_PIN_6,APP_GPIO_PIN_7,\
+                                 APP_GPIO_PIN_8,APP_GPIO_PIN_9,APP_GPIO_PIN_10,APP_GPIO_PIN_11,APP_GPIO_PIN_12,APP_GPIO_PIN_13,APP_GPIO_PIN_14,APP_GPIO_PIN_15,\
+                                 APP_GPIO_PIN_16,APP_GPIO_PIN_17,APP_GPIO_PIN_18,APP_GPIO_PIN_19,APP_GPIO_PIN_20,APP_GPIO_PIN_21,APP_GPIO_PIN_22,APP_GPIO_PIN_23,\
+                                 APP_GPIO_PIN_24,APP_GPIO_PIN_25,APP_GPIO_PIN_26,APP_GPIO_PIN_27,APP_GPIO_PIN_28,APP_GPIO_PIN_29,APP_GPIO_PIN_30,APP_GPIO_PIN_31,};
+    const uint32_t gpio_pin_mux[] = {APP_GPIO_MUX_0,APP_GPIO_MUX_1,APP_GPIO_MUX_2,APP_GPIO_MUX_3,APP_GPIO_MUX_4,APP_GPIO_MUX_5,APP_GPIO_MUX_6,APP_GPIO_MUX_7,\
+                                     APP_GPIO_MUX_8};
     
     spi_flash_io_t spi_config_io;
     if(spi_group < 5)
@@ -113,16 +115,8 @@ static void dfu_spi_flash_init(uint8_t cs_pin, uint8_t cs_mux, uint8_t spi_group
     
     if(cs_pin < 32)
     {
-        if(cs_pin < 16)
-        {
-            spi_config_io.spi_cs.gpio = GPIO0;
-            spi_config_io.spi_cs.pin = gpio_pin[cs_pin];
-        }
-        else
-        {
-            spi_config_io.spi_cs.gpio = GPIO1;
-            spi_config_io.spi_cs.pin = gpio_pin[cs_pin-16];
-        }
+        spi_config_io.spi_cs.gpio = APP_GPIO_TYPE_NORMAL;
+        spi_config_io.spi_cs.pin = gpio_pin[cs_pin];
     }
     if(cs_mux < 9)
     {

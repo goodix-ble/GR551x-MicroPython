@@ -113,19 +113,19 @@ static const attm_desc_t bps_attr_tab[BPS_IDX_NB] =
     [BPS_IDX_BP_MEAS_CHAR]    = {BLE_ATT_DECL_CHARACTERISTIC, READ_PERM_UNSEC, 0, 0},
     // Blood Pressure Measurement Characteristic Value
     [BPS_IDX_BP_MEAS_VAL]     = {BLE_ATT_CHAR_BLOOD_PRESSURE_MEAS,
-#ifdef COMPATIBILITY_AUTO_TEST
+#ifdef PTS_AUTO_TEST
                                  INDICATE_PERM_UNSEC,
 #else
-                                 INDICATE_PERM(UNAUTH),
+                                 INDICATE_PERM(NOAUTH),
 #endif
                                  ATT_VAL_LOC_USER,
                                  BPS_BP_MEAS_MAX_LEN},
     // Blood Pressure Measurement Characteristic - Client Characteristic Configuration Descriptor
     [BPS_IDX_BP_MEAS_IND_CFG] = {BLE_ATT_DESC_CLIENT_CHAR_CFG,
-#ifdef COMPATIBILITY_AUTO_TEST
+#ifdef PTS_AUTO_TEST
                                  READ_PERM_UNSEC | WRITE_REQ_PERM_UNSEC,
 #else
-                                 READ_PERM(UNAUTH) | WRITE_REQ_PERM(UNAUTH),
+                                 READ_PERM(NOAUTH) | WRITE_REQ_PERM(NOAUTH),
 #endif
                                  0,
                                  0},
@@ -134,19 +134,19 @@ static const attm_desc_t bps_attr_tab[BPS_IDX_NB] =
     [BPS_IDX_INTM_CUFF_PRESS_CHAR]    = {BLE_ATT_DECL_CHARACTERISTIC, READ_PERM_UNSEC, 0, 0},
     // Intermediate Cuff Pressure Characteristic Value
     [BPS_IDX_INTM_CUFF_PRESS_VAL]     = {BLE_ATT_CHAR_INTERMEDIATE_CUFF_PRESSURE,
-#ifdef COMPATIBILITY_AUTO_TEST
+#ifdef PTS_AUTO_TEST
                                          NOTIFY_PERM_UNSEC,
 #else
-                                         NOTIFY_PERM(UNAUTH),
+                                         NOTIFY_PERM(NOAUTH),
 #endif
                                          ATT_VAL_LOC_USER,
                                          BPS_BP_MEAS_MAX_LEN},
     // Intermediate Cuff Pressure Characteristic - Client Characteristic Configuration Descriptor
     [BPS_IDX_INTM_CUFF_PRESS_NTF_CFG] = {BLE_ATT_DESC_CLIENT_CHAR_CFG,
-#ifdef COMPATIBILITY_AUTO_TEST
+#ifdef PTS_AUTO_TEST
                                          READ_PERM_UNSEC | WRITE_REQ_PERM_UNSEC,
 #else
-                                         READ_PERM(UNAUTH) | WRITE_REQ_PERM(UNAUTH),
+                                         READ_PERM(NOAUTH) | WRITE_REQ_PERM(NOAUTH),
 #endif
                                          0,
                                          0},
@@ -155,10 +155,10 @@ static const attm_desc_t bps_attr_tab[BPS_IDX_NB] =
     [BPS_IDX_BP_FEATURE_CHAR] = {BLE_ATT_DECL_CHARACTERISTIC, READ_PERM_UNSEC, 0, 0},
     // Blood Pressure Feature Characteristic Value
     [BPS_IDX_BP_FEATURE_VAL]  = {BLE_ATT_CHAR_BLOOD_PRESSURE_FEATURE,
-#ifdef COMPATIBILITY_AUTO_TEST
+#ifdef PTS_AUTO_TEST
                                  READ_PERM_UNSEC,
 #else
-                                 READ_PERM(UNAUTH),
+                                 READ_PERM(NOAUTH),
 #endif
                                  ATT_VAL_LOC_USER,
                                  sizeof(uint16_t)},
@@ -399,26 +399,26 @@ static uint16_t bps_measurement_encode(bps_meas_t *p_meas, uint8_t *p_encoded_bu
     uint16_t encoded_sfloat = 0;
 
     // Set measurement units flag
-    if (p_meas->blood_pressure_units_in_kpa)
+    if (p_meas->bl_unit_in_kpa)
     {
         flags |= BPS_MEAS_BLOOD_PRESSURE_UNITS_FLAG_BIT;
     }
 
     // Blood Pressure Measurement - Systolic
-    encoded_sfloat = ((p_meas->blood_pressure_systolic.exponent << 12) & 0xF000) |
-                     ((p_meas->blood_pressure_systolic.mantissa <<  0) & 0x0FFF);
+    encoded_sfloat = ((p_meas->systolic.exponent << 12) & 0xF000) |
+                     ((p_meas->systolic.mantissa <<  0) & 0x0FFF);
     p_encoded_buffer[length++] = LO_U16(encoded_sfloat);
     p_encoded_buffer[length++] = HI_U16(encoded_sfloat);
 
     // Blood Pressure Measurement - Diastolic
-    encoded_sfloat = ((p_meas->blood_pressure_diastolic.exponent << 12) & 0xF000) |
-                     ((p_meas->blood_pressure_diastolic.mantissa <<  0) & 0x0FFF);
+    encoded_sfloat = ((p_meas->diastolic.exponent << 12) & 0xF000) |
+                     ((p_meas->diastolic.mantissa <<  0) & 0x0FFF);
     p_encoded_buffer[length++] = LO_U16(encoded_sfloat);
     p_encoded_buffer[length++] = HI_U16(encoded_sfloat);
 
     // Blood Pressure Measurement - Mean Arterial Pressure
-    encoded_sfloat = ((p_meas->mean_arterial_pressure.exponent << 12) & 0xF000) |
-                     ((p_meas->mean_arterial_pressure.mantissa <<  0) & 0x0FFF);
+    encoded_sfloat = ((p_meas->mean_arterial_pr.exponent << 12) & 0xF000) |
+                     ((p_meas->mean_arterial_pr.mantissa <<  0) & 0x0FFF);
     p_encoded_buffer[length++] = LO_U16(encoded_sfloat);
     p_encoded_buffer[length++] = HI_U16(encoded_sfloat);
 
@@ -453,11 +453,11 @@ static uint16_t bps_measurement_encode(bps_meas_t *p_meas, uint8_t *p_encoded_bu
     }
 
     // Measurement Status
-    if (p_meas->measurement_status_present)
+    if (p_meas->meas_status_present)
     {
         flags |= BPS_MEAS_MEASUREMENT_STATUS_FLAG_BIT;
-        p_encoded_buffer[length++] = LO_U16(p_meas->measurement_status);
-        p_encoded_buffer[length++] = HI_U16(p_meas->measurement_status);
+        p_encoded_buffer[length++] = LO_U16(p_meas->meas_status);
+        p_encoded_buffer[length++] = HI_U16(p_meas->meas_status);
     }
 
     // Flags field
@@ -473,7 +473,7 @@ static uint16_t bps_measurement_encode(bps_meas_t *p_meas, uint8_t *p_encoded_bu
 sdk_err_t bps_measurement_send(uint8_t conidx, bps_meas_t *p_meas)
 {
     sdk_err_t        error_code = SDK_ERR_IND_DISABLED;
-    uint8_t          encoded_bps_meas[BPS_BP_MEAS_MAX_LEN];
+    uint8_t          encoded_bps_meas[BPS_BP_MEAS_MAX_LEN] = {0};
     gatts_noti_ind_t bps_ind;
 
     uint16_t length = bps_measurement_encode(p_meas, encoded_bps_meas);

@@ -222,7 +222,8 @@ typedef struct
                                   - For Primary/Secondary/Included Services, this field is not used and should be set 0. \n
                                   - For Characteristic Declaration, this field is not used and should be set 0. \n
                                   - For Characteristic Extended Properties, this field is not used and should be set 0. \n
-                                  - For Client Characteristic Configuration and Server Characteristic Configuration, value must be saved in user space. There is no need for users to set this value location bit. */
+                                  - For Client Characteristic Configuration and Server Characteristic Configuration, value must be saved in user space,
+                                    user needn't to set this value location bit. The UUID length type must be set to 0.*/
                                   
     uint16_t max_size;       /**< Attribute max size. \n
                                   - For Primary/Secondary/Included Services, this field is not used, set 0. \n
@@ -249,7 +250,8 @@ typedef struct
                                   - For Primary/Secondary/Included Services, this field is not used, set 0. \n
                                   - For Characteristic Declaration, this field is not used, set 0. \n
                                   - For Characteristic Extended Properties, this field is not used, set 0. \n
-                                  - For Client Characteristic Configuration and Server Characteristic Configuration, value must be saved in user space, user needn't to set this value location bit. */
+                                  - For Client Characteristic Configuration and Server Characteristic Configuration, value must be saved in user space,
+                                    user needn't to set this value location bit. The UUID length type must be set to 0.*/
                                   
     uint16_t max_size;       /**< Attribute max size. \n
                                   - For Primary/Secondary/Included Services, this field is not used, set 0. \n

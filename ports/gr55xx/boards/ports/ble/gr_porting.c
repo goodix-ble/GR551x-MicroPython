@@ -163,7 +163,7 @@ void *gr_realloc(void *ptr, size_t size) {
 }
 
 
-
+/*
 void HardFault_Handler_C(unsigned int * hardfault_args)
 {
     unsigned int stacked_r0;
@@ -203,3 +203,4 @@ void HardFault_Handler_C(unsigned int * hardfault_args)
     gr_trace("SCB_SHCSR = %x\n", SCB->SHCSR);    
     while (1);
 }
+*/

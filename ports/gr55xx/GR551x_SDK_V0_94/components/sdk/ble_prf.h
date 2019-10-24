@@ -266,10 +266,14 @@ uint16_t ble_client_prf_add(const prf_client_info_t *p_client_prf_info, uint8_t 
  *       If srvc_uuid is NULL, the invalid pointer error code will be returned immediately.
  *
  * @note Function callback @ref gattc_prf_cbs_t::app_gattc_srvc_browse_cb will be called for all attributes of each service found.
+ *       After completed service handle range registeration for receiving peer device indication/notification will be executed internally.
+ *       Because secondary service can't be browsed, so handle range registeration for receiving peer device indication/notification to this client
+ *       profile maybe necessary. App can call function ble_gattc_prf_evt_handle_register for registeration, it depends on user app.
+ *       
  *
  * @param[in] prf_id:          Profile id.
  * @param[in] conn_idx:        Current connection index.
- * @param[in] p_srvc_uuid:    Pointer to Service UUID.
+ * @param[in] p_srvc_uuid:     Pointer to Service UUID.
  *
  * @retval ::SDK_SUCCESS: Successfully start the Browse Service(s) procedure.
  * @retval ::SDK_ERR_INVALID_CONN_IDX: Invalid connection index supplied.
@@ -523,7 +527,7 @@ uint16_t ble_gattc_prf_indicate_cfm(uint8_t prf_id, uint8_t conn_idx, uint16_t h
  ****************************************************************************************
  * @brief Profile client Register Indication/Notification event.
  *
- * @note Confirm indication which has been correctly received from the peer.
+ * @note Registration to peer device events (Indication/Notification) for specific client profile.
  *       Once completed @ref gattc_prf_cbs_t::app_gattc_prf_reg_cb with type: @ref GATTC_EVT_UNREGISTER will be called.
  *
  * @param[in] prf_id:       Profile id.
@@ -534,7 +538,7 @@ uint16_t ble_gattc_prf_indicate_cfm(uint8_t prf_id, uint8_t conn_idx, uint16_t h
  * @retval ::SDK_ERR_INVALID_CONN_IDX: Invalid connection index supplied.
  * @retval ::SDK_ERR_POINTER_NULL:     Invalid pointer supplied.
  * @retval ::SDK_ERR_INVALID_PARAM:    Invalid parameter(s) supplied.
- * @retval ::SDK_ERR_NO_RESOURCES: Not enough resources.
+ * @retval ::SDK_ERR_NO_RESOURCES:     Not enough resources.
  ****************************************************************************************
  */
 uint16_t ble_gattc_prf_evt_handle_register(uint8_t prf_id, uint8_t conn_idx, gattc_prf_reg_peer_evt_t *env);
@@ -543,7 +547,7 @@ uint16_t ble_gattc_prf_evt_handle_register(uint8_t prf_id, uint8_t conn_idx, gat
  ****************************************************************************************
  * @brief Profile client Unregister Indication/Notification event.
  *
- * @note Confirm indication which has been correctly received from the peer.
+ * @note Unregistration to peer device events (Indication/Notification) for specific client profile.
  *       Once completed @ref gattc_prf_cbs_t::app_gattc_prf_reg_cb with type: @ref GATTC_EVT_UNREGISTER will be called.
  *
  * @param[in] prf_id:       Profile id.
@@ -554,7 +558,7 @@ uint16_t ble_gattc_prf_evt_handle_register(uint8_t prf_id, uint8_t conn_idx, gat
  * @retval ::SDK_ERR_INVALID_CONN_IDX: Invalid connection index supplied.
  * @retval ::SDK_ERR_POINTER_NULL:     Invalid pointer supplied.
  * @retval ::SDK_ERR_INVALID_PARAM:    Invalid parameter(s) supplied.
- * @retval ::SDK_ERR_NO_RESOURCES: Not enough resources.
+ * @retval ::SDK_ERR_NO_RESOURCES:     Not enough resources.
  ****************************************************************************************
  */
 uint16_t ble_gattc_prf_evt_handle_unregister(uint8_t prf_id, uint8_t conn_idx, gattc_prf_reg_peer_evt_t *env);

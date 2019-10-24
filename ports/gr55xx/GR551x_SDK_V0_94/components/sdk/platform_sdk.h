@@ -54,7 +54,26 @@ typedef enum
    MIRROR_32M,
 } table_idx_t;
 
-/**@brief IO leakage protect config table. */
+/**@brief sdk clock type. */
+typedef enum
+{
+    RNG_OSC_CLK = 0,
+    RTC_OSC_CLK,
+    RNG_OSC_CLK2,
+} sdk_clock_type_t;
+
+
+/*
+ ****************************************************************************************
+ * @brief   IO leakage protect config table.
+ * The three fields are defined in bitmap format, each bit is corresponding to each IO
+ * The configuration rules are as below
+ * 1. input to GR551x with on-board PU or PD resistors
+ * 2. output from GR551x
+ * IO setting must be set properly according to board configurations to avoid leackage
+ * during sleep.
+ ****************************************************************************************
+ */
 typedef struct
 {
    uint32_t gpio;
@@ -130,6 +149,66 @@ void system_lp_table_update_twval(table_idx_t table_idx, int16_t dur_offset, int
  ****************************************************************************************
  */
 void system_io_leakage_protect(io_table_t *p_io_table);
+
+/*
+ ****************************************************************************************
+ * @brief  platform low power clock init function
++ * @param[in] clock     :  Exteranl RTC setting or internal RNG/RNG2 setting
++ * @param[in] accuracy  :  Low speed clock accuracy.
++ * @param[in] xo_offset :  Clock calibration parameter.
+ * @retval :  void
+ ****************************************************************************************
+ */
+void platform_clock_init(sdk_clock_type_t clock, uint16_t accuracy, uint16_t xo_offset);
+
+/*
+ ****************************************************************************************
+ * @brief  platform rc calibration function
+ * @retval :  void
+ ****************************************************************************************
+ */
+void platform_rc_calibration(void);
+
+/*
+ ****************************************************************************************
+ * @brief  platform init function
+ * @retval :  void
+ ****************************************************************************************
+ */
+void platform_init(void);
+
+/*
+ ****************************************************************************************
+ * @brief  pmu init function
+ * @retval : void
+ ****************************************************************************************
+ */
+void system_pmu_init(void);
+
+/*
+ ****************************************************************************************
+ * @brief  pmu deinit function
+ * @retval : void
+ ****************************************************************************************
+ */
+void system_pmu_deinit(void);
+
+/*
+ ****************************************************************************************
+ * @brief  warm boot process
+ * @retval :  void
+ ****************************************************************************************
+ */
+void warm_boot(void);
+
+/*
+ ****************************************************************************************
+ * @brief  pmu calibration handler     
+ * @param[in] p_arg : none args
+ * @retval :  void
+ ****************************************************************************************
+ */
+void pmu_calibration_handler(void* p_arg);
 
 
 /** @} */

@@ -144,18 +144,18 @@ typedef struct
 /**@brief Blood Pressure measurement structure. */
 typedef struct
 {
-    uint8_t         blood_pressure_units_in_kpa;     /**< Blood Pressure Units Flag, 0=mmHg, 1=kPa */
-    uint8_t         time_stamp_present;              /**< Time Stamp Flag, 0=not present, 1=present. */
-    uint8_t         pulse_rate_present;              /**< Pulse Rate Flag, 0=not present, 1=present. */
-    uint8_t         user_id_present;                 /**< User ID Flag, 0=not present, 1=present. */
-    uint8_t         measurement_status_present;      /**< Measurement Status Flag, 0=not present, 1=present. */
-    ieee_float16_t  blood_pressure_systolic;         /**< Blood Pressure Measurement Compound Value - Systolic. */
-    ieee_float16_t  blood_pressure_diastolic;        /**< Blood Pressure Measurement Compound Value - Diastolic . */
-    ieee_float16_t  mean_arterial_pressure;          /**< Blood Pressure Measurement Compound Value - Mean Arterial Pressure. */
-    prf_date_time_t time_stamp;                      /**< Time Stamp. */
-    ieee_float16_t  pulse_rate;                      /**< Pulse Rate. */
-    uint8_t         user_id;                         /**< User ID. */
-    uint16_t        measurement_status;              /**< Measurement Status. */
+    uint8_t         bl_unit_in_kpa;         /**< Blood Pressure Units Flag, 0=mmHg, 1=kPa */
+    uint8_t         time_stamp_present;     /**< Time Stamp Flag, 0=not present, 1=present. */
+    uint8_t         pulse_rate_present;     /**< Pulse Rate Flag, 0=not present, 1=present. */
+    uint8_t         user_id_present;        /**< User ID Flag, 0=not present, 1=present. */
+    uint8_t         meas_status_present;    /**< Measurement Status Flag, 0=not present, 1=present. */
+    ieee_float16_t  systolic;               /**< Blood Pressure Measurement Compound Value - Systolic. */
+    ieee_float16_t  diastolic;              /**< Blood Pressure Measurement Compound Value - Diastolic . */
+    ieee_float16_t  mean_arterial_pr;       /**< Blood Pressure Measurement Compound Value - Mean Arterial Pressure. */
+    prf_date_time_t time_stamp;             /**< Time Stamp. */
+    ieee_float16_t  pulse_rate;             /**< Pulse Rate. */
+    uint8_t         user_id;                /**< User ID. */
+    uint16_t        meas_status;            /**< Measurement Status. */
 } bps_meas_t;
 
 /**@brief Blood Pressure Service init stucture. This contains all option and data needed for initialization of the service. */

@@ -14,6 +14,7 @@
 #define LOG_UART_RX_PINMUX              GPIO_MUX_2
 
 /*******HCI UART IO CONFIG***********************/
+#define HCI_UART_GRP_ID                 0
 #define HCI_UART_FLOW_ON                0
 #define HCI_UART_BAUDRATE               115200
 #define HCI_UART_TRN_PORT               GPIO0
@@ -26,6 +27,7 @@
 #define HCI_UART_RX_PINMUX              GPIO_MUX_2
 #define HCI_UART_CTS_PINMUX             GPIO_MUX_0
 #define HCI_UART_RTS_PINMUX             GPIO_MUX_0
+#define HCI_UART_TRIGGER_PIN            AON_GPIO_PIN_1
 
 /*******UART DRIVER IO CONFIG*******************/
 #define SERIAL_PORT_GRP                 UART0
@@ -37,19 +39,19 @@
 
 /*******KEY DRIVER IO CONFIG********************/
 #define KEY_OK_PIN                      AON_GPIO_PIN_1
-#define KEY_UP_PIN                      LL_GPIO_PIN_12
-#define KEY_DOWN_PIN                    LL_GPIO_PIN_13
-#define KEY_LEFT_PIN                    LL_GPIO_PIN_14
-#define KEY_RIGHT_PIN                   LL_GPIO_PIN_15
+#define KEY_UP_PIN                      GPIO_PIN_12
+#define KEY_DOWN_PIN                    GPIO_PIN_13
+#define KEY_LEFT_PIN                    GPIO_PIN_14
+#define KEY_RIGHT_PIN                   GPIO_PIN_15
 
 /*******KEY TRIGGER MODE CONFIG*******************/
 #define KEY_ANO_TRIGGER_MODE            AON_GPIO_MODE_IT_FALLING
 #define KEY_TRIGGER_MODE                GPIO_MODE_IT_FALLING
 
 /*******LED IO CONFIG FOR SK*********************/
-#define LED_NUM_0_IO   GPIO_PIN_4
-#define LED_NUM_0_GRP  GPIO0 
-#define LED_NUM_1_IO   MSIO_PIN_4
+#define LED_NUM_0_IO                    GPIO_PIN_4
+#define LED_NUM_0_GRP                   GPIO0 
+#define LED_NUM_1_IO                    MSIO_PIN_4
 
 /*******ADC IO CONFIG***************************/
 #define ADC_P_INPUT_PIN                 MSIO_PIN_0
@@ -103,6 +105,13 @@
 #define PWM1_GPIO_MUX                   MSIO_MUX_0
 #define PWM1_CHANNEL_B                  MSIO_PIN_4
 #define PWM1_PORT                       MSIO
+
+/*******COMP IO CONFIG***************************/
+#define COMP_INPUT_PIN                  MSIO_PIN_0
+#define COMP_INPUT_PORT                 MSIO
+
+#define COMP_VREF_PIN                   MSIO_PIN_1
+#define COMP_VREF_PORT                  MSIO
 
 /*******QSPI IO CONFIG**************************/
 #define QSPI_MODULE                     QSPI1

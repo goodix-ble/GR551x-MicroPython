@@ -67,7 +67,7 @@
  */
 #define PCS_CONNECTION_MAX      (10 < CFG_MAX_CONNECTIONS ?\
                                  10 : CFG_MAX_CONNECTIONS)                       /**< Maximum number of Power Consumption Service connections. */
-#define PCS_MAX_DATA_LEN        20                                               /**< Maximum length of application data packet which is transmitted via PCS. */
+#define PCS_MAX_DATA_LEN        244                                              /**< Maximum length of application data packet which is transmitted via PCS. */
 #define PCS_SERVICE_UUID        0x1B, 0xD7, 0x90, 0xEC, 0xE8, 0xB9, 0x75, 0x80,\
                                 0x0A, 0x46, 0x44, 0xD3, 0x01, 0x05, 0xED, 0xA6   /**< The UUID of Power Consumption Service for setting advertising data. */
 
@@ -104,7 +104,7 @@ typedef enum
     PCS_SETTING_TYPE_ADV_INTERVAL,       /**< BLE Advertising Interval parameter. */
     PCS_SETTING_TYPE_CONN_PARAM,         /**< BLE Connection parameter. */
     PCS_SETTING_TYPE_PHY,                /**< Radio Phy mode, 1M, 2M, Encoded. */
-    PCS_SETTING_TYPE_ADV_DATA,          /**< BLE 17 byte dvertising data. */
+    PCS_SETTING_TYPE_ADV_DATA,           /**< BLE advertising data. */
     PCS_SETTING_TYPE_TX_POWER,           /**< Tx Power. */
 } pcs_setting_type_t;
 /** @} */

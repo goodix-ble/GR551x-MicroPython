@@ -86,7 +86,7 @@ enum otas_attr_idx_tag
 struct otas_env_t
 {
     otas_init_t otas_init;
-    uint8_t     ntf_cfg[OTAS_CONNECTION_MAX];
+    uint16_t     ntf_cfg[OTAS_CONNECTION_MAX];
     uint16_t    start_hdl;
 };
 
@@ -223,7 +223,7 @@ static void otas_read_att_cb(uint8_t conn_idx, const gatts_read_req_cb_t *p_para
     uint8_t          handle     = p_param->handle;
     uint8_t          tab_index  = 0;
 
-    tab_index = prf_find_idx_by_handle(handle, s_otas_env.start_hdl, OTAS_IDX_NB, (uint8_t*)s_char_mask);
+    tab_index = prf_find_idx_by_handle(handle, s_otas_env.start_hdl, OTAS_IDX_NB, (uint8_t*)&s_char_mask);
 
     cfm.handle = handle;
     cfm.status = BLE_SUCCESS;
@@ -232,10 +232,13 @@ static void otas_read_att_cb(uint8_t conn_idx, const gatts_read_req_cb_t *p_para
     {
         case OTAS_IDX_TX_CFG:
             cfm.length = sizeof(uint16_t);
-            cfm.value = (uint8_t*)s_otas_env.ntf_cfg[conn_idx];
+            cfm.value = (uint8_t *)(&s_otas_env.ntf_cfg[conn_idx]);
             break;
         
-        default:break;
+        default:
+            cfm.length = 0;
+            cfm.status = BLE_ATT_ERR_INVALID_HANDLE;
+            break;
     }
 
     ble_gatts_read_cfm(conn_idx,&cfm);
@@ -300,6 +303,7 @@ static void otas_write_att_cb(uint8_t conn_idx, const gatts_write_req_cb_t *p_pa
                     s_otas_env.otas_init.evt_handler(&event);
                 }
             }
+            break;
 
         default:
             cfm.status = BLE_ATT_ERR_INVALID_HANDLE;

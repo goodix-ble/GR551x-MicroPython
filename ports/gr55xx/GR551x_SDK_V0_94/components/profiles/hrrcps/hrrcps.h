@@ -92,6 +92,8 @@ typedef enum
     HRRCPS_CTRL_PT_RSCS_NTF_DISABLE,       /**< Disable RSCS notification. */
     HRRCPS_CTRL_PT_HRS_CONN_STA_REPORT,    /**< Report HRS connection state. */
     HRRCPS_CTRL_PT_RSCS_CONN_STA_REPORT,   /**< Report RSCS connecntion state. */
+    HRRCPS_CTRL_PT_HRS_DISCONN,            /**< Disconnect HRS link. */
+    HRRCPS_CTRL_PT_RSCS_DISCONN,           /**< Disconnect RSCS link. */
     HRRCPS_CTRL_PT_RSP_CODE = 0xff,        /**< Response code. */
 } hrrcps_ctrl_pt_id_t;
 
@@ -116,6 +118,8 @@ typedef enum
     HRRCPS_EVT_DISABLE_RSCS_NTF,            /**< Disable RSCS notificaiton. */
     HRRCPS_EVT_HRS_SENSOR_LOC_READ,         /**< Read HRS sensor location. */
     HRRCPS_EVT_RSCS_SENSOR_LOC_READ,        /**< Read RSCS sensor location. */
+    HRRCPS_EVT_DISCONN_HRS_LINK,            /**< Disconnect HRS link. */
+    HRRCPS_EVT_DISCONN_RSCS_LINK,           /**< Disconnect RSCS link. */
 } hrrcps_evt_type_t;
 /** @} */
 

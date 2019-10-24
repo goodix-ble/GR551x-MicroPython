@@ -151,8 +151,6 @@ typedef struct
     void (*dfu_flash_set_security)(bool enable);                                                  /**< The function is used to set the flash security mode as Enable or Disable. */
     bool (*dfu_flash_get_security)(void);                                                         /**< The function is used to get the flash security mode (Enable or Disable). */
 	void (*dfu_flash_get_info)(uint32_t *id, uint32_t *size);                                     /**< The function is used to get the flash id and size. */
-    void (*dfu_delay_reset_timer_start)(void);                                                    /**< The function is used to start a reset delay timer. can use dfu_default_reset_dealy_timer_start
-	                                                                                                   also can use own timer*/
 } dfu_func_t;
 
 /**@brief SPI used functions config definition. */
@@ -302,21 +300,13 @@ void dfu_spi_flash_func_config(dfu_spi_flash_func_t *spi_flash_func);
 
 /**
  *****************************************************************************************
- * @brief Function for start default reset dealy timer
+ * @brief Function for start default reset delay timer
  *
- * @note If use dfu default reset dealy timer,should init ble stack .
+ * @note If use dfu default reset delay timer,should init ble stack .
  *****************************************************************************************
  */
-void dfu_default_reset_dealy_timer_start(void);
+void dfu_default_reset_delay_timer_start(void);
 
-/**
- *****************************************************************************************
- * @brief Function for reset device.
- *
- * @note If not use dfu_default_reset_dealy_timer_start, This function should be called in own reset timer out handler.
- *****************************************************************************************
- */
-void dfu_delay_reset_timeout_handler(void);
 /** @} */
 #endif
 /** @} */

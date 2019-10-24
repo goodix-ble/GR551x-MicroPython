@@ -42,7 +42,6 @@
 
 #ifdef HAL_PWR_MODULE_ENABLED
 
-
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 
@@ -279,17 +278,37 @@ __WEAK void hal_pwr_sleep_timer_irq_handler(void)
     hal_pwr_sleep_timer_elapsed_callback();
 }
 
+__WEAK void hal_pwr_ext_wakeup_irq_handler(void)
+{
+    /* Get external wakeup pin */
+    uint32_t pin = ll_pwr_get_ext_wakeup_status();
+
+    /* Clear external wakeup status */
+    ll_pwr_clear_ext_wakeup_status(PWR_EXTWKUP_PIN_ALL);
+
+    /* Clear external wakeup event */
+    ll_pwr_clear_wakeup_event(LL_PWR_WKUP_EVENT_EXT);
+
+    /* Clear pended sleep timer interrupt */
+    NVIC_ClearPendingIRQ(EXTWKUP_IRQn);
+
+    /* Call external wakeup callback */
+    hal_pwr_ext_wakeup_callback(pin);
+
+}
 
 __WEAK void hal_pwr_sleep_timer_elapsed_callback(void)
 {
     return;
 }
 
+
+__WEAK void hal_pwr_ext_wakeup_callback(uint32_t ext_wakeup_pinx)
+{
+    return;
+}
+
 /** @} */
-
-#else
-
-#error "error 2"
 
 #endif /* HAL_PWR_MODULE_ENABLED */
 

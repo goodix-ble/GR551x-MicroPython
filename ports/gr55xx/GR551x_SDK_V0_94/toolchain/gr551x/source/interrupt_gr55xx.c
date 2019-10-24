@@ -79,9 +79,7 @@ SVC_Dead
                 B       SVC_Dead                ; None Existing SVC
                 ALIGN
 }
-#endif
-
-#if defined ( __GNUC__ )
+#elif defined ( __GNUC__ )
 void __attribute__((naked))SVC_Handler (void)
 {
     __asm("TST R14,$4\n");
@@ -91,7 +89,7 @@ void __attribute__((naked))SVC_Handler (void)
     __asm("MOVEQ   R12,SP\n");
     __asm("PUSH    {R0-R3,LR}\n");
     __asm("MOV  R0, R12\n");
-    __asm("BL  SVC_Handler_C\n");
+    __asm("BL  SVC_handler_proc\n");
     __asm("MOV  R12, R0\n");
     __asm("POP {R0-R3}\n");
     __asm("CMP R12,$0\n");
@@ -100,6 +98,8 @@ void __attribute__((naked))SVC_Handler (void)
     __asm("POP {R14}\n");
     __asm("BX      LR\n");
 }
+#else
+	
 #endif
 
 /**
@@ -109,9 +109,12 @@ void __attribute__((naked))SVC_Handler (void)
  ****************************************************************************************
  */
 #if ENABLE_FAULT_TRACE
-uint32_t R4_R11_REG[8];
+
 __WEAK void app_log_port_flush(void){};
-void print_exception_stack(uint32_t sp)
+
+#if defined ( __CC_ARM ) 
+uint32_t R4_R11_REG[8];
+static void print_exception_stack(uint32_t sp)
 {
     printf("HARDFAULT CALLSTACK INFO:\r\n");
     printf("================================\r\n");
@@ -139,15 +142,85 @@ __asm void HardFault_Handler (void)
     BL  print_exception_stack
     ALIGN
 }
-#else
 
+#elif defined ( __GNUC__ )
+
+static void print_exception_stack(unsigned int * hardfault_args)
+{
+    unsigned int stacked_r0;
+    unsigned int stacked_r1;
+    unsigned int stacked_r2;
+    unsigned int stacked_r3;
+    unsigned int stacked_r12;
+    unsigned int stacked_lr;
+    unsigned int stacked_pc;
+    unsigned int stacked_psr;
+    
+    stacked_r0 = ((unsigned long) hardfault_args[0]);
+    stacked_r1 = ((unsigned long) hardfault_args[1]);
+    stacked_r2 = ((unsigned long) hardfault_args[2]);
+    stacked_r3 = ((unsigned long) hardfault_args[3]);
+
+    stacked_r12 = ((unsigned long) hardfault_args[4]);
+    stacked_lr = ((unsigned long) hardfault_args[5]);
+    stacked_pc = ((unsigned long) hardfault_args[6]);
+    stacked_psr = ((unsigned long) hardfault_args[7]);
+    printf("HARDFAULT CALLSTACK INFO:\r\n");
+    printf("================================\r\n");
+    printf("R0 = %x\r\n", stacked_r0);
+    printf("R1 = %x\r\n", stacked_r1);
+    printf("R2 = %x\r\n", stacked_r2);
+    printf("R3 = %x\r\n", stacked_r3);
+    printf("R12 = %x\r\n", stacked_r12);
+    printf("LR [R14] = %x  subroutine call return address\r\n", stacked_lr);
+    printf("PC [R15] = %x  program counter\r\n", stacked_pc);
+    printf("PSR = %x\r\n", stacked_psr);
+    printf("BFAR = %x\r\n", (*((volatile unsigned long *)(0xE000ED38))));
+    printf("CFSR = %x\r\n", (*((volatile unsigned long *)(0xE000ED28))));
+    printf("HFSR = %x\r\n", (*((volatile unsigned long *)(0xE000ED2C))));
+    printf("DFSR = %x\r\n", (*((volatile unsigned long *)(0xE000ED30))));
+    printf("AFSR = %x\r\n", (*((volatile unsigned long *)(0xE000ED3C))));
+    printf("SCB_SHCSR = %x\r\n", SCB->SHCSR);    
+	printf("================================\r\n");
+    app_log_port_flush();
+
+    while (1);
+}
+
+void __attribute__((naked))HardFault_Handler (void)
+{
+    __asm("TST     LR,#4\n");
+    __asm("ITE     EQ\n");
+    __asm("MRSEQ   R0,MSP\n");
+    __asm("MRSNE   R0,PSP\n");
+    __asm("BL      print_exception_stack\n");
+
+    while (1);
+}
+
+#else
+	
 void HardFault_Handler (void) 
 {
-    __BKPT(0);
    while (1);
 }
 
 #endif
+
+#else	/*ENABLE_FAULT_TRACE*/
+
+void HardFault_Handler (void) 
+{
+   while (1);
+}
+
+#endif  /*ENABLE_FAULT_TRACE*/
+
+
+void BLE_SDK_Handler (void)
+{
+    BLE_SDK_Handler_func();
+}
 
 /**
  ****************************************************************************************
@@ -195,5 +268,71 @@ void SLPTIMER_IRQHandler(void)
 {
     hal_pwr_sleep_timer_irq_handler();
 }
+
+
+void EXT0_IRQHandler(void) {
+}
+void EXT1_IRQHandler(void) {  
+}
+void EXT2_IRQHandler(void) {
+}
+void HMAC_IRQHandler(void) {
+}
+void I2C1_IRQHandler(void) {
+}
+void SPI_M_IRQHandler(void) {
+}
+void WDT_IRQHandler(void) {
+}
+void AES_IRQHandler(void) {
+}
+void I2S_M_IRQHandler(void) {
+}
+void DUAL_TIMER_IRQHandler(void) {
+}
+void ISO7816_IRQHandler(void) {
+}
+void PRESENT_IRQHandler(void) {
+}
+void DebugMon_Handler(void) {
+}
+void I2S_S_IRQHandler(void) {
+}
+void Default_Handler(void) {
+}
+void RNG_IRQHandler(void) {
+}
+void EXTWKUP_IRQHandler(void) {
+}
+void CALENDAR_IRQHandler(void) {
+}
+void SPI_S_IRQHandler(void) {
+}
+void NMI_Handler(void) {
+}
+void TIMER1_IRQHandler(void) {
+}
+void PKC_IRQHandler(void) {
+}
+void TIMER0_IRQHandler(void) {
+}
+void PMU_IRQHandler(void) {
+}
+void XQSPI_IRQHandler(void) {
+}
+void PendSV_Handler(void) {
+}
+void AON_WDT_IRQHandler(void) {
+}
+void PWR_CMD_IRQHandler(void) {
+}
+void I2C0_IRQHandler(void) {
+}
+
+
+
+
+
+
 
 

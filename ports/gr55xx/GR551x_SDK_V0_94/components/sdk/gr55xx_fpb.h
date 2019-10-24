@@ -50,8 +50,8 @@ int fun_replace_by_svc(uint32_t ori_func, uint32_t rep_func, uint8_t patch_table
  * @retval :  void
  ****************************************************************************************
  */
-void SVC_handler_proc(uint32_t *svc_args);
-
+uint32_t SVC_handler_proc(uint32_t *svc_args);
+    
  /*
  ****************************************************************************************
  * @brief  Register FPB patch enable function

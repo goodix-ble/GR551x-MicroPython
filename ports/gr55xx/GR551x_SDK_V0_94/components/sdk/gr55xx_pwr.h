@@ -71,6 +71,7 @@ typedef struct
 {
     uint32_t  pwr_mgmt_app_timer_thrd;
     uint32_t  pwr_mgmt_ble_core_thrd;
+    uint32_t  pwr_mgmt_rtc_timer_thrd;
 } pwr_mgmt_var_box_t;
 
 /**@brief power manager boot type. */
@@ -115,6 +116,9 @@ typedef struct
 
 /**@brief Trace function type. */ 
 typedef void (*trace_func_t)(uint8_t);
+
+/**@brief Trace function type. */ 
+typedef void (*periph_func_t)(void);
 
 /**@brief Before sleep function type. */ 
 typedef void (*pwr_before_sleep_func_t)(void);
@@ -201,30 +205,6 @@ bool pwr_mgmt_ble_wakeup(void);
 
 /**
  ****************************************************************************************
- * @brief This function is of weak type, and users need to customize it in user_periph_setup.c
- *        This function is used to tell the power management unit whether the peripherals are 
- *        still working, if so, the system does not go to deep sleep, if not, the management
- *        is returned to the PMU.
- * @return  dev_state_t  the state of device
- * @retval :  DEVICE_BUSY  
- *            DEVICE_IDLE 
- ****************************************************************************************
- */
-pwr_mgmt_dev_state_t pwr_mgmt_check_device_state(void);
-
- /**
- ****************************************************************************************
- * @brief This function is of weak type, and users need to customize it in user_periph_setup.c
- *        This function is called back before PMU is about to execute deep sleep. 
- *        Users can flush some registers in this function, so that they will not be cleared 
- *        because of deep sleep. 
- * @retval : void
- ****************************************************************************************
- */
-void pwr_mgmt_before_enter_sleep(void);
-
-/**
- ****************************************************************************************
  * @brief  This function is used to push startup information in app timer. 
  *         This information will optimize power management strategy. 
  *         Note that this function is an advanced API and users should not use it directly.
@@ -241,6 +221,15 @@ void pwr_mgmt_notify_timer_event(notify_timer_event_t timer_event);
  ****************************************************************************************
  */
 pwr_mgmt_mode_t pwr_mgmt_get_sleep_mode(void);
+
+
+/**
+ ****************************************************************************************
+ * @brief  update wake up param
+ * @retval : void
+ ****************************************************************************************
+ */
+void pwr_mgmt_update_wkup_param(void);
 
 /**
  ****************************************************************************************
@@ -259,6 +248,23 @@ void pwr_mgmt_wfe_sleep(void);
  ****************************************************************************************
  */
 void pwr_mgmt_init(pwr_table_t *p_pwr_table);
+
+/**
+ ****************************************************************************************
+ * @brief    Peripheral Controller Initialization Register interface.
+ * @param    p_periph_init      :  the pointer of device init function
+ * @return   void
+ ****************************************************************************************
+ */
+void pwr_mgmt_dev_init(periph_func_t p_periph_init);
+
+/**
+ ****************************************************************************************
+ * @brief    Device config resume interface.
+ * @return   void
+ ****************************************************************************************
+ */
+void pwr_mgmt_dev_resume(void);
 
 /**
  ****************************************************************************************

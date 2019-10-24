@@ -94,7 +94,7 @@ typedef enum IRQn
     PWR_CMD_IRQn              =  24,  /**< POWER CMD ACK Interrupt                                                   */
     BLESLP_IRQn               =  25,  /**< BLE Sleep Interrupt                                                       */
     SLPTIMER_IRQn             =  26,  /**< Sleep Timer Interrupt                                                     */
-    EXTWKUP_IRQn              =  27,  /**< External Wakeup Interrupt                                                 */
+    COMP_EXT_IRQn             =  27,  /**< Comparator and External Wakeup Interrupt                                  */
     AON_WDT_IRQn              =  28,  /**< Always on Watchdog Interrupt                                              */
     I2S_M_IRQn                =  29,  /**< I2S_M Interrupt                                                           */
     I2S_S_IRQn                =  30,  /**< I2S_S Interrupt                                                           */
@@ -1338,6 +1338,11 @@ typedef struct _rng_regs
 #define AON_RF_REG_1_EN_INJ_ON                              (0x1 << AON_RF_REG_1_EN_INJ_Pos)
 #define AON_RF_REG_1_EN_INJ_OFF                             (0x0 << AON_RF_REG_1_EN_INJ_Pos)
 
+#define AON_RF_REG_1_TON_Pos                                (11U)
+#define AON_RF_REG_1_TON_Len                                (3U)
+#define AON_RF_REG_1_TON_Msk                                (0x7U << AON_RF_REG_1_TON_Pos)
+#define AON_RF_REG_1_TON                                    AON_RF_REG_1_TON_Msk
+
 #define AON_RF_REG_1_DCDC_REG2_Pos                          (8U)
 #define AON_RF_REG_1_DCDC_REG2_Len                          (8U)
 #define AON_RF_REG_1_DCDC_REG2_Msk                          (0xFFU << AON_RF_REG_1_DCDC_REG2_Pos)
@@ -1349,6 +1354,11 @@ typedef struct _rng_regs
 #define AON_RF_REG_1_DCDC_REG1                              AON_RF_REG_1_DCDC_REG1_Msk
 
 /*******************  Bit definition for AON_REG_RF_REG_2 register  **********/
+#define AON_RF_REG_2_TON_EN_Pos                             (17U)
+#define AON_RF_REG_2_TON_EN_Msk                             (0x1U << AON_RF_REG_2_TON_EN_Pos)
+#define AON_RF_REG_2_TON_EN_ON                              (0x1  << AON_RF_REG_2_TON_EN_Pos)
+#define AON_RF_REG_2_TON_EN_OFF                             (0x0  << AON_RF_REG_2_TON_EN_Pos)
+
 #define AON_RF_REG_2_GP_REG2_Pos                            (16U)
 #define AON_RF_REG_2_GP_REG2_Len                            (8U)
 #define AON_RF_REG_2_GP_REG2_Msk                            (0xFFU << AON_RF_REG_2_GP_REG2_Pos)

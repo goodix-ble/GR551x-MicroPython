@@ -196,6 +196,7 @@ static void bas_read_att_cb(uint8_t conn_idx, const gatts_read_req_cb_t *p_param
 {
     uint8_t          handle = p_param->handle;
     uint8_t          tab_index;
+    uint8_t          char_pres_value[PRF_CHAR_PRES_FMT_SIZE];
     uint8_t          i;
     gatts_read_cfm_t cfm;
 
@@ -229,7 +230,8 @@ static void bas_read_att_cb(uint8_t conn_idx, const gatts_read_req_cb_t *p_param
 
         case BAS_IDX_BATT_LVL_PRES_FMT:
             cfm.length = PRF_CHAR_PRES_FMT_SIZE;
-            prf_pack_char_pres_fmt(cfm.value, &(s_bas_env[i].batt_level_pres_format));
+            prf_pack_char_pres_fmt(char_pres_value, &(s_bas_env[i].batt_level_pres_format));
+            cfm.value = char_pres_value;
             break;
 
         default:
@@ -388,6 +390,11 @@ sdk_err_t bas_batt_lvl_update(uint8_t conn_idx, uint8_t ins_idx, uint8_t batt_lv
 
 sdk_err_t bas_service_init(bas_init_t bas_init[], uint8_t ins_num)
 {
+    if (NULL == bas_init)
+    {
+        return SDK_ERR_POINTER_NULL;
+    }
+
     if (ins_num > BAS_INSTANCE_MAX)
     {
         return SDK_ERR_INVALID_PARAM;
