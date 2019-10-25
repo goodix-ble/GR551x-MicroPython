@@ -39,7 +39,7 @@ mp_obj_t ble_obj_enable(void) {
     
     if(!s_gr_ble_common_params_ins.is_ble_initialized){
         gr_ble_stack_init();
-        //gr_ubluepy_init();
+        gr_xblepy_init();
         gr_trace("enable the ble stack...\r\n");
     } else {
         gr_trace("ble stack enabled already...\r\n");
@@ -72,7 +72,7 @@ mp_obj_t ble_obj_enabled(void) {
 /// test function, start the adv test
 mp_obj_t ble_obj_start_adv(void) {
     if(s_gr_ble_common_params_ins.is_ble_initialized) {
-        gr_ubluepy_gap_start_adv_test();
+        gr_xblepy_gap_start_adv_test();
     }
 
     return mp_const_none;

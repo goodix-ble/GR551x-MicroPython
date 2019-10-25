@@ -64,7 +64,7 @@ static void ble_init_complete_callback(void){
     memcpy(&s_gr_ble_common_params_ins.local_bd_addr, &bd_addr, sizeof(gap_bdaddr_t));
 
 
-    //gr_ubluepy_gap_start_adv_test();
+    //gr_xblepy_gap_start_adv_test();
 }
 
 
@@ -72,7 +72,7 @@ void gr_ble_stack_init(void){
     s_gr_ble_common_params_ins.is_ble_initialized = false;
 
     ble_stack_init(&s_app_ble_callback, &heaps_table);
-    //gr_ubluepy_gap_start_adv_test();
+    //gr_xblepy_gap_start_adv_test();
 }
 
 char * gr_ble_format_uuid128b_to_string(uint8_t * uuid128b, uint8_t len){    

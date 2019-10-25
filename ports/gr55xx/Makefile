@@ -92,9 +92,9 @@ endif
 # ble porting
 SRC_C += \
     boards/ports/ble/gr_porting.c \
-    boards/ports/ble/ubluepy_hal_common.c \
-    boards/ports/ble/ubluepy_hal_gap.c \
-    boards/ports/ble/ubluepy_hal_gatt_server.c \
+    boards/ports/ble/xblepy_hal_common.c \
+    boards/ports/ble/xblepy_hal_gap.c \
+    boards/ports/ble/xblepy_hal_gatt_server.c \
     boards/ports/ble/user_callback/user_gatts_profile_callback.c \
     boards/ports/ble/user_callback/user_gap_callback.c \
     boards/ports/ble/user_callback/user_gatt_common_callback.c \
@@ -102,20 +102,20 @@ SRC_C += \
     boards/ports/ble/user_callback/user_l2cap_callback.c \
     boards/ports/ble/user_callback/user_sm_callback.c \
     modules/ble/modble.c \
-    modules/ubluepy/modubluepy.c \
-    modules/ubluepy/ubluepy_uuid.c \
-    modules/ubluepy/ubluepy_constants.c \
-    modules/ubluepy/ubluepy_delegate.c \
-    modules/ubluepy/ubluepy_descriptor.c \
-    modules/ubluepy/ubluepy_characteristic.c \
-    modules/ubluepy/ubluepy_service.c \
-    modules/ubluepy/ubluepy_peripheral.c \
-    modules/ubluepy/ubluepy_scan_entry.c \
-    modules/ubluepy/ubluepy_scanner.c \
+    modules/xblepy/modxblepy.c \
+    modules/xblepy/xblepy_uuid.c \
+    modules/xblepy/xblepy_constants.c \
+    modules/xblepy/xblepy_delegate.c \
+    modules/xblepy/xblepy_descriptor.c \
+    modules/xblepy/xblepy_characteristic.c \
+    modules/xblepy/xblepy_service.c \
+    modules/xblepy/xblepy_peripheral.c \
+    modules/xblepy/xblepy_scan_entry.c \
+    modules/xblepy/xblepy_scanner.c \
 
     
 INC_GR += -I./modules/ble
-INC_GR += -I./modules/ubluepy
+INC_GR += -I./modules/xblepy
 INC_GR += -I./boards/ports/ble
 INC_GR += -I./boards/ports/ble/user_callback
 

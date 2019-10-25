@@ -52,8 +52,8 @@ Q(address)
 Q(startadv)
 Q(stopadv)
 
-/*********************************** ubluepy module *********************************/
-Q(ubluepy)
+/*********************************** xblepy module *********************************/
+Q(xblepy)
 
 //UUID class
 Q(UUID)

@@ -3,25 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Glenn Ruben Bakke
+ * Copyright (c) 2019 nix.long
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
  */
 
 #include "py/obj.h"
@@ -32,13 +15,13 @@
 #include "assert.h"
 #include "gr_porting.h"
 
-#if MICROPY_PY_UBLUEPY
+#if MICROPY_PY_XBLEPY
 
-#include "modubluepy.h"
+#include "modxblepy.h"
 
-STATIC void ubluepy_uuid_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
-    ubluepy_uuid_obj_t * self = (ubluepy_uuid_obj_t *)o;
-    if (self->type == UBLUEPY_UUID_16_BIT) {
+STATIC void xblepy_uuid_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
+    xblepy_uuid_obj_t * self = (xblepy_uuid_obj_t *)o;
+    if (self->type == XBLEPY_UUID_16_BIT) {
         mp_printf(print, "UUID(uuid: 0x" HEX2_FMT HEX2_FMT ")",
                   self->value[1], self->value[0]);
     } else {
@@ -46,7 +29,7 @@ STATIC void ubluepy_uuid_print(const mp_print_t *print, mp_obj_t o, mp_print_kin
     }
 }
 
-STATIC mp_obj_t ubluepy_uuid_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+STATIC mp_obj_t xblepy_uuid_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
 
     enum { ARG_NEW_UUID };
 
@@ -58,7 +41,7 @@ STATIC mp_obj_t ubluepy_uuid_make_new(const mp_obj_type_t *type, size_t n_args, 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    ubluepy_uuid_obj_t *s = m_new_obj(ubluepy_uuid_obj_t);
+    xblepy_uuid_obj_t *s = m_new_obj(xblepy_uuid_obj_t);
     s->base.type = type;
 
     mp_obj_t uuid_obj = args[ARG_NEW_UUID].u_obj;
@@ -68,19 +51,19 @@ STATIC mp_obj_t ubluepy_uuid_make_new(const mp_obj_type_t *type, size_t n_args, 
     }
 
     if (mp_obj_is_int(uuid_obj)) {
-        s->type = UBLUEPY_UUID_16_BIT;
+        s->type = XBLEPY_UUID_16_BIT;
         s->value[1] = (((uint16_t)mp_obj_get_int(uuid_obj)) >> 8) & 0xFF;
         s->value[0] = ((uint8_t)mp_obj_get_int(uuid_obj)) & 0xFF;
     } else if (mp_obj_is_str(uuid_obj)) {
         GET_STR_DATA_LEN(uuid_obj, str_data, str_len);
         if (str_len == 6) { // Assume hex digit prefixed with 0x
-            s->type = UBLUEPY_UUID_16_BIT;
+            s->type = XBLEPY_UUID_16_BIT;
             s->value[0]  = unichar_xdigit_value(str_data[5]);
             s->value[0] += unichar_xdigit_value(str_data[4]) << 4;
             s->value[1]  = unichar_xdigit_value(str_data[3]);
             s->value[1] += unichar_xdigit_value(str_data[2]) << 4;
         } else if (str_len == 36) {
-            s->type = UBLUEPY_UUID_128_BIT;
+            s->type = XBLEPY_UUID_128_BIT;
             uint8_t buffer[16];
             buffer[0]  = unichar_xdigit_value(str_data[35]);
             buffer[0] += unichar_xdigit_value(str_data[34]) << 4;
@@ -129,9 +112,9 @@ STATIC mp_obj_t ubluepy_uuid_make_new(const mp_obj_type_t *type, size_t n_args, 
         } else {
             mp_raise_ValueError("Invalid UUID string length");
         }
-    } else if (mp_obj_is_type(uuid_obj, &ubluepy_uuid_type)) {
+    } else if (mp_obj_is_type(uuid_obj, &xblepy_uuid_type)) {
         // deep copy instance
-        ubluepy_uuid_obj_t * p_old = MP_OBJ_TO_PTR(uuid_obj);
+        xblepy_uuid_obj_t * p_old = MP_OBJ_TO_PTR(uuid_obj);
         s->type     = p_old->type;
         s->value[0] = p_old->value[0];
         s->value[1] = p_old->value[1];
@@ -146,12 +129,12 @@ STATIC mp_obj_t ubluepy_uuid_make_new(const mp_obj_type_t *type, size_t n_args, 
 /// Get binary value of the 16 or 128 bit UUID. Returned as bytearray type.
 ///
 STATIC mp_obj_t uuid_bin_val(mp_obj_t self_in) {
-    ubluepy_uuid_obj_t * self = MP_OBJ_TO_PTR(self_in);
+    xblepy_uuid_obj_t * self = MP_OBJ_TO_PTR(self_in);
 
     // TODO: Extend the uint16 byte value to 16 byte if 128-bit,
     //       also encapsulate it in a bytearray. For now, return
     //       the uint16_t field of the UUID.
-    if (self->type == UBLUEPY_UUID_128_BIT) {
+    if (self->type == XBLEPY_UUID_128_BIT) {
         mp_obj_t uuid_str = mp_obj_new_str(gr_ble_format_uuid128b_to_string(&self->value_128b[0], 16), 36);        
         return uuid_str;//MP_OBJ_NEW_SMALL_INT(self->value_128b[0] | self->value_128b[1] << 8);
     } else {        
@@ -159,24 +142,24 @@ STATIC mp_obj_t uuid_bin_val(mp_obj_t self_in) {
     }
     
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_uuid_bin_val_obj, uuid_bin_val);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(xblepy_uuid_bin_val_obj, uuid_bin_val);
 
-STATIC const mp_rom_map_elem_t ubluepy_uuid_locals_dict_table[] = {
+STATIC const mp_rom_map_elem_t xblepy_uuid_locals_dict_table[] = {
 #if 0
-    { MP_ROM_QSTR(MP_QSTR_getCommonName), MP_ROM_PTR(&ubluepy_uuid_get_common_name_obj) },
+    { MP_ROM_QSTR(MP_QSTR_getCommonName), MP_ROM_PTR(&xblepy_uuid_get_common_name_obj) },
 #endif
     // Properties
-    { MP_ROM_QSTR(MP_QSTR_binVal), MP_ROM_PTR(&ubluepy_uuid_bin_val_obj) },
+    { MP_ROM_QSTR(MP_QSTR_binVal), MP_ROM_PTR(&xblepy_uuid_bin_val_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(ubluepy_uuid_locals_dict, ubluepy_uuid_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(xblepy_uuid_locals_dict, xblepy_uuid_locals_dict_table);
 
-const mp_obj_type_t ubluepy_uuid_type = {
+const mp_obj_type_t xblepy_uuid_type = {
     { &mp_type_type },
     .name = MP_QSTR_UUID,
-    .print = ubluepy_uuid_print,
-    .make_new = ubluepy_uuid_make_new,
-    .locals_dict = (mp_obj_dict_t*)&ubluepy_uuid_locals_dict
+    .print = xblepy_uuid_print,
+    .make_new = xblepy_uuid_make_new,
+    .locals_dict = (mp_obj_dict_t*)&xblepy_uuid_locals_dict
 };
 
-#endif // MICROPY_PY_UBLUEPY
+#endif // MICROPY_PY_XBLEPY

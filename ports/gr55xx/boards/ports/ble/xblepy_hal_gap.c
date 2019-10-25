@@ -1,7 +1,7 @@
 #include "py/nlr.h"
 #include "mp_defs.h"
-#include "modubluepy.h"
-#include "ubluepy_hal.h"
+#include "modxblepy.h"
+#include "xblepy_hal.h"
 #include "gr_config.h"
 #include "gr_porting.h"
 
@@ -22,7 +22,7 @@ gr_ble_gap_params_t s_gr_ble_gap_params_ins = {
     .is_need_sec_cfm    = false,
 };
 
-bool gr_ubluepy_gap_start_adv(ubluepy_advertise_data_t * p_adv_params) {
+bool gr_xblepy_gap_start_adv(xblepy_advertise_data_t * p_adv_params) {
     static uint8_t adv_data[GR_BLE_GAP_ADV_DEFAULT_SIZE];    
     const  uint8_t max_size     = GR_BLE_ADV_DATA_LEN_MAX < GR_BLE_SCAN_RSP_DATA_LEN_MAX ? GR_BLE_ADV_DATA_LEN_MAX: GR_BLE_SCAN_RSP_DATA_LEN_MAX ;
     uint8_t     byte_pos        = 0;    
@@ -148,17 +148,17 @@ bool gr_ubluepy_gap_start_adv(ubluepy_advertise_data_t * p_adv_params) {
     return true;
 }
 
-bool gr_ubluepy_gap_start_services(mp_obj_t * p_services, uint8_t num_of_services) {
+bool gr_xblepy_gap_start_services(mp_obj_t * p_services, uint8_t num_of_services) {
     bool ret = true;
-    gr_trace("+++ gr_ubluepy_gap_start_services called(%d) \r\n", num_of_services);
+    gr_trace("+++ gr_xblepy_gap_start_services called(%d) \r\n", num_of_services);
 
     //1. start service 
     if ((num_of_services > 0) && (p_services != NULL)) {
 
         for (uint8_t i = 0; i < num_of_services; i++) {
-            ubluepy_service_obj_t * p_service = (ubluepy_service_obj_t *)p_services[i];
+            xblepy_service_obj_t * p_service = (xblepy_service_obj_t *)p_services[i];
             
-            ret = gr_ubluepy_start_service(p_service);
+            ret = gr_xblepy_start_service(p_service);
             if(!ret) {
                 return ret;
             }
@@ -168,26 +168,26 @@ bool gr_ubluepy_gap_start_services(mp_obj_t * p_services, uint8_t num_of_service
     return ret;
 }
 
-bool gr_ubluepy_gap_delete_service(mp_obj_t * p_service) {
+bool gr_xblepy_gap_delete_service(mp_obj_t * p_service) {
     bool ret = true;
-    gr_trace("+++ gr_ubluepy_gap_delete_service called \r\n");
+    gr_trace("+++ gr_xblepy_gap_delete_service called \r\n");
 
 
 
 }
 
-bool gr_ubluepy_gap_start_advertise(ubluepy_advertise_data_t * p_adv_params) {
+bool gr_xblepy_gap_start_advertise(xblepy_advertise_data_t * p_adv_params) {
     bool ret;
-    gr_trace("+++ gr_ubluepy_gap_start_advertise called (%s) \r\n", p_adv_params->p_device_name);
+    gr_trace("+++ gr_xblepy_gap_start_advertise called (%s) \r\n", p_adv_params->p_device_name);
     
     //1. start service 
 #if 0
     if (p_adv_params->num_of_services > 0) {
 
         for (uint8_t i = 0; i < p_adv_params->num_of_services; i++) {
-            ubluepy_service_obj_t * p_service = (ubluepy_service_obj_t *)p_adv_params->p_services[i];
+            xblepy_service_obj_t * p_service = (xblepy_service_obj_t *)p_adv_params->p_services[i];
             
-            ret = gr_ubluepy_start_service(p_service);
+            ret = gr_xblepy_start_service(p_service);
             if(!ret) {
                 return ret;
             }
@@ -195,7 +195,7 @@ bool gr_ubluepy_gap_start_advertise(ubluepy_advertise_data_t * p_adv_params) {
     }
 #endif
     //2. start adv
-    ret = gr_ubluepy_gap_start_adv(p_adv_params);    
+    ret = gr_xblepy_gap_start_adv(p_adv_params);    
 
     uint32_t patch_enable_flag_addr = 0x300041d8;
     printf("+++ patch_enable_flag: 0x%x \r\n", *((uint32_t *)0x300041d8));
@@ -204,17 +204,17 @@ bool gr_ubluepy_gap_start_advertise(ubluepy_advertise_data_t * p_adv_params) {
     return ret;
 }
 
-bool gr_ubluepy_gap_stop_advertise(void) {
-    gr_trace("+++ gr_ubluepy_gap_stop_advertise called \r\n");
+bool gr_xblepy_gap_stop_advertise(void) {
+    gr_trace("+++ gr_xblepy_gap_stop_advertise called \r\n");
     
     return true;
 }
 
 
-bool gr_ubluepy_gap_start_adv_test(void) {
-    ubluepy_advertise_data_t  adv_params;
+bool gr_xblepy_gap_start_adv_test(void) {
+    xblepy_advertise_data_t  adv_params;
 
-    memset(&adv_params, 0 ,sizeof(ubluepy_advertise_data_t));
+    memset(&adv_params, 0 ,sizeof(xblepy_advertise_data_t));
 
     adv_params.p_device_name = "micro_p";
     adv_params.device_name_len = 7;
@@ -224,5 +224,5 @@ bool gr_ubluepy_gap_start_adv_test(void) {
     adv_params.data_len = 0;
     adv_params.connectable = true;
 
-    return gr_ubluepy_gap_start_adv(&adv_params);
+    return gr_xblepy_gap_start_adv(&adv_params);
 }

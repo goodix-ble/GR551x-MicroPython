@@ -87,7 +87,7 @@ static ble_err_t gatt_prf_db_init(void)
     gatts_db.attr_tab_cfg          = &s_attr_mask[0];
     gatts_db.max_nb_attr           = psrv->mGattNum;
     
-    if (psrv->mUuidType == UBLUEPY_UUID_128_BIT)
+    if (psrv->mUuidType == XBLEPY_UUID_128_BIT)
     {
         gatts_db.uuid                  = ((attm_desc_128_t *)psrv->pAttTable)->uuid;
         gatts_db.srvc_perm             = SRVC_UUID_TYPE_SET(UUID_TYPE_128);

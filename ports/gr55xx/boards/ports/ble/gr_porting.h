@@ -5,7 +5,7 @@
 #include "user_app.h"
 #include "gr_config.h"
 #include "ble.h"
-#include "modubluepy.h"
+#include "modxblepy.h"
 
 #define GR_PORT_DEBUG   1
 
@@ -53,7 +53,7 @@ typedef struct{
 
 typedef struct
 {
-    ubluepy_uuid_type_t         uuid_type;
+    xblepy_uuid_type_t         uuid_type;
     union
     {
         attm_desc_t             attm;
@@ -62,17 +62,17 @@ typedef struct
     uint16_t                    service_handle;     //save service handle
     uint16_t                    parent_handle;      //save parent handle
     uint16_t                    handle;             //save my onw handle, service handle's parent is 0, if service_handle == handle, it's service entity    
-    ubluepy_attr_type_t         type;
+    xblepy_attr_type_t          type;
     
-    ubluepy_prop_t              raw_properties;
-    ubluepy_permission_t        raw_permissions;
+    xblepy_prop_t              raw_properties;
+    xblepy_permission_t        raw_permissions;
 } BTGattEntity_t;
 
 typedef struct{
     bool                isUsed;             //record this posit
     uint16_t            mServiceHandle;     //service handlle
     uint16_t            mGattNum;           //number of attribute
-    ubluepy_uuid_type_t mUuidType;          //just support 16b & 128b
+    xblepy_uuid_type_t  mUuidType;          //just support 16b & 128b
     void *              pAttTable;          //pointer to att table, real type is attm_desc_t * or attm_desc_128_t *    
 }BTGattServiceList_t;
 

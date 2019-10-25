@@ -1,7 +1,7 @@
 #include "mp_defs.h"
 #include "stdint.h"
-#include "modubluepy.h"
-#include "ubluepy_hal.h"
+#include "modxblepy.h"
+#include "xblepy_hal.h"
 #include "gr_config.h"
 #include "gr_porting.h"
 
@@ -30,75 +30,75 @@ static bool prvGetServiceAttmTable(uint16_t usServiceHandle, bool * isUUID128, v
 
 
 
-static bool gr_transfer_mpy_props_to_goodix_props(const ubluepy_prop_t xProperties, const ubluepy_permission_t xPermissions, uint16_t *perm){
+static bool gr_transfer_mpy_props_to_goodix_props(const xblepy_prop_t xProperties, const xblepy_permission_t xPermissions, uint16_t *perm){
 
     *perm = 0;
     
-    if(xProperties & UBLUEPY_PROP_BROADCAST){
+    if(xProperties & XBLEPY_PROP_BROADCAST){
         *perm |= BROADCAST_ENABLE;
     }
     
-    if(xProperties & UBLUEPY_PROP_READ){
-        if(xPermissions & UBLUEPY_PERM_READ){
+    if(xProperties & XBLEPY_PROP_READ){
+        if(xPermissions & XBLEPY_PERM_READ){
             *perm |= READ_PERM(NOAUTH);
-        } else if(xPermissions & UBLUEPY_PERM_READ_ENCRYPTED){
+        } else if(xPermissions & XBLEPY_PERM_READ_ENCRYPTED){
             *perm |= READ_PERM(UNAUTH);
-        } else if(xPermissions & UBLUEPY_PERM_READ_ENCRYPTED_MITM){
+        } else if(xPermissions & XBLEPY_PERM_READ_ENCRYPTED_MITM){
             *perm |= READ_PERM(AUTH);
         }        
     }
     
-    if(xProperties & UBLUEPY_PROP_WRITE_WO_RESP){
-        if(xPermissions & UBLUEPY_PERM_WRITE){
+    if(xProperties & XBLEPY_PROP_WRITE_WO_RESP){
+        if(xPermissions & XBLEPY_PERM_WRITE){
             *perm |= WRITE_CMD_PERM(NOAUTH);
-        } else if(xPermissions & UBLUEPY_PERM_WRITE_ENCRYPTED){
+        } else if(xPermissions & XBLEPY_PERM_WRITE_ENCRYPTED){
             *perm |= WRITE_CMD_PERM(UNAUTH);
-        } else if(xPermissions & UBLUEPY_PERM_WRITE_ENCRYPTED_MITM){
+        } else if(xPermissions & XBLEPY_PERM_WRITE_ENCRYPTED_MITM){
             *perm |= WRITE_CMD_PERM(AUTH);
         }
     }
     
-    if(xProperties & UBLUEPY_PROP_WRITE){
-        if(xPermissions & UBLUEPY_PERM_WRITE){
+    if(xProperties & XBLEPY_PROP_WRITE){
+        if(xPermissions & XBLEPY_PERM_WRITE){
             *perm |= WRITE_REQ_PERM(NOAUTH);
-        } else if(xPermissions & UBLUEPY_PERM_WRITE_ENCRYPTED){
+        } else if(xPermissions & XBLEPY_PERM_WRITE_ENCRYPTED){
             *perm |= WRITE_REQ_PERM(UNAUTH);
-        } else if(xPermissions & UBLUEPY_PERM_WRITE_ENCRYPTED_MITM){
+        } else if(xPermissions & XBLEPY_PERM_WRITE_ENCRYPTED_MITM){
             *perm |= WRITE_REQ_PERM(AUTH);
         }
     }
     
-    if(xProperties & UBLUEPY_PROP_NOTIFY){
-        if(xPermissions & (UBLUEPY_PERM_WRITE | UBLUEPY_PERM_READ)){
+    if(xProperties & XBLEPY_PROP_NOTIFY){
+        if(xPermissions & (XBLEPY_PERM_WRITE | XBLEPY_PERM_READ)){
             *perm |= NOTIFY_PERM(NOAUTH);
-        } else if(xPermissions & (UBLUEPY_PERM_WRITE_ENCRYPTED | UBLUEPY_PERM_READ_ENCRYPTED)){
+        } else if(xPermissions & (XBLEPY_PERM_WRITE_ENCRYPTED | XBLEPY_PERM_READ_ENCRYPTED)){
             *perm |= NOTIFY_PERM(UNAUTH);
-        } else if(xPermissions & (UBLUEPY_PERM_WRITE_ENCRYPTED_MITM | UBLUEPY_PERM_READ_ENCRYPTED_MITM)){
+        } else if(xPermissions & (XBLEPY_PERM_WRITE_ENCRYPTED_MITM | XBLEPY_PERM_READ_ENCRYPTED_MITM)){
             *perm |= NOTIFY_PERM(AUTH);
         }        
     }
     
-    if(xProperties & UBLUEPY_PROP_INDICATE){
-        if(xPermissions & (UBLUEPY_PERM_WRITE | UBLUEPY_PERM_READ)){
+    if(xProperties & XBLEPY_PROP_INDICATE){
+        if(xPermissions & (XBLEPY_PERM_WRITE | XBLEPY_PERM_READ)){
             *perm |= INDICATE_PERM(NOAUTH);
-        } else if(xPermissions & (UBLUEPY_PERM_WRITE_ENCRYPTED | UBLUEPY_PERM_READ_ENCRYPTED)){
+        } else if(xPermissions & (XBLEPY_PERM_WRITE_ENCRYPTED | XBLEPY_PERM_READ_ENCRYPTED)){
             *perm |= INDICATE_PERM(UNAUTH);
-        } else if(xPermissions & (UBLUEPY_PERM_WRITE_ENCRYPTED_MITM | UBLUEPY_PERM_READ_ENCRYPTED_MITM)){
+        } else if(xPermissions & (XBLEPY_PERM_WRITE_ENCRYPTED_MITM | XBLEPY_PERM_READ_ENCRYPTED_MITM)){
             *perm |= INDICATE_PERM(AUTH);
         }         
     }
     
-    if(xProperties & UBLUEPY_PROP_AUTH_SIGNED_WR){
-        if(xPermissions & UBLUEPY_PERM_WRITE_SIGNED){
+    if(xProperties & XBLEPY_PROP_AUTH_SIGNED_WR){
+        if(xPermissions & XBLEPY_PERM_WRITE_SIGNED){
             *perm |= WRITE_SIGNED_PERM(UNAUTH);
-        } else if(xPermissions & UBLUEPY_PERM_WRITE_SIGNED_MITM){
+        } else if(xPermissions & XBLEPY_PERM_WRITE_SIGNED_MITM){
             *perm |= WRITE_SIGNED_PERM(AUTH);
         } else {
             *perm |= WRITE_SIGNED_PERM(NOAUTH);
         }
     }
     
-    if(xProperties & UBLUEPY_PROP_EXTENDED_PROP){
+    if(xProperties & XBLEPY_PROP_EXTENDED_PROP){
         *perm |= EXT_PROP_ENABLE;
     }
     
@@ -109,7 +109,7 @@ static bool gr_transfer_mpy_props_to_goodix_props(const ubluepy_prop_t xProperti
 
 
 
-bool gr_ubluepy_gatt_add_service(ubluepy_service_obj_t * service){
+bool gr_xblepy_gatt_add_service(xblepy_service_obj_t * service){
     bool ret = true;
     attm_desc_t     attm;
     attm_desc_128_t attm128;    
@@ -121,28 +121,28 @@ bool gr_ubluepy_gatt_add_service(ubluepy_service_obj_t * service){
     }
     else
     {            
-        if( UBLUEPY_SERVICE_PRIMARY == service->type ){
-            xGattTable[ xGattTableSize ].type = UBLUEPY_ATTR_TYPE_PRIMARY_SERVICE;
+        if( XBLEPY_SERVICE_PRIMARY == service->type ){
+            xGattTable[ xGattTableSize ].type = XBLEPY_ATTR_TYPE_PRIMARY_SERVICE;
         } else {
-            xGattTable[ xGattTableSize ].type = UBLUEPY_ATTR_TYPE_SECONDARY_SERVICE;
+            xGattTable[ xGattTableSize ].type = XBLEPY_ATTR_TYPE_SECONDARY_SERVICE;
         }
         
-        if(service->p_uuid->type == UBLUEPY_UUID_16_BIT){
+        if(service->p_uuid->type == XBLEPY_UUID_16_BIT){
 
             attm.perm           = 0;
             attm.ext_perm       = 0;
             attm.max_size       = 0;
             attm.uuid           = (service->p_uuid->value[1] << 8) | service->p_uuid->value[0];
             
-            xGattTable[ xGattTableSize ].uuid_type          = UBLUEPY_UUID_16_BIT;
+            xGattTable[ xGattTableSize ].uuid_type          = XBLEPY_UUID_16_BIT;
             xGattTable[ xGattTableSize ].properties.attm    = attm;
-        } else if(service->p_uuid->type == UBLUEPY_UUID_128_BIT){                
+        } else if(service->p_uuid->type == XBLEPY_UUID_128_BIT){                
             attm128.perm        = 0;
             attm128.ext_perm    = 0;
             attm128.max_size    = 0;                
             memcpy(&attm128.uuid[0], &service->p_uuid->value_128b[0], GR_BLE_128BIT_UUID_LEN);
             
-            xGattTable[ xGattTableSize ].uuid_type          = UBLUEPY_UUID_128_BIT;
+            xGattTable[ xGattTableSize ].uuid_type          = XBLEPY_UUID_128_BIT;
             xGattTable[ xGattTableSize ].properties.attm128 = attm128;
         }
         
@@ -165,7 +165,7 @@ bool gr_ubluepy_gatt_add_service(ubluepy_service_obj_t * service){
     return ret;
 }
 
-bool gr_ubluepy_gatt_add_characteristic(ubluepy_characteristic_obj_t * charac) {
+bool gr_xblepy_gatt_add_characteristic(xblepy_characteristic_obj_t * charac) {
     bool ret = true;
     attm_desc_t     attm;
     attm_desc_128_t attm128;    
@@ -183,7 +183,7 @@ bool gr_ubluepy_gatt_add_characteristic(ubluepy_characteristic_obj_t * charac) {
     
         ext_perm |= ATT_VAL_LOC_USER;
         
-        if(charac->p_uuid->type == UBLUEPY_UUID_16_BIT) {
+        if(charac->p_uuid->type == XBLEPY_UUID_16_BIT) {
             ext_perm |= ATT_UUID_TYPE_SET(UUID_TYPE_16);            
 
             attm.perm           = perm;
@@ -191,9 +191,9 @@ bool gr_ubluepy_gatt_add_characteristic(ubluepy_characteristic_obj_t * charac) {
             attm.max_size       = GR_BLE_GATTS_VAR_ATTR_LEN_MAX;
             attm.uuid           = (charac->p_uuid->value[1] << 8) | charac->p_uuid->value[0];
             
-            xGattTable[ xGattTableSize ].uuid_type          = UBLUEPY_UUID_16_BIT;
+            xGattTable[ xGattTableSize ].uuid_type          = XBLEPY_UUID_16_BIT;
             xGattTable[ xGattTableSize ].properties.attm    = attm;
-        } else if(charac->p_uuid->type == UBLUEPY_UUID_128_BIT) {
+        } else if(charac->p_uuid->type == XBLEPY_UUID_128_BIT) {
             ext_perm |= ATT_UUID_TYPE_SET(UUID_TYPE_128);
                             
             attm128.perm        = perm;
@@ -201,11 +201,11 @@ bool gr_ubluepy_gatt_add_characteristic(ubluepy_characteristic_obj_t * charac) {
             attm128.max_size    = GR_BLE_GATTS_VAR_ATTR_LEN_MAX;                
             memcpy(&attm128.uuid[0], &charac->p_uuid->value_128b[0], GR_BLE_128BIT_UUID_LEN);
             
-            xGattTable[ xGattTableSize ].uuid_type          = UBLUEPY_UUID_128_BIT;
+            xGattTable[ xGattTableSize ].uuid_type          = XBLEPY_UUID_128_BIT;
             xGattTable[ xGattTableSize ].properties.attm128 = attm128;
         }
         
-        xGattTable[ xGattTableSize ].type = UBLUEPY_ATTR_TYPE_CHARACTERISTIC_VAL;
+        xGattTable[ xGattTableSize ].type = XBLEPY_ATTR_TYPE_CHARACTERISTIC_VAL;
         xGattTable[ xGattTableSize ].parent_handle  = UINT16_MAX;
         xGattTable[ xGattTableSize ].service_handle = charac->p_service->handle;
         xGattTable[ xGattTableSize ].raw_properties = charac->props;
@@ -213,7 +213,7 @@ bool gr_ubluepy_gatt_add_characteristic(ubluepy_characteristic_obj_t * charac) {
 
         for( int i = 0; i < xGattTableSize; ++i )
         {
-            if( ( (xGattTable[i].type == UBLUEPY_ATTR_TYPE_PRIMARY_SERVICE) || (xGattTable[i].type == UBLUEPY_ATTR_TYPE_SECONDARY_SERVICE)) && ( xGattTable[ i ].handle == charac->p_service->handle ) )
+            if( ( (xGattTable[i].type == XBLEPY_ATTR_TYPE_PRIMARY_SERVICE) || (xGattTable[i].type == XBLEPY_ATTR_TYPE_SECONDARY_SERVICE)) && ( xGattTable[ i ].handle == charac->p_service->handle ) )
             {
                 xGattTable[ xGattTableSize ].parent_handle = xGattTable[ i ].handle;
                 break;
@@ -245,7 +245,7 @@ bool gr_ubluepy_gatt_add_characteristic(ubluepy_characteristic_obj_t * charac) {
     return ret;
 }
 
-bool gr_ubluepy_gatt_add_descriptor(ubluepy_descriptor_obj_t * p_desc) {
+bool gr_xblepy_gatt_add_descriptor(xblepy_descriptor_obj_t * p_desc) {
 
     bool ret        = true;
     attm_desc_t     attm;
@@ -259,49 +259,49 @@ bool gr_ubluepy_gatt_add_descriptor(ubluepy_descriptor_obj_t * p_desc) {
     }
     else
     {        
-        ubluepy_prop_t x_properties =   UBLUEPY_PROP_BROADCAST      |
-                                        UBLUEPY_PROP_READ           |
-                                        UBLUEPY_PROP_WRITE_WO_RESP  |
-                                        UBLUEPY_PROP_WRITE          |
-                                        UBLUEPY_PROP_NOTIFY         |
-                                        UBLUEPY_PROP_INDICATE       |
-                                        UBLUEPY_PROP_AUTH_SIGNED_WR |
-                                        UBLUEPY_PROP_EXTENDED_PROP;
+        xblepy_prop_t x_properties =   XBLEPY_PROP_BROADCAST      |
+                                        XBLEPY_PROP_READ           |
+                                        XBLEPY_PROP_WRITE_WO_RESP  |
+                                        XBLEPY_PROP_WRITE          |
+                                        XBLEPY_PROP_NOTIFY         |
+                                        XBLEPY_PROP_INDICATE       |
+                                        XBLEPY_PROP_AUTH_SIGNED_WR |
+                                        XBLEPY_PROP_EXTENDED_PROP;
 
         gr_transfer_mpy_props_to_goodix_props(x_properties, p_desc->perms, &perm);
 
         /*check is CCCD ?*/
-        if( ( ( p_desc->p_uuid->type == UBLUEPY_UUID_128_BIT ) && ( p_desc->p_uuid->value_128b[2] == 0x29) && ( p_desc->p_uuid->value_128b[3] == 0x02 )) ||
-            ( ( p_desc->p_uuid->type == UBLUEPY_UUID_16_BIT  ) && ( p_desc->p_uuid->value[1]      == 0x29) && ( p_desc->p_uuid->value[0]      == 0x02 )) ) {
+        if( ( ( p_desc->p_uuid->type == XBLEPY_UUID_128_BIT ) && ( p_desc->p_uuid->value_128b[2] == 0x29) && ( p_desc->p_uuid->value_128b[3] == 0x02 )) ||
+            ( ( p_desc->p_uuid->type == XBLEPY_UUID_16_BIT  ) && ( p_desc->p_uuid->value[1]      == 0x29) && ( p_desc->p_uuid->value[0]      == 0x02 )) ) {
         
             attm.perm           = perm;
             attm.ext_perm       = ATT_VAL_LOC_USER | ATT_UUID_TYPE_SET(UUID_TYPE_16);
             attm.max_size       = GR_BLE_GATTS_VAR_ATTR_LEN_MAX;
             attm.uuid           = 0x2902;
                 
-            xGattTable[ xGattTableSize ].uuid_type          = UBLUEPY_UUID_16_BIT;
+            xGattTable[ xGattTableSize ].uuid_type          = XBLEPY_UUID_16_BIT;
             xGattTable[ xGattTableSize ].properties.attm    = attm;
-        } else if(p_desc->p_uuid->type == UBLUEPY_UUID_16_BIT){
+        } else if(p_desc->p_uuid->type == XBLEPY_UUID_16_BIT){
 
             attm.perm           = perm;
             attm.ext_perm       = ATT_VAL_LOC_USER | ATT_UUID_TYPE_SET(UUID_TYPE_16);
             attm.max_size       = GR_BLE_GATTS_VAR_ATTR_LEN_MAX;
             attm.uuid           = (p_desc->p_uuid->value[1] << 8 ) | p_desc->p_uuid->value[0];
             
-            xGattTable[ xGattTableSize ].uuid_type          = UBLUEPY_UUID_16_BIT;
+            xGattTable[ xGattTableSize ].uuid_type          = XBLEPY_UUID_16_BIT;
             xGattTable[ xGattTableSize ].properties.attm    = attm;
-        } else if(p_desc->p_uuid->type == UBLUEPY_UUID_128_BIT){
+        } else if(p_desc->p_uuid->type == XBLEPY_UUID_128_BIT){
 
             attm128.perm        = perm;
             attm128.ext_perm    = ATT_VAL_LOC_USER | ATT_UUID_TYPE_SET(UUID_TYPE_128);;
             attm128.max_size    = GR_BLE_GATTS_VAR_ATTR_LEN_MAX;
             memcpy(&attm128.uuid[0], &p_desc->p_uuid->value_128b[0], 16);
             
-            xGattTable[ xGattTableSize ].uuid_type          = UBLUEPY_UUID_128_BIT;
+            xGattTable[ xGattTableSize ].uuid_type          = XBLEPY_UUID_128_BIT;
             xGattTable[ xGattTableSize ].properties.attm128 = attm128;
         }
 
-        xGattTable[ xGattTableSize ].type = UBLUEPY_ATTR_TYPE_DESCRIPTOR;
+        xGattTable[ xGattTableSize ].type = XBLEPY_ATTR_TYPE_DESCRIPTOR;
         xGattTable[ xGattTableSize ].parent_handle  = UINT16_MAX;
         xGattTable[ xGattTableSize ].service_handle = p_desc->service_handle;
         xGattTable[ xGattTableSize ].raw_properties = 0;
@@ -310,7 +310,7 @@ bool gr_ubluepy_gatt_add_descriptor(ubluepy_descriptor_obj_t * p_desc) {
         for( int16_t i = ( int16_t ) xGattTableSize - 1; i >= 0; --i )
         {
             //find parent Characteristic, must find in reverse order
-            if( ( xGattTable[ i ].type == UBLUEPY_ATTR_TYPE_CHARACTERISTIC_VAL ) && ( xGattTable[ i ].parent_handle == p_desc->service_handle ) )
+            if( ( xGattTable[ i ].type == XBLEPY_ATTR_TYPE_CHARACTERISTIC_VAL ) && ( xGattTable[ i ].parent_handle == p_desc->service_handle ) )
             {
                 //set Characteristic's handle as descr's parent handle 
                 xGattTable[ xGattTableSize ].parent_handle = xGattTable[ i ].handle;
@@ -340,7 +340,7 @@ bool gr_ubluepy_gatt_add_descriptor(ubluepy_descriptor_obj_t * p_desc) {
 }
 
 
-bool gr_ubluepy_start_service(ubluepy_service_obj_t * service) {
+bool gr_xblepy_start_service(xblepy_service_obj_t * service) {
     if(service == NULL)
         return false;
     
@@ -359,7 +359,7 @@ bool gr_ubluepy_start_service(ubluepy_service_obj_t * service) {
         
         srvlist.mGattNum        = att_num;        
         srvlist.mServiceHandle  = service_handle;
-        srvlist.mUuidType       = isUuid128 ? UBLUEPY_UUID_128_BIT : UBLUEPY_UUID_16_BIT;
+        srvlist.mUuidType       = isUuid128 ? XBLEPY_UUID_128_BIT : XBLEPY_UUID_16_BIT;
         srvlist.pAttTable       = ptable;
         
         ret = prvBTGattServiceListPut(srvlist);
@@ -368,19 +368,19 @@ bool gr_ubluepy_start_service(ubluepy_service_obj_t * service) {
             ret = gr_gatt_service_register(service_handle);
         }
     }
-    gr_trace("+++ gr_ubluepy_start_service : %d  \r\n", ret); 
+    gr_trace("+++ gr_xblepy_start_service : %d  \r\n", ret); 
     
     return ret;    
 }
 
-bool gr_ubluepy_stop_service(ubluepy_service_obj_t * service) {
+bool gr_xblepy_stop_service(xblepy_service_obj_t * service) {
     service = service;
     //nothing to to
     
     return true;
 }
 
-bool gr_ubluepy_delete_service(ubluepy_service_obj_t * service) {
+bool gr_xblepy_delete_service(xblepy_service_obj_t * service) {
     bool ret = true;
     uint16_t service_handle = service->handle;
 
@@ -408,13 +408,13 @@ bool prvGetServiceAttmTable(uint16_t usServiceHandle, bool * isUUID128, void ** 
     for( i= 0; i < xGattTableSize; i++)
     {        
         if(xGattTable[ i ].service_handle == usServiceHandle){
-            if( ( xGattTable[ i ].type == UBLUEPY_ATTR_TYPE_CHARACTERISTIC_VAL ) && ( xGattTable[ i ].parent_handle == usServiceHandle ) ){ //find characteristic value
+            if( ( xGattTable[ i ].type == XBLEPY_ATTR_TYPE_CHARACTERISTIC_VAL ) && ( xGattTable[ i ].parent_handle == usServiceHandle ) ){ //find characteristic value
                 gatt_count += 2;  //extra 1 for characteristic decl
             } else {
                 gatt_count++;
             }
             
-            if(xGattTable[ i ].uuid_type == UBLUEPY_UUID_128_BIT){
+            if(xGattTable[ i ].uuid_type == XBLEPY_UUID_128_BIT){
                 is_128b = true;
             }
         }        
@@ -444,12 +444,12 @@ bool prvGetServiceAttmTable(uint16_t usServiceHandle, bool * isUUID128, void ** 
         for(i = 0; i < xGattTableSize; i++){
             if(xGattTable[ i ].service_handle == usServiceHandle){
                 //add char decl
-                if( ( xGattTable[ i ].type == UBLUEPY_ATTR_TYPE_CHARACTERISTIC_VAL ) && ( xGattTable[ i ].parent_handle == usServiceHandle ) ){
+                if( ( xGattTable[ i ].type == XBLEPY_ATTR_TYPE_CHARACTERISTIC_VAL ) && ( xGattTable[ i ].parent_handle == usServiceHandle ) ){
                     memcpy(((attm_desc_128_t*)pattm) + temp_count, &char_decl_128, sizeof(attm_desc_128_t));
                     temp_count++;
                 } 
                 
-                if(xGattTable[ i ].uuid_type == UBLUEPY_UUID_128_BIT){
+                if(xGattTable[ i ].uuid_type == XBLEPY_UUID_128_BIT){
                     memcpy( (((attm_desc_128_t*)pattm) + temp_count), &(xGattTable[ i ].properties.attm128), sizeof(attm_desc_128_t));
                 } else {
                     uint8_t uuid128[16] = BLE_ATT_16_TO_128_ARRAY(xGattTable[ i ].properties.attm.uuid);
@@ -484,7 +484,7 @@ bool prvGetServiceAttmTable(uint16_t usServiceHandle, bool * isUUID128, void ** 
         for(i = 0; i < xGattTableSize; i++){
             if(xGattTable[ i ].service_handle == usServiceHandle){
                 //add char decl
-                if( ( xGattTable[ i ].type == UBLUEPY_ATTR_TYPE_CHARACTERISTIC_VAL ) && ( xGattTable[ i ].parent_handle == usServiceHandle ) ){
+                if( ( xGattTable[ i ].type == XBLEPY_ATTR_TYPE_CHARACTERISTIC_VAL ) && ( xGattTable[ i ].parent_handle == usServiceHandle ) ){
                     memcpy(((attm_desc_t*)pattm) + temp_count, &char_decl, sizeof(attm_desc_t));
                     temp_count++;
                 }
@@ -563,13 +563,13 @@ static char * prvFormatUUID(BTGattEntity_t gatt){
     uint8_t len = 0;
     memset(&tbuff[0], 0 , 64);
     
-    if(gatt.uuid_type == UBLUEPY_UUID_128_BIT){
+    if(gatt.uuid_type == XBLEPY_UUID_128_BIT){
         len = 0;
         for(int i = 15;i >= 0; i--){
             len += sprintf(&tbuff[len], "%02x", gatt.properties.attm128.uuid[i]);
         }
         
-    } else if(gatt.uuid_type == UBLUEPY_UUID_16_BIT){
+    } else if(gatt.uuid_type == XBLEPY_UUID_16_BIT){
         sprintf(&tbuff[0], "0x%04x", gatt.properties.attm.uuid);
     }
     
@@ -586,16 +586,16 @@ void gr_ble_gatt_handle_map_print(void){
     gr_trace("+++ Port  +++  Stack  +++  UUID +++\r\n");
     
     for (int i=0; i< max; i++) {
-        if((xGattTable[i].type >= UBLUEPY_ATTR_TYPE_PRIMARY_SERVICE) && (xGattTable[i].type <= UBLUEPY_ATTR_TYPE_INCLUDED_SERVICE)) {
+        if((xGattTable[i].type >= XBLEPY_ATTR_TYPE_PRIMARY_SERVICE) && (xGattTable[i].type <= XBLEPY_ATTR_TYPE_INCLUDED_SERVICE)) {
             stack_handle = gr_gatt_transto_ble_stack_handle(xGattTable[i].handle);
             gr_trace("+++ %-4d  +++  %-6d +++ (SERVICE    )%s \r\n", xGattTable[i].handle, stack_handle, prvFormatUUID(xGattTable[i]));
-        }else if(UBLUEPY_ATTR_TYPE_CHARACTERISTIC_VAL == xGattTable[i].type) {
+        }else if(XBLEPY_ATTR_TYPE_CHARACTERISTIC_VAL == xGattTable[i].type) {
             stack_handle = gr_gatt_transto_ble_stack_handle(xGattTable[i].handle - 1);
             gr_trace("+++ %-4d  +++  %-6d +++   (CHAR DECL)0x2803 \r\n", xGattTable[i].handle - 1, stack_handle);
 
             stack_handle = gr_gatt_transto_ble_stack_handle(xGattTable[i].handle);
             gr_trace("+++ %-4d  +++  %-6d +++   (CHAR VALU)%s \r\n", xGattTable[i].handle, stack_handle, prvFormatUUID(xGattTable[i]));
-        } else if(UBLUEPY_ATTR_TYPE_DESCRIPTOR == xGattTable[i].type) {
+        } else if(XBLEPY_ATTR_TYPE_DESCRIPTOR == xGattTable[i].type) {
             stack_handle = gr_gatt_transto_ble_stack_handle(xGattTable[i].handle);
             gr_trace("+++ %-4d  +++  %-6d +++   (DESC     )%s \r\n", xGattTable[i].handle, stack_handle, prvFormatUUID(xGattTable[i]));
         } else {
@@ -609,7 +609,7 @@ void gr_ble_gatt_handle_map_print(void){
 }
 
 
-void gr_ubluepy_init(void)
+void gr_xblepy_init(void)
 {    
     xGattTableSize = 0;
     memset(&xGattTable[0], 0, sizeof(BTGattEntity_t) * GR_BLE_GATT_MAX_ENTITIES);
