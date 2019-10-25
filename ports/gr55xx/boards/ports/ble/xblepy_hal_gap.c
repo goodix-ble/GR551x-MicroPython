@@ -11,7 +11,8 @@
 #define     GR_BLE_DEFAULT_ADV_NAME                 "gr_mpy"
 #define     GR_BLE_DEFAULT_ADV_NAME_LEN             (sizeof(GR_BLE_DEFAULT_ADV_NAME) - 1)
 
-#define     GR_BLE_ADVERTISING_INTERVAL             300
+#define     GR_BLE_ADVERTISING_INTERVAL_MIN         32
+#define     GR_BLE_ADVERTISING_INTERVAL_MAX         48
 #define     GR_BLE_ADVERTISING_TIMEOUT              3000
 
 gr_ble_gap_params_t s_gr_ble_gap_params_ins = {
@@ -83,8 +84,8 @@ bool gr_xblepy_gap_start_adv(xblepy_advertise_data_t * p_adv_params) {
     {
         s_gr_ble_gap_params_ins.gap_adv_param.chnl_map     = GAP_ADV_CHANNEL_37_38_39;
         s_gr_ble_gap_params_ins.gap_adv_param.filter_pol   = GAP_ADV_ALLOW_SCAN_ANY_CON_ANY;          
-        s_gr_ble_gap_params_ins.gap_adv_param.adv_intv_max = GR_BLE_ADVERTISING_INTERVAL * 2;
-        s_gr_ble_gap_params_ins.gap_adv_param.adv_intv_min = GR_BLE_ADVERTISING_INTERVAL;
+        s_gr_ble_gap_params_ins.gap_adv_param.adv_intv_max = GR_BLE_ADVERTISING_INTERVAL_MAX;
+        s_gr_ble_gap_params_ins.gap_adv_param.adv_intv_min = GR_BLE_ADVERTISING_INTERVAL_MIN;
         s_gr_ble_gap_params_ins.gap_adv_param.disc_mode    = GAP_DISC_MODE_GEN_DISCOVERABLE;
 
         if( p_adv_params->connectable == true ) {
@@ -96,7 +97,7 @@ bool gr_xblepy_gap_start_adv(xblepy_advertise_data_t * p_adv_params) {
         s_err = ble_gap_adv_param_set(0, BLE_GAP_OWN_ADDR_STATIC, &s_gr_ble_gap_params_ins.gap_adv_param);
         if(SDK_SUCCESS != s_err){
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                          "Can not set adv param,err(%d).", s_err));
+                          "set adv param fail,err(%d).", s_err));
             return false;
         }                
     }

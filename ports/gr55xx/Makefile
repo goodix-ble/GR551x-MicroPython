@@ -111,6 +111,7 @@ SRC_C += \
     modules/xblepy/xblepy_service.c \
     modules/xblepy/xblepy_device.c \
     modules/xblepy/xblepy_peripheral.c \
+    modules/xblepy/xblepy_central.c \
     modules/xblepy/xblepy_scan_entry.c \
     modules/xblepy/xblepy_scanner.c \
 

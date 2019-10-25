@@ -416,24 +416,24 @@ MP_DECLARE_CONST_FUN_OBJ_1(xblepy_device_whoami_obj);
 
 STATIC const mp_rom_map_elem_t xblepy_peripheral_locals_dict_table[] = {
     /* super class method start */
-    { MP_ROM_QSTR(MP_QSTR_whoami),  MP_ROM_PTR(&xblepy_device_whoami_obj) },
+    { MP_ROM_QSTR(MP_QSTR_whoami),                  MP_ROM_PTR(&xblepy_device_whoami_obj) },
     /* super class method end */
     
     /* advertise & conn/disconn*/
-    { MP_ROM_QSTR(MP_QSTR_startAdvertise),              MP_ROM_PTR(&xblepy_peripheral_advertise_obj) },
-    { MP_ROM_QSTR(MP_QSTR_stopAdvertise),               MP_ROM_PTR(&xblepy_peripheral_advertise_stop_obj) },
-    { MP_ROM_QSTR(MP_QSTR_disconnect),             MP_ROM_PTR(&xblepy_peripheral_disconnect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_startAdvertise),          MP_ROM_PTR(&xblepy_peripheral_advertise_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stopAdvertise),           MP_ROM_PTR(&xblepy_peripheral_advertise_stop_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disconnect),              MP_ROM_PTR(&xblepy_peripheral_disconnect_obj) },
     
     /* Service actions */
-    { MP_ROM_QSTR(MP_QSTR_addService),             MP_ROM_PTR(&xblepy_peripheral_add_service_obj) },
-    { MP_ROM_QSTR(MP_QSTR_removeService),          MP_ROM_PTR(&xblepy_peripheral_remove_service_obj) },    
-    { MP_ROM_QSTR(MP_QSTR_getServices),            MP_ROM_PTR(&xblepy_peripheral_get_services_obj) },
-    { MP_ROM_QSTR(MP_QSTR_startServices),          MP_ROM_PTR(&xblepy_peripheral_start_services_obj) },
+    { MP_ROM_QSTR(MP_QSTR_addService),              MP_ROM_PTR(&xblepy_peripheral_add_service_obj) },
+    { MP_ROM_QSTR(MP_QSTR_removeService),           MP_ROM_PTR(&xblepy_peripheral_remove_service_obj) },    
+    { MP_ROM_QSTR(MP_QSTR_getServices),             MP_ROM_PTR(&xblepy_peripheral_get_services_obj) },
+    { MP_ROM_QSTR(MP_QSTR_startServices),           MP_ROM_PTR(&xblepy_peripheral_start_services_obj) },
     
     /* event handler & delegate */
-    { MP_ROM_QSTR(MP_QSTR_withDelegate),           MP_ROM_PTR(&xblepy_peripheral_with_delegate_obj) },
-    { MP_ROM_QSTR(MP_QSTR_setNotificationHandler), MP_ROM_PTR(&xblepy_peripheral_set_notif_handler_obj) },
-    { MP_ROM_QSTR(MP_QSTR_setConnectionHandler),   MP_ROM_PTR(&xblepy_peripheral_set_conn_handler_obj) },    
+    { MP_ROM_QSTR(MP_QSTR_withDelegate),            MP_ROM_PTR(&xblepy_peripheral_with_delegate_obj) },
+    { MP_ROM_QSTR(MP_QSTR_setNotificationHandler),  MP_ROM_PTR(&xblepy_peripheral_set_notif_handler_obj) },
+    { MP_ROM_QSTR(MP_QSTR_setConnectionHandler),    MP_ROM_PTR(&xblepy_peripheral_set_conn_handler_obj) },    
 
 };
 

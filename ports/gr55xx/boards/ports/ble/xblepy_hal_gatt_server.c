@@ -39,7 +39,7 @@ static bool gr_transfer_mpy_props_to_goodix_props(const xblepy_prop_t xPropertie
     }
     
     if(xProperties & XBLEPY_PROP_READ){
-        if(xPermissions & XBLEPY_PERM_READ){
+        if(xPermissions & XBLEPY_PERM_READ_FREE){
             *perm |= READ_PERM(NOAUTH);
         } else if(xPermissions & XBLEPY_PERM_READ_ENCRYPTED){
             *perm |= READ_PERM(UNAUTH);
@@ -48,8 +48,8 @@ static bool gr_transfer_mpy_props_to_goodix_props(const xblepy_prop_t xPropertie
         }        
     }
     
-    if(xProperties & XBLEPY_PROP_WRITE_WO_RESP){
-        if(xPermissions & XBLEPY_PERM_WRITE){
+    if(xProperties & XBLEPY_PROP_WRITE_NO_RESP){
+        if(xPermissions & XBLEPY_PERM_WRITE_FREE){
             *perm |= WRITE_CMD_PERM(NOAUTH);
         } else if(xPermissions & XBLEPY_PERM_WRITE_ENCRYPTED){
             *perm |= WRITE_CMD_PERM(UNAUTH);
@@ -59,7 +59,7 @@ static bool gr_transfer_mpy_props_to_goodix_props(const xblepy_prop_t xPropertie
     }
     
     if(xProperties & XBLEPY_PROP_WRITE){
-        if(xPermissions & XBLEPY_PERM_WRITE){
+        if(xPermissions & XBLEPY_PERM_WRITE_FREE){
             *perm |= WRITE_REQ_PERM(NOAUTH);
         } else if(xPermissions & XBLEPY_PERM_WRITE_ENCRYPTED){
             *perm |= WRITE_REQ_PERM(UNAUTH);
@@ -69,7 +69,7 @@ static bool gr_transfer_mpy_props_to_goodix_props(const xblepy_prop_t xPropertie
     }
     
     if(xProperties & XBLEPY_PROP_NOTIFY){
-        if(xPermissions & (XBLEPY_PERM_WRITE | XBLEPY_PERM_READ)){
+        if(xPermissions & (XBLEPY_PERM_WRITE_FREE | XBLEPY_PERM_READ_FREE)){
             *perm |= NOTIFY_PERM(NOAUTH);
         } else if(xPermissions & (XBLEPY_PERM_WRITE_ENCRYPTED | XBLEPY_PERM_READ_ENCRYPTED)){
             *perm |= NOTIFY_PERM(UNAUTH);
@@ -79,7 +79,7 @@ static bool gr_transfer_mpy_props_to_goodix_props(const xblepy_prop_t xPropertie
     }
     
     if(xProperties & XBLEPY_PROP_INDICATE){
-        if(xPermissions & (XBLEPY_PERM_WRITE | XBLEPY_PERM_READ)){
+        if(xPermissions & (XBLEPY_PERM_WRITE_FREE | XBLEPY_PERM_READ_FREE)){
             *perm |= INDICATE_PERM(NOAUTH);
         } else if(xPermissions & (XBLEPY_PERM_WRITE_ENCRYPTED | XBLEPY_PERM_READ_ENCRYPTED)){
             *perm |= INDICATE_PERM(UNAUTH);
@@ -261,7 +261,7 @@ bool gr_xblepy_gatt_add_descriptor(xblepy_descriptor_obj_t * p_desc) {
     {        
         xblepy_prop_t x_properties =   XBLEPY_PROP_BROADCAST      |
                                         XBLEPY_PROP_READ           |
-                                        XBLEPY_PROP_WRITE_WO_RESP  |
+                                        XBLEPY_PROP_WRITE_NO_RESP  |
                                         XBLEPY_PROP_WRITE          |
                                         XBLEPY_PROP_NOTIFY         |
                                         XBLEPY_PROP_INDICATE       |

@@ -43,7 +43,7 @@ u0 = UUID("6e400001-b5a3-f393-e0a9-e50e24dcca9e")
 u1 = UUID("6e400002-b5a3-f393-e0a9-e50e24dcca9e")
 u2 = UUID("6e400003-b5a3-f393-e0a9-e50e24dcca9e")
 s = Service(u0)
-c0 = Characteristic(u1, props = Characteristic.PROP_WRITE | Characteristic.PROP_WRITE_WO_RESP)
+c0 = Characteristic(u1, props = Characteristic.PROP_WRITE | Characteristic.PROP_WRITE_NO_RESP)
 c1 = Characteristic(u2, props = Characteristic.PROP_NOTIFY, attrs = Characteristic.ATTR_CCCD)
 s.addCharacteristic(c0)
 s.addCharacteristic(c1)
@@ -102,7 +102,7 @@ typedef enum _xblepy_prop_t {
     XBLEPY_PROP_NONE                    = 0x00,
     XBLEPY_PROP_BROADCAST               = 0x01,
     XBLEPY_PROP_READ                    = 0x02,
-    XBLEPY_PROP_WRITE_WO_RESP           = 0x04,
+    XBLEPY_PROP_WRITE_NO_RESP           = 0x04,
     XBLEPY_PROP_WRITE                   = 0x08,
     XBLEPY_PROP_NOTIFY                  = 0x10,
     XBLEPY_PROP_INDICATE                = 0x20,
@@ -112,11 +112,11 @@ typedef enum _xblepy_prop_t {
 
 typedef enum _xblepy_permission_t
 {
-    XBLEPY_PERM_NONE                    = 0x0000,
-    XBLEPY_PERM_READ                    = 0x0001,       /**< Readable, Encryption not required, No Authentication Required. */
+    XBLEPY_PERM_NONE                    = 0x0000,       /**< no permission to read ro write */
+    XBLEPY_PERM_READ_FREE               = 0x0001,       /**< Readable, read freely, both Encryption and Authentication are not Required. */
     XBLEPY_PERM_READ_ENCRYPTED          = 0x0002,       /**< Readable, Encryption required, No Authentication Required. */
     XBLEPY_PERM_READ_ENCRYPTED_MITM     = 0x0004,       /**< Readable, Encryption required, Authentication Required. */
-    XBLEPY_PERM_WRITE                   = 0x0010,       /**< Writable, Encryption not required, No Authentication Required. */
+    XBLEPY_PERM_WRITE_FREE              = 0x0010,       /**< Writable, write freely, both Encryption and Authentication are not Required. */
     XBLEPY_PERM_WRITE_ENCRYPTED         = 0x0020,       /**< Writable, Encryption required, No Authentication Required. */
     XBLEPY_PERM_WRITE_ENCRYPTED_MITM    = 0x0040,       /**< Writable, Encryption required, Authentication Required. */
     XBLEPY_PERM_WRITE_SIGNED            = 0x0080,       /**< Writable, Signed required, No Authentication Required. */
