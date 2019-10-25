@@ -17,7 +17,7 @@
 #include "mp_defs.h"
 #include "xblepy_hal.h"
 
-#if MICROPY_PY_XBLEPY
+#if defined(MICROPY_PY_XBLEPY) && defined(MICROPY_PY_XBLEPY_PERIPHERAL)
 
 STATIC void xblepy_peripheral_check_ble_stack_status(void) {
     if(!s_gr_ble_common_params_ins.is_ble_initialized) {
@@ -28,25 +28,28 @@ STATIC void xblepy_peripheral_check_ble_stack_status(void) {
 
 STATIC void xblepy_peripheral_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     xblepy_peripheral_obj_t * self = (xblepy_peripheral_obj_t *)o;
-    (void)self;
-    mp_printf(print, "Peripheral(conn_handle: " HEX2_FMT ")",
-              self->conn_handle);
+    
+    mp_printf(print, "Peripheral(conn id:%d,role:%d,addr:[%02x:%02x:%02x:%02x:%02x:%02x])", 
+                                            self->conn_id, self->role, 
+                                            self->addr.addr[0],self->addr.addr[1],self->addr.addr[2],
+                                            self->addr.addr[3],self->addr.addr[4],self->addr.addr[5]
+                );
 }
 
-STATIC void gap_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t conn_handle, uint16_t length, uint8_t * data) {
+STATIC void gap_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t conn_id, uint16_t length, uint8_t * data) {
     xblepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (event_id == 16) {                // connect event
-        self->conn_handle = conn_handle;
+        self->conn_id = conn_id;
     } else if (event_id == 17) {         // disconnect event
-        self->conn_handle = 0xFFFF;      // invalid connection handle
+        self->conn_id = 0xFFFF;      // invalid connection handle
     }
 
     if (self->conn_handler != mp_const_none) {
         mp_obj_t args[3];
         mp_uint_t num_of_args = 3;
         args[0] = MP_OBJ_NEW_SMALL_INT(event_id);
-        args[1] = MP_OBJ_NEW_SMALL_INT(conn_handle);
+        args[1] = MP_OBJ_NEW_SMALL_INT(conn_id);
         if (data != NULL) {
             args[2] = mp_obj_new_bytearray_by_ref(length, data);
         } else {
@@ -80,18 +83,10 @@ STATIC void gatts_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t at
 
 }
 
-#if MICROPY_PY_XBLEPY_CENTRAL
 
-static volatile bool m_disc_evt_received;
-
-STATIC void gattc_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data) {
-    xblepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    (void)self;
-    m_disc_evt_received = true;
-}
-#endif
-
+#if 0   /*use device's constructor method */
 STATIC mp_obj_t xblepy_peripheral_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    gr_trace("+++ new peripheral() \r\n");
     enum {
         ARG_NEW_DEVICE_ADDR,
         ARG_NEW_ADDR_TYPE
@@ -107,17 +102,19 @@ STATIC mp_obj_t xblepy_peripheral_make_new(const mp_obj_type_t *type, size_t n_a
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     xblepy_peripheral_obj_t *s = m_new_obj(xblepy_peripheral_obj_t);
-    s->base.type = type;
+    s->device.base.type = type;
+    s->role             = XBLEPY_ROLE_PERIPHERAL;
 
     s->delegate      = mp_const_none;
     s->conn_handler  = mp_const_none;
     s->notif_handler = mp_const_none;
-    s->conn_handle   = 0xFFFF;
+    s->conn_id   = 0xFFFF;
 
     s->service_list = mp_obj_new_list(0, NULL);
 
     return MP_OBJ_FROM_PTR(s);
 }
+#endif
 
 /// \method withDelegate(DefaultDelegate)
 /// Set delegate instance for handling Bluetooth LE events.
@@ -131,13 +128,14 @@ STATIC mp_obj_t peripheral_with_delegate(mp_obj_t self_in, mp_obj_t delegate) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(xblepy_peripheral_with_delegate_obj, peripheral_with_delegate);
 
+
 /// \method setNotificationHandler(func)
 /// Set handler for Bluetooth LE notification events.
 ///
 STATIC mp_obj_t peripheral_set_notif_handler(mp_obj_t self_in, mp_obj_t func) {
     xblepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    self->notif_handler = func;
+    //self->notif_handler = func;
 
     return mp_const_none;
 }
@@ -155,7 +153,6 @@ STATIC mp_obj_t peripheral_set_conn_handler(mp_obj_t self_in, mp_obj_t func) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(xblepy_peripheral_set_conn_handler_obj, peripheral_set_conn_handler);
 
-#if MICROPY_PY_XBLEPY_PERIPHERAL
 
 /// \method startAdvertise(device_name, [data=bytearray], [connectable=True])
 /// Start the advertising. Connectable advertisment type by default.
@@ -181,7 +178,6 @@ STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args,
 
     // xblepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_obj_t device_name_obj = args[0].u_obj;
-    //mp_obj_t service_obj     = args[1].u_obj;
     mp_obj_t data_obj        = args[1].u_obj;
     mp_obj_t connectable_obj = args[2].u_obj;
 
@@ -250,6 +246,7 @@ STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args,
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(xblepy_peripheral_advertise_obj, 0, peripheral_advertise);
 
+
 /// \method stopAdvertise()
 /// Stop advertisment if any onging advertisment.
 ///
@@ -264,7 +261,6 @@ STATIC mp_obj_t peripheral_advertise_stop(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(xblepy_peripheral_advertise_stop_obj, peripheral_advertise_stop);
 
-#endif // MICROPY_PY_XBLEPY_PERIPHERAL
 
 /// \method disconnect()
 /// disconnect connection.
@@ -413,217 +409,46 @@ STATIC mp_obj_t peripheral_start_services(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(xblepy_peripheral_start_services_obj, peripheral_start_services);
 
 
-#if MICROPY_PY_XBLEPY_CENTRAL
-
-    void static disc_add_service(mp_obj_t self, ble_drv_service_data_t * p_service_data) {
-        xblepy_service_obj_t * p_service = m_new_obj(xblepy_service_obj_t);
-        p_service->base.type = &xblepy_service_type;
-
-        xblepy_uuid_obj_t * p_uuid = m_new_obj(xblepy_uuid_obj_t);
-        p_uuid->base.type = &xblepy_uuid_type;
-
-        p_service->p_uuid = p_uuid;
-
-        p_uuid->type = p_service_data->uuid_type;
-        p_uuid->value[0] = p_service_data->uuid & 0xFF;
-        p_uuid->value[1] = p_service_data->uuid >> 8;
-
-        p_service->handle       = p_service_data->start_handle;
-        p_service->start_handle = p_service_data->start_handle;
-        p_service->end_handle   = p_service_data->end_handle;
-
-        p_service->char_list = mp_obj_new_list(0, NULL);
-
-        peripheral_add_service(self, MP_OBJ_FROM_PTR(p_service));
-    }
-
-    void static disc_add_char(mp_obj_t service_in, ble_drv_char_data_t * p_desc_data) {
-        xblepy_service_obj_t        * p_service   = MP_OBJ_TO_PTR(service_in);
-        xblepy_characteristic_obj_t * p_char = m_new_obj(xblepy_characteristic_obj_t);
-        p_char->base.type = &xblepy_characteristic_type;
-
-        xblepy_uuid_obj_t * p_uuid = m_new_obj(xblepy_uuid_obj_t);
-        p_uuid->base.type = &xblepy_uuid_type;
-
-        p_char->p_uuid = p_uuid;
-
-        p_uuid->type = p_desc_data->uuid_type;
-        p_uuid->value[0] = p_desc_data->uuid & 0xFF;
-        p_uuid->value[1] = p_desc_data->uuid >> 8;
-
-        // add characteristic specific data from discovery
-        p_char->props  = p_desc_data->props;
-        p_char->handle = p_desc_data->value_handle;
-
-        // equivalent to xblepy_service.c - service_add_characteristic()
-        // except the registration of the characteristic towards the bluetooth stack
-        p_char->service_handle = p_service->handle;
-        p_char->p_service      = p_service;
-
-        mp_obj_list_append(p_service->char_list, MP_OBJ_FROM_PTR(p_char));
-    }
-
-    /// \method connect(device_address [, addr_type=ADDR_TYPE_PUBLIC])
-    /// Connect to device peripheral with the given device address.
-    /// addr_type can be either ADDR_TYPE_PUBLIC (default) or
-    /// ADDR_TYPE_RANDOM_STATIC.
-    ///
-    STATIC mp_obj_t peripheral_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-        xblepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-        mp_obj_t dev_addr              = pos_args[1];
-
-        self->role = XBLEPY_ROLE_CENTRAL;
-
-        static const mp_arg_t allowed_args[] = {
-            { MP_QSTR_addr_type, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = XBLEPY_ADDR_TYPE_PUBLIC } },
-        };
-
-        // parse args
-        mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-        mp_arg_parse_all(n_args - 2, pos_args + 2, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-        uint8_t addr_type = args[0].u_int;
-
-        ble_drv_gap_event_handler_set(MP_OBJ_FROM_PTR(self), gap_event_handler);
-
-        if (mp_obj_is_str(dev_addr)) {
-            GET_STR_DATA_LEN(dev_addr, str_data, str_len);
-            if (str_len == 17) { // Example "11:22:33:aa:bb:cc"
-
-                uint8_t * p_addr = m_new(uint8_t, 6);
-
-                p_addr[0]  = unichar_xdigit_value(str_data[16]);
-                p_addr[0] += unichar_xdigit_value(str_data[15]) << 4;
-                p_addr[1]  = unichar_xdigit_value(str_data[13]);
-                p_addr[1] += unichar_xdigit_value(str_data[12]) << 4;
-                p_addr[2]  = unichar_xdigit_value(str_data[10]);
-                p_addr[2] += unichar_xdigit_value(str_data[9]) << 4;
-                p_addr[3]  = unichar_xdigit_value(str_data[7]);
-                p_addr[3] += unichar_xdigit_value(str_data[6]) << 4;
-                p_addr[4]  = unichar_xdigit_value(str_data[4]);
-                p_addr[4] += unichar_xdigit_value(str_data[3]) << 4;
-                p_addr[5]  = unichar_xdigit_value(str_data[1]);
-                p_addr[5] += unichar_xdigit_value(str_data[0]) << 4;
-
-                ble_drv_connect(p_addr, addr_type);
-
-                m_del(uint8_t, p_addr, 6);
-            }
-        }
-
-        // block until connected
-        while (self->conn_handle == 0xFFFF) {
-            ;
-        }
-
-        ble_drv_gattc_event_handler_set(MP_OBJ_FROM_PTR(self), gattc_event_handler);
-
-        bool service_disc_retval = ble_drv_discover_services(self, self->conn_handle, 0x0001, disc_add_service);
-
-        // continue discovery of primary services ...
-        while (service_disc_retval) {
-            // locate the last added service
-            mp_obj_t * services = NULL;
-            mp_uint_t  num_services;
-            mp_obj_get_array(self->service_list, &num_services, &services);
-
-            xblepy_service_obj_t * p_service = (xblepy_service_obj_t *)services[num_services - 1];
-
-            service_disc_retval = ble_drv_discover_services(self,
-                                                            self->conn_handle,
-                                                            p_service->end_handle + 1,
-                                                            disc_add_service);
-        }
-
-        // For each service perform a characteristic discovery
-        mp_obj_t * services = NULL;
-        mp_uint_t  num_services;
-        mp_obj_get_array(self->service_list, &num_services, &services);
-
-        for (uint16_t s = 0; s < num_services; s++) {
-            xblepy_service_obj_t * p_service = (xblepy_service_obj_t *)services[s];
-            bool char_disc_retval = ble_drv_discover_characteristic(p_service,
-                                                                    self->conn_handle,
-                                                                    p_service->start_handle,
-                                                                    p_service->end_handle,
-                                                                    disc_add_char);
-            // continue discovery of characteristics ...
-            while (char_disc_retval) {
-                mp_obj_t * characteristics = NULL;
-                mp_uint_t  num_chars;
-                mp_obj_get_array(p_service->char_list, &num_chars, &characteristics);
-
-                xblepy_characteristic_obj_t * p_char = (xblepy_characteristic_obj_t *)characteristics[num_chars - 1];
-                uint16_t next_handle = p_char->handle + 1;
-                if ((next_handle) < p_service->end_handle) {
-                    char_disc_retval = ble_drv_discover_characteristic(p_service,
-                                                                       self->conn_handle,
-                                                                       next_handle,
-                                                                       p_service->end_handle,
-                                                                       disc_add_char);
-                } else {
-                    break;
-                }
-            }
-        }
-
-        return mp_const_none;
-    }
-    STATIC MP_DEFINE_CONST_FUN_OBJ_KW(xblepy_peripheral_connect_obj, 2, peripheral_connect);
-
-#endif
+/*
+ * declare super class' methods, and register them in this class
+ */
+MP_DECLARE_CONST_FUN_OBJ_1(xblepy_device_whoami_obj);
 
 STATIC const mp_rom_map_elem_t xblepy_peripheral_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_withDelegate),           MP_ROM_PTR(&xblepy_peripheral_with_delegate_obj) },
-    { MP_ROM_QSTR(MP_QSTR_setNotificationHandler), MP_ROM_PTR(&xblepy_peripheral_set_notif_handler_obj) },
-    { MP_ROM_QSTR(MP_QSTR_setConnectionHandler),   MP_ROM_PTR(&xblepy_peripheral_set_conn_handler_obj) },    
-#if MICROPY_PY_XBLEPY_CENTRAL
-    { MP_ROM_QSTR(MP_QSTR_connect),                MP_ROM_PTR(&xblepy_peripheral_connect_obj) },
-    #if 0
-        { MP_ROM_QSTR(MP_QSTR_disconnect),             MP_ROM_PTR(&xblepy_peripheral_disconnect_obj) },
-        { MP_ROM_QSTR(MP_QSTR_getServiceByUUID),       MP_ROM_PTR(&xblepy_peripheral_get_service_by_uuid_obj) },
-        { MP_ROM_QSTR(MP_QSTR_getCharacteristics),     MP_ROM_PTR(&xblepy_peripheral_get_chars_obj) },
-        { MP_ROM_QSTR(MP_QSTR_getDescriptors),         MP_ROM_PTR(&xblepy_peripheral_get_descs_obj) },
-        { MP_ROM_QSTR(MP_QSTR_waitForNotifications),   MP_ROM_PTR(&xblepy_peripheral_wait_for_notif_obj) },
-        { MP_ROM_QSTR(MP_QSTR_writeCharacteristic),    MP_ROM_PTR(&xblepy_peripheral_write_char_obj) },
-        { MP_ROM_QSTR(MP_QSTR_readCharacteristic),     MP_ROM_PTR(&xblepy_peripheral_read_char_obj) },
-    #endif // 0
-#endif // MICROPY_PY_XBLEPY_CENTRAL
-
-#if MICROPY_PY_XBLEPY_PERIPHERAL || MICROPY_PY_XBLEPY_BROADCASTER
+    /* super class method start */
+    { MP_ROM_QSTR(MP_QSTR_whoami),  MP_ROM_PTR(&xblepy_device_whoami_obj) },
+    /* super class method end */
+    
+    /* advertise & conn/disconn*/
     { MP_ROM_QSTR(MP_QSTR_startAdvertise),              MP_ROM_PTR(&xblepy_peripheral_advertise_obj) },
     { MP_ROM_QSTR(MP_QSTR_stopAdvertise),               MP_ROM_PTR(&xblepy_peripheral_advertise_stop_obj) },
-#endif
-
-#if MICROPY_PY_XBLEPY_PERIPHERAL    
     { MP_ROM_QSTR(MP_QSTR_disconnect),             MP_ROM_PTR(&xblepy_peripheral_disconnect_obj) },
+    
+    /* Service actions */
     { MP_ROM_QSTR(MP_QSTR_addService),             MP_ROM_PTR(&xblepy_peripheral_add_service_obj) },
     { MP_ROM_QSTR(MP_QSTR_removeService),          MP_ROM_PTR(&xblepy_peripheral_remove_service_obj) },    
     { MP_ROM_QSTR(MP_QSTR_getServices),            MP_ROM_PTR(&xblepy_peripheral_get_services_obj) },
     { MP_ROM_QSTR(MP_QSTR_startServices),          MP_ROM_PTR(&xblepy_peripheral_start_services_obj) },
-    #if 0
-        { MP_ROM_QSTR(MP_QSTR_addCharacteristic),      MP_ROM_PTR(&xblepy_peripheral_add_char_obj) },
-        { MP_ROM_QSTR(MP_QSTR_addDescriptor),          MP_ROM_PTR(&xblepy_peripheral_add_desc_obj) },
-        { MP_ROM_QSTR(MP_QSTR_writeCharacteristic),    MP_ROM_PTR(&xblepy_peripheral_write_char_obj) },
-        { MP_ROM_QSTR(MP_QSTR_readCharacteristic),     MP_ROM_PTR(&xblepy_peripheral_read_char_obj) },
-    #endif
-#endif
+    
+    /* event handler & delegate */
+    { MP_ROM_QSTR(MP_QSTR_withDelegate),           MP_ROM_PTR(&xblepy_peripheral_with_delegate_obj) },
+    { MP_ROM_QSTR(MP_QSTR_setNotificationHandler), MP_ROM_PTR(&xblepy_peripheral_set_notif_handler_obj) },
+    { MP_ROM_QSTR(MP_QSTR_setConnectionHandler),   MP_ROM_PTR(&xblepy_peripheral_set_conn_handler_obj) },    
 
-
-
-#if MICROPY_PY_XBLEPY_OBSERVER
-    // Nothing yet.
-#endif
 };
 
+
 STATIC MP_DEFINE_CONST_DICT(xblepy_peripheral_locals_dict, xblepy_peripheral_locals_dict_table);
+
+extern mp_obj_t xblepy_device_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args);
 
 const mp_obj_type_t xblepy_peripheral_type = {
     { &mp_type_type },
     .name = MP_QSTR_Peripheral,
     .print = xblepy_peripheral_print,
-    .make_new = xblepy_peripheral_make_new,
-    .locals_dict = (mp_obj_dict_t*)&xblepy_peripheral_locals_dict
+    .make_new = xblepy_device_make_new,
+    .locals_dict = (mp_obj_dict_t*)&xblepy_peripheral_locals_dict,
+    .parent = &xblepy_device_type
 };
 
-#endif // MICROPY_PY_XBLEPY
+#endif /* defined(MICROPY_PY_XBLEPY) && defined(MICROPY_PY_XBLEPY_PERIPHERAL) */

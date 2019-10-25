@@ -56,6 +56,7 @@ p.advertise(device_name="micr", services=[s])
 
 #include "py/obj.h"
 
+extern const mp_obj_type_t xblepy_device_type;
 extern const mp_obj_type_t xblepy_uuid_type;
 extern const mp_obj_type_t xblepy_service_type;
 extern const mp_obj_type_t xblepy_characteristic_type;
@@ -67,6 +68,8 @@ extern const mp_obj_type_t xblepy_constants_ad_types_type;
 
 #define XBLEPY_UNASSIGNED_HANDLE       (0)
 #define XBLEPY_INVALID_HANDLE          (0xffff)
+#define XBLEPY_BD_ADDR_LEN             (6)
+#define XBLEPY_BD_ADDR_DEFAULT         {0x11,0x22,0x33,0xdd,0xee,0xff}
 
 typedef enum {
     XBLEPY_UUID_16_BIT = 1,
@@ -87,7 +90,9 @@ typedef enum {
 #endif
 } xblepy_addr_type_t;
 
+
 typedef enum {
+    XBLEPY_ROLE_UNKNOWN = 0,
     XBLEPY_ROLE_PERIPHERAL,
     XBLEPY_ROLE_CENTRAL
 } xblepy_role_type_t;
@@ -137,16 +142,40 @@ typedef enum
     XBLEPY_ATTR_TYPE_DESCRIPTOR,               /**< Characteristic descriptor. */    
 } xblepy_attr_type_t;
 
-typedef struct _xblepy_uuid_obj_t {
-    mp_obj_base_t                   base;
-    xblepy_uuid_type_t              type;
-    uint8_t                         value[2];
-    uint8_t                         uuid_vs_idx;
-    uint8_t                         value_128b[16];
-} xblepy_uuid_obj_t;
+/********************************************************************************************
+ *   Basic Element Object struct for Ble : UUID, Descriptor, Characteristic, Service
+ ********************************************************************************************/
+typedef struct _xblepy_bd_addr_obj_t {
+    uint8_t                         addr[XBLEPY_BD_ADDR_LEN];
+} xblepy_bd_addr_t;
 
-typedef struct _xblepy_peripheral_obj_t {
+typedef struct _xblepy_event_handler_t {
+    uint8_t                         e_type;
+    mp_obj_t                        e_handler;
+} xblepy_event_handler_t;
+
+/*
+ * Device is super class of Peripheral and Central
+ */
+typedef struct _xblepy_device_obj_t {
     mp_obj_base_t                   base;
+    xblepy_role_type_t              role;
+    xblepy_addr_type_t              addr_type;
+    xblepy_bd_addr_t                addr;
+    volatile uint16_t               conn_id;
+    mp_obj_t                        delegate;
+    mp_obj_t                        service_list;
+    xblepy_event_handler_t *        handler_list;   
+
+    mp_obj_t                        conn_handler;       //delete later, avoid compile error for now
+} xblepy_device_obj_t;
+
+typedef struct _xblepy_device_obj_t     xblepy_peripheral_obj_t;
+typedef struct _xblepy_device_obj_t     xblepy_central_obj_t;
+
+/*
+typedef struct _xblepy_peripheral_obj_t {
+    xblepy_device_obj_t             device;
     xblepy_role_type_t              role;
     volatile uint16_t               conn_handle;
     mp_obj_t                        delegate;
@@ -154,6 +183,15 @@ typedef struct _xblepy_peripheral_obj_t {
     mp_obj_t                        conn_handler;
     mp_obj_t                        service_list;
 } xblepy_peripheral_obj_t;
+*/
+
+typedef struct _xblepy_uuid_obj_t {
+    mp_obj_base_t                   base;
+    xblepy_uuid_type_t              type;
+    uint8_t                         value[2];
+    uint8_t                         uuid_vs_idx;
+    uint8_t                         value_128b[16];
+} xblepy_uuid_obj_t;
 
 typedef struct _xblepy_service_obj_t {
     mp_obj_base_t                   base;
@@ -171,9 +209,6 @@ typedef struct _xblepy_characteristic_obj_t {
     uint16_t                        handle;                 //myself handle
     xblepy_uuid_obj_t *             p_uuid;
     uint16_t                        service_handle;
-    uint16_t                        user_desc_handle;
-    uint16_t                        cccd_handle;
-    uint16_t                        sccd_handle;
     mp_obj_t                        desc_list;          //save descriptors belongs to this charac
     xblepy_attr_t                   attrs;
     xblepy_prop_t                   props;
@@ -192,6 +227,18 @@ typedef struct _xblepy_descriptor_obj_t {
     xblepy_characteristic_obj_t *   p_charac;        //belongs to which characteristic ptr
 } xblepy_descriptor_obj_t;
 
+
+
+
+
+
+
+
+
+
+
+
+
 typedef struct _xblepy_delegate_obj_t {
     mp_obj_base_t                   base;
 } xblepy_delegate_obj_t;
@@ -209,6 +256,7 @@ typedef struct _xblepy_advertise_data_t {
 typedef struct _xblepy_scanner_obj_t {
     mp_obj_base_t                   base;
     mp_obj_t                        adv_reports;
+    
 } xblepy_scanner_obj_t;
 
 typedef struct _xblepy_scan_entry_obj_t {

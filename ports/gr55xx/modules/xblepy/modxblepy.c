@@ -18,6 +18,7 @@ extern const mp_obj_type_t xblepy_delegate_type;
 extern const mp_obj_type_t xblepy_descriptor_type;
 extern const mp_obj_type_t xblepy_characteristic_type;
 extern const mp_obj_type_t xblepy_service_type;
+extern const mp_obj_type_t xblepy_device_type;
 extern const mp_obj_type_t xblepy_peripheral_type;
 
 /***
@@ -39,6 +40,7 @@ STATIC const mp_rom_map_elem_t mp_module_xblepy_globals_table[] = {
 #endif
     { MP_ROM_QSTR(MP_QSTR_Characteristic),  MP_ROM_PTR(&xblepy_characteristic_type) },
     { MP_ROM_QSTR(MP_QSTR_Service),         MP_ROM_PTR(&xblepy_service_type) },
+    { MP_ROM_QSTR(MP_QSTR_Device),         MP_ROM_PTR(&xblepy_device_type) },
     { MP_ROM_QSTR(MP_QSTR_Peripheral),      MP_ROM_PTR(&xblepy_peripheral_type) },
     
 /***    

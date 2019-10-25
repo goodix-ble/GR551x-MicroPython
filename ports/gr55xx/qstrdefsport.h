@@ -172,6 +172,13 @@ Q(peripheral)
 Q(PRIMARY)
 Q(SECONDARY)
 
+//Device
+Q(Device)
+Q(whoami)
+Q(role)
+Q(addr_type)
+Q(addr)
+
 //Peripheral
 Q(Peripheral)
 Q(device_name)
