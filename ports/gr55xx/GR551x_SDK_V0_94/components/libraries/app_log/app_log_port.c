@@ -355,6 +355,7 @@ int _write(int file, const char *buf, int len)
         buf++;
         tx_len++;
     }
+    app_log_port_flush();
     return tx_len;
 }
 

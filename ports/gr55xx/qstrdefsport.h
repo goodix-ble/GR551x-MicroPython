@@ -209,3 +209,13 @@ Q(stopAdvertise)
 
 //Central
 Q(Central)
+
+//DefaultGAPDelegate
+Q(DefaultGAPDelegate)
+Q(setGapDelegate)
+Q(handleAdvStartEvent)
+Q(handleAdvStopEvent)
+Q(handleConnectEvent)
+Q(handleDisconnectEvent)
+
+

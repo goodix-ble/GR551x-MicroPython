@@ -105,7 +105,6 @@ SRC_C += \
     modules/xblepy/modxblepy.c \
     modules/xblepy/xblepy_uuid.c \
     modules/xblepy/xblepy_constants.c \
-    modules/xblepy/xblepy_delegate.c \
     modules/xblepy/xblepy_descriptor.c \
     modules/xblepy/xblepy_characteristic.c \
     modules/xblepy/xblepy_service.c \
@@ -114,6 +113,8 @@ SRC_C += \
     modules/xblepy/xblepy_central.c \
     modules/xblepy/xblepy_scan_entry.c \
     modules/xblepy/xblepy_scanner.c \
+    modules/xblepy/xblepy_delegate.c \
+    modules/xblepy/xblepy_default_gap_delegate.c \
 
     
 INC_GR += -I./modules/ble

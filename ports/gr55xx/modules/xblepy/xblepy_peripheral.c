@@ -108,13 +108,26 @@ STATIC mp_obj_t xblepy_peripheral_make_new(const mp_obj_type_t *type, size_t n_a
     s->delegate      = mp_const_none;
     s->conn_handler  = mp_const_none;
     s->notif_handler = mp_const_none;
-    s->conn_id   = 0xFFFF;
+    s->conn_id       = 0xFFFF;
 
     s->service_list = mp_obj_new_list(0, NULL);
 
     return MP_OBJ_FROM_PTR(s);
 }
 #endif
+
+/// \method setGapDelegate(DefaultGapDelegate)
+/// Set delegate instance for handling Bluetooth LE events.
+///
+STATIC mp_obj_t peripheral_set_gap_delegate(mp_obj_t self_in, mp_obj_t delegate) {
+    xblepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    self->gap_delegate              = delegate;
+    //self->gap_delegate->base.type   = &xblepy_default_gap_delegate_type;
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(xblepy_peripheral_set_gap_delegate_obj, peripheral_set_gap_delegate);
 
 /// \method withDelegate(DefaultDelegate)
 /// Set delegate instance for handling Bluetooth LE events.
@@ -127,6 +140,8 @@ STATIC mp_obj_t peripheral_with_delegate(mp_obj_t self_in, mp_obj_t delegate) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(xblepy_peripheral_with_delegate_obj, peripheral_with_delegate);
+
+
 
 
 /// \method setNotificationHandler(func)
@@ -232,9 +247,9 @@ STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args,
     adv_data.connectable = true;
     if (connectable_obj != mp_const_none && !(mp_obj_is_true(connectable_obj))) {
         adv_data.connectable = false;
-    } else {
-        gr_xblepy_set_gap_event_handler(MP_OBJ_FROM_PTR(self), gap_event_handler);
-        gr_xblepy_set_gatts_event_handler(MP_OBJ_FROM_PTR(self), gatts_event_handler);
+    } else {        
+        gr_xblepy_set_gap_delegate_event_handler(MP_OBJ_FROM_PTR(self));
+        //gr_xblepy_set_gatts_event_handler(MP_OBJ_FROM_PTR(self), gatts_event_handler);
     }
 
     if(!gr_xblepy_gap_start_advertise(&adv_data)){
@@ -431,6 +446,9 @@ STATIC const mp_rom_map_elem_t xblepy_peripheral_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_startServices),           MP_ROM_PTR(&xblepy_peripheral_start_services_obj) },
     
     /* event handler & delegate */
+    
+    { MP_ROM_QSTR(MP_QSTR_setGapDelegate),            MP_ROM_PTR(&xblepy_peripheral_set_gap_delegate_obj) },
+
     { MP_ROM_QSTR(MP_QSTR_withDelegate),            MP_ROM_PTR(&xblepy_peripheral_with_delegate_obj) },
     { MP_ROM_QSTR(MP_QSTR_setNotificationHandler),  MP_ROM_PTR(&xblepy_peripheral_set_notif_handler_obj) },
     { MP_ROM_QSTR(MP_QSTR_setConnectionHandler),    MP_ROM_PTR(&xblepy_peripheral_set_conn_handler_obj) },    

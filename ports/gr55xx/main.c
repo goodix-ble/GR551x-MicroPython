@@ -209,12 +209,13 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 #endif
 
 void nlr_jump_fail(void *val) {
-    printf(">>> nlr_jump_fail \r\n");
-    while (1);
+    printf(">>> FATAL: uncaught exception %p\n", val);
+    mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(val));
+    __fatal_error("");
 }
 
 void NORETURN __fatal_error(const char *msg) {
-    printf(">>> __fatal_error \r\n");
+    printf(">>> __fatal_error, program stopped! \r\n");
     while (1);
 }
 

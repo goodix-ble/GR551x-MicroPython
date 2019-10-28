@@ -66,6 +66,8 @@ extern const mp_obj_type_t xblepy_scan_entry_type;
 extern const mp_obj_type_t xblepy_constants_type;
 extern const mp_obj_type_t xblepy_constants_ad_types_type;
 
+extern const mp_obj_type_t xblepy_default_gap_delegate_type;
+
 #define XBLEPY_UNASSIGNED_HANDLE       (0)
 #define XBLEPY_INVALID_HANDLE          (0xffff)
 #define XBLEPY_BD_ADDR_LEN             (6)
@@ -154,6 +156,10 @@ typedef struct _xblepy_event_handler_t {
     mp_obj_t                        e_handler;
 } xblepy_event_handler_t;
 
+typedef struct _xblepy_gap_delegate_obj_t {
+    mp_obj_base_t                   base;
+} xblepy_delegate_obj_t, xblepy_gap_delegate_obj_t;
+
 /*
  * Device is super class of Peripheral and Central
  */
@@ -165,7 +171,9 @@ typedef struct _xblepy_device_obj_t {
     volatile uint16_t               conn_id;
     mp_obj_t                        delegate;
     mp_obj_t                        service_list;
-    xblepy_event_handler_t *        handler_list;   
+    xblepy_event_handler_t *        handler_list;
+    
+    xblepy_gap_delegate_obj_t *     gap_delegate;
 
     mp_obj_t                        conn_handler;       //delete later, avoid compile error for now
 } xblepy_device_obj_t;
@@ -239,9 +247,7 @@ typedef struct _xblepy_descriptor_obj_t {
 
 
 
-typedef struct _xblepy_delegate_obj_t {
-    mp_obj_base_t                   base;
-} xblepy_delegate_obj_t;
+
 
 typedef struct _xblepy_advertise_data_t {
     uint8_t *                       p_device_name;

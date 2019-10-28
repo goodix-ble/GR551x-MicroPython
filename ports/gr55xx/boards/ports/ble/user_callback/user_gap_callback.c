@@ -44,7 +44,7 @@
 #include "app_log.h"
 #include "gr_config.h"
 #include "gr_porting.h"
-
+#include "xblepy_hal.h"
 
 /*
  * LOCAL FUNCTION DECLARATION
@@ -188,28 +188,19 @@ static void app_gap_adv_start_cb(uint8_t inst_idx, uint8_t status)
     gr_trace("+++ Adverting started idx: %d, status: (0X%02X). \r\n", inst_idx, status); 
     if (BLE_SUCCESS == status){
         s_gr_ble_gap_params_ins.is_adv_started = true;
+    } else {
+        s_gr_ble_gap_params_ins.is_adv_started = false;
     }
-#if 0    
-    static GR_CB_MSG_BASIC_T     s_adv_msg; 
-    GR_CALLBACK_MSG_T            * msg = (GR_CALLBACK_MSG_T*) gr_ble_cb_msg_alloc_mem();
-    
-           
-    
-    if (BLE_SUCCESS == status){
-        s_gr_ble_gap_params_ins.is_adv_started = true;
+
+    if(mp_ble_gap_delagate_obj != NULL) {
+        xblepy_device_obj_t * device = MP_OBJ_TO_PTR(mp_ble_gap_delagate_obj);
+        if(device->gap_delegate != mp_const_none) {
+            xblepy_gap_delegate_obj_t * gap_dele = MP_OBJ_TO_PTR(device->gap_delegate);
+            
+            mp_obj_t load_attr = mp_load_attr(gap_dele, qstr_from_str("handleAdvStartEvent"));
+            mp_call_function_1(load_attr, MP_OBJ_NEW_SMALL_INT(status));   
+        }
     }
-    
-    if(msg == NULL){
-        return;
-    }
-    
-    s_adv_msg.gr_index      = inst_idx;
-    s_adv_msg.gr_status     = status;
-    msg->msg_type           = GR_CB_MSG_ADV_START;
-    msg->msg                = (void*) &s_adv_msg;
-    
-    gr_ble_cb_msg_send(msg, true);    
-#endif
 }
 
 /**
@@ -231,6 +222,16 @@ static void app_gap_adv_stop_cb(uint8_t inst_idx, uint8_t status, gap_stopped_re
         gr_trace("+++ Advertising Stop failed... \r\n");
     }
     //no upper callback to notify
+
+    if(mp_ble_gap_delagate_obj != NULL) {
+        xblepy_device_obj_t * device = MP_OBJ_TO_PTR(mp_ble_gap_delagate_obj);
+        if(device->gap_delegate != mp_const_none) {
+            xblepy_gap_delegate_obj_t * gap_dele = MP_OBJ_TO_PTR(device->gap_delegate);
+            
+            mp_obj_t load_attr = mp_load_attr(gap_dele, qstr_from_str("handleAdvStopEvent"));
+            mp_call_function_1(load_attr, MP_OBJ_NEW_SMALL_INT(status));   
+        }
+    }
 }
 
 /**
@@ -369,9 +370,7 @@ static void app_gap_sync_lost_cb(uint8_t inst_idx)
  */
 static void app_gap_connect_cb(uint8_t conn_idx, uint8_t status, const gap_conn_cmp_t *p_conn_param)
 {
-    //static GR_CB_MSG_BASIC_T     s_conn_msg; 
-    //GR_CALLBACK_MSG_T            * msg = NULL;
-    
+    uint8_t paddr[XBLEPY_BD_ADDR_LEN] = {0x00,0x00,0x00,0x00,0x00,0x00};
     if (BLE_SUCCESS == status)
     {
         gr_trace("+++ app_gap_connect_cb Connected with the peer %02X:%02X:%02X:%02X:%02X:%02X.  \r\n",
@@ -387,21 +386,22 @@ static void app_gap_connect_cb(uint8_t conn_idx, uint8_t status, const gap_conn_
         s_gr_ble_gap_params_ins.cur_connect_id = conn_idx;
         
         memcpy(&s_gr_ble_gap_params_ins.gap_conn_cmp_param, p_conn_param, sizeof(gap_conn_cmp_t));
-#if 0    
-        msg = (GR_CALLBACK_MSG_T*) gr_ble_cb_msg_alloc_mem();
-        if(msg == NULL){
-            return;
-        }
-        
-        s_conn_msg.gr_index      = conn_idx;
-        s_conn_msg.gr_status     = status;
-        msg->msg_type            = GR_CB_MSG_GAP_CONNECT;
-        msg->msg                 = (void*) &s_conn_msg;
-        
-        gr_ble_cb_msg_send(msg, true);
-#endif
+
+        memcpy(&paddr[0], &p_conn_param->peer_addr.addr[0], XBLEPY_BD_ADDR_LEN);
     } else {
         gr_trace("+++ app_gap_connect_cb connect fail: %d  \r\n", status);
+    }
+
+    if(mp_ble_gap_delagate_obj != NULL) {
+        xblepy_device_obj_t * device = MP_OBJ_TO_PTR(mp_ble_gap_delagate_obj);
+        if(device->gap_delegate != mp_const_none) {
+            xblepy_gap_delegate_obj_t * gap_dele = MP_OBJ_TO_PTR(device->gap_delegate);
+
+            mp_obj_t peer_addr = mp_obj_new_bytes(&paddr[0], XBLEPY_BD_ADDR_LEN);
+            
+            mp_obj_t load_attr = mp_load_attr(gap_dele, qstr_from_str("handleConnectEvent"));
+            mp_call_function_2(load_attr, MP_OBJ_NEW_SMALL_INT(status), peer_addr);   
+        }
     }
 }
 
@@ -416,30 +416,22 @@ static void app_gap_connect_cb(uint8_t conn_idx, uint8_t status, const gap_conn_
  */
 static void app_gap_disconnect_cb(uint8_t conn_idx, uint8_t status, uint8_t reason)
 {
-    //static GR_CB_MSG_BASIC_T     s_disconn_msg; 
-    //GR_CALLBACK_MSG_T            * msg = NULL;
-    
     if (BLE_SUCCESS == status)
     {
-        gr_trace("+++ Disconnected, reason:%d  \r\n", reason);
-        
+        gr_trace("+++ Disconnected, reason:%d  \r\n", reason);        
         s_gr_ble_gap_params_ins.is_connected = false;
-#if 0        
-        msg = (GR_CALLBACK_MSG_T*) gr_ble_cb_msg_alloc_mem();
-        if(msg == NULL){
-            return;
-        }
-        
-        s_disconn_msg.gr_index   = conn_idx;
-        s_disconn_msg.gr_status  = status;
-        s_disconn_msg.gr_reason  = reason;         
-        msg->msg_type            = GR_CB_MSG_GAP_DISCONNECT;
-        msg->msg                 = (void*) &s_disconn_msg;
-        
-        gr_ble_cb_msg_send(msg, true);
-#endif        
     } else {
         ("app_gap_disconnect_cb connect fail: %d  ", status);
+    }
+
+    if(mp_ble_gap_delagate_obj != NULL) {
+        xblepy_device_obj_t * device = MP_OBJ_TO_PTR(mp_ble_gap_delagate_obj);
+        if(device->gap_delegate != mp_const_none) {
+            xblepy_gap_delegate_obj_t * gap_dele = MP_OBJ_TO_PTR(device->gap_delegate);
+            
+            mp_obj_t load_attr = mp_load_attr(gap_dele, qstr_from_str("handleDisconnectEvent"));
+            mp_call_function_1(load_attr, MP_OBJ_NEW_SMALL_INT(status));   
+        }
     }
 }
 
