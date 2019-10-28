@@ -2,8 +2,6 @@
 ##
 ##                           Ble Heart Rate Service Demo
 ##
-## 
-##
 ## HRS Service Profile:
 ##      +++   ATTR  ++++++++++  UUID ++++++++++++++++++++++++++++++
 ##      +++ (SERVICE    )  0x2800 
@@ -51,6 +49,7 @@ hrs_c1.addDescriptor(hrs_d1)
 hrs.addCharacteristic(hrs_c1)
 hrs.addCharacteristic(hrs_c2)
 hrs.addCharacteristic(hrs_c3)
+
 # DIS
 dis = xblepy.Service(xblepy.UUID(0x2800))
 dis_c1 = xblepy.Characteristic(xblepy.UUID(0x2A23), perms=xblepy.Constants.AttrPerm.PERM_READ_FREE, props=xblepy.Constants.CharacProp.PROP_READ)
@@ -62,6 +61,7 @@ dis_c6 = xblepy.Characteristic(xblepy.UUID(0x2A28), perms=xblepy.Constants.AttrP
 dis_c7 = xblepy.Characteristic(xblepy.UUID(0x2A29), perms=xblepy.Constants.AttrPerm.PERM_READ_FREE, props=xblepy.Constants.CharacProp.PROP_READ)
 dis_c8 = xblepy.Characteristic(xblepy.UUID(0x2A2A), perms=xblepy.Constants.AttrPerm.PERM_READ_FREE, props=xblepy.Constants.CharacProp.PROP_READ)
 dis_c9 = xblepy.Characteristic(xblepy.UUID(0x2A50), perms=xblepy.Constants.AttrPerm.PERM_READ_FREE, props=xblepy.Constants.CharacProp.PROP_READ)
+
 dis.addCharacteristic(dis_c1)
 dis.addCharacteristic(dis_c2)
 dis.addCharacteristic(dis_c3)
