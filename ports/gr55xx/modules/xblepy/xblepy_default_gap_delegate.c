@@ -11,6 +11,7 @@
 #include "py/runtime.h"
 #include "mp_defs.h"
 #include "gr_porting.h"
+#include "xblepy_hal.h"
 
 #if MICROPY_PY_XBLEPY_PERIPHERAL
 
@@ -104,10 +105,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(xblepy_default_gap_delegate_handle_disconnect_e
 
 
 STATIC const mp_rom_map_elem_t xblepy_default_gap_delegate_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_handleAdvStartEvent),     MP_ROM_PTR(&xblepy_default_gap_delegate_handle_adv_start_event_obj) },
-    { MP_ROM_QSTR(MP_QSTR_handleAdvStopEvent),      MP_ROM_PTR(&xblepy_default_gap_delegate_handle_adv_stop_event_obj) },    
-    { MP_ROM_QSTR(MP_QSTR_handleConnectEvent),      MP_ROM_PTR(&xblepy_default_gap_delegate_handle_connect_event_obj) },
-    { MP_ROM_QSTR(MP_QSTR_handleDisconnectEvent),   MP_ROM_PTR(&xblepy_default_gap_delegate_handle_disconnect_event_obj) },
+    { MP_ROM_QSTR(XBLEPY_METHOD_QSTR(PNI_GAP_HANDLE_ADV_START_EVENT)),     MP_ROM_PTR(&xblepy_default_gap_delegate_handle_adv_start_event_obj) },
+    { MP_ROM_QSTR(XBLEPY_METHOD_QSTR(PNI_GAP_HANDLE_ADV_STOP_EVENT)),      MP_ROM_PTR(&xblepy_default_gap_delegate_handle_adv_stop_event_obj) },    
+    { MP_ROM_QSTR(XBLEPY_METHOD_QSTR(PNI_GAP_HANDLE_CONNECT_EVENT)),       MP_ROM_PTR(&xblepy_default_gap_delegate_handle_connect_event_obj) },
+    { MP_ROM_QSTR(XBLEPY_METHOD_QSTR(PNI_GAP_HANDLE_DISCONNECT_EVENT)),    MP_ROM_PTR(&xblepy_default_gap_delegate_handle_disconnect_event_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(xblepy_default_gap_delegate_locals_dict, xblepy_default_gap_delegate_locals_dict_table);

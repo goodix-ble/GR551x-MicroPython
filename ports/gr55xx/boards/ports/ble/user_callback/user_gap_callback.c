@@ -46,6 +46,8 @@
 #include "gr_porting.h"
 #include "xblepy_hal.h"
 
+#include "py/runtime.h"
+
 /*
  * LOCAL FUNCTION DECLARATION
  *****************************************************************************************
@@ -197,7 +199,7 @@ static void app_gap_adv_start_cb(uint8_t inst_idx, uint8_t status)
         if(device->gap_delegate != mp_const_none) {
             xblepy_gap_delegate_obj_t * gap_dele = MP_OBJ_TO_PTR(device->gap_delegate);
             
-            mp_obj_t load_attr = mp_load_attr(gap_dele, qstr_from_str("handleAdvStartEvent"));
+            mp_obj_t load_attr = mp_load_attr(gap_dele, XBLEPY_METHOD_TO_QSTR(PNI_GAP_HANDLE_ADV_START_EVENT));
             mp_call_function_1(load_attr, MP_OBJ_NEW_SMALL_INT(status));   
         }
     }
@@ -228,7 +230,7 @@ static void app_gap_adv_stop_cb(uint8_t inst_idx, uint8_t status, gap_stopped_re
         if(device->gap_delegate != mp_const_none) {
             xblepy_gap_delegate_obj_t * gap_dele = MP_OBJ_TO_PTR(device->gap_delegate);
             
-            mp_obj_t load_attr = mp_load_attr(gap_dele, qstr_from_str("handleAdvStopEvent"));
+            mp_obj_t load_attr = mp_load_attr(gap_dele, XBLEPY_METHOD_TO_QSTR(PNI_GAP_HANDLE_ADV_STOP_EVENT));
             mp_call_function_1(load_attr, MP_OBJ_NEW_SMALL_INT(status));   
         }
     }
@@ -399,7 +401,7 @@ static void app_gap_connect_cb(uint8_t conn_idx, uint8_t status, const gap_conn_
 
             mp_obj_t peer_addr = mp_obj_new_bytes(&paddr[0], XBLEPY_BD_ADDR_LEN);
             
-            mp_obj_t load_attr = mp_load_attr(gap_dele, qstr_from_str("handleConnectEvent"));
+            mp_obj_t load_attr = mp_load_attr(gap_dele, XBLEPY_METHOD_TO_QSTR(PNI_GAP_HANDLE_CONNECT_EVENT));
             mp_call_function_2(load_attr, MP_OBJ_NEW_SMALL_INT(status), peer_addr);   
         }
     }
@@ -429,7 +431,7 @@ static void app_gap_disconnect_cb(uint8_t conn_idx, uint8_t status, uint8_t reas
         if(device->gap_delegate != mp_const_none) {
             xblepy_gap_delegate_obj_t * gap_dele = MP_OBJ_TO_PTR(device->gap_delegate);
             
-            mp_obj_t load_attr = mp_load_attr(gap_dele, qstr_from_str("handleDisconnectEvent"));
+            mp_obj_t load_attr = mp_load_attr(gap_dele, XBLEPY_METHOD_TO_QSTR(PNI_GAP_HANDLE_DISCONNECT_EVENT));
             mp_call_function_1(load_attr, MP_OBJ_NEW_SMALL_INT(status));   
         }
     }

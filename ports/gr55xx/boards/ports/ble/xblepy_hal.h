@@ -5,6 +5,33 @@
 #include "modxblepy.h"
 #include "gr_porting.h"
 
+
+/***************************************************************************
+ *          define native interfaces between mpy and c
+ ***************************************************************************/
+
+/* PNI means micropython native interface */
+//methods for DefaultGAPDelegate
+#define PNI_GAP_HANDLE_ADV_START_EVENT              handleAdvStartEvent
+#define PNI_GAP_HANDLE_ADV_STOP_EVENT               handleAdvStopEvent
+#define PNI_GAP_HANDLE_CONNECT_EVENT                handleConnectEvent
+#define PNI_GAP_HANDLE_DISCONNECT_EVENT             handleDisconnectEvent
+
+#define _METHOD_QSTR_(method)                       MP_QSTR_##method
+#define XBLEPY_METHOD_QSTR(method)                  _METHOD_QSTR_(method)
+#define XBLEPY_METHOD_STR(method)                   #method
+#define XBLEPY_METHOD_TO_QSTR(method)               qstr_from_str(XBLEPY_METHOD_STR(method))
+
+
+
+
+
+
+
+/***************************************************************************
+ *          define hal methods
+ ***************************************************************************/
+
 bool gr_xblepy_gatt_add_service(xblepy_service_obj_t * service);
 bool gr_xblepy_gatt_add_characteristic(xblepy_characteristic_obj_t * charac);
 bool gr_xblepy_gatt_add_descriptor(xblepy_descriptor_obj_t * desc);
