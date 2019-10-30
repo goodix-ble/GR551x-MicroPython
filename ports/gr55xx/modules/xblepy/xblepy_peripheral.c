@@ -129,6 +129,20 @@ STATIC mp_obj_t peripheral_set_gap_delegate(mp_obj_t self_in, mp_obj_t delegate)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(xblepy_peripheral_set_gap_delegate_obj, peripheral_set_gap_delegate);
 
+
+/// \method setGattsDelegate(DefaultGattsDelegate)
+/// Set gatts delegate instance for handling Bluetooth LE events.
+///
+STATIC mp_obj_t peripheral_set_gatts_delegate(mp_obj_t self_in, mp_obj_t delegate) {
+    xblepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    self->gatts_delegate              = delegate;
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(xblepy_peripheral_set_gatts_delegate_obj, peripheral_set_gatts_delegate);
+
+
 /// \method withDelegate(DefaultDelegate)
 /// Set delegate instance for handling Bluetooth LE events.
 ///
@@ -248,8 +262,7 @@ STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args,
     if (connectable_obj != mp_const_none && !(mp_obj_is_true(connectable_obj))) {
         adv_data.connectable = false;
     } else {        
-        gr_xblepy_set_gap_delegate_event_handler(MP_OBJ_FROM_PTR(self));
-        //gr_xblepy_set_gatts_event_handler(MP_OBJ_FROM_PTR(self), gatts_event_handler);
+        gr_xblepy_register_active_peripheral_object(self);
     }
 
     if(!gr_xblepy_gap_start_advertise(&adv_data)){
@@ -336,6 +349,28 @@ STATIC mp_obj_t peripheral_get_services(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(xblepy_peripheral_get_services_obj, peripheral_get_services);
 
+STATIC void xblepy_peripheral_check_attr_index(bool start_flag, uint16_t attr_idx) {
+#define MAX_SUPPORT_ATTR_IDX_COUNT  100u
+
+    static uint16_t  offset = 0;
+    static uint16_t  attr_idx_table[MAX_SUPPORT_ATTR_IDX_COUNT];
+
+    if(start_flag) {
+        offset = 0;
+        memset(&attr_idx_table[0], 0, sizeof(uint16_t) * MAX_SUPPORT_ATTR_IDX_COUNT);
+
+        return;
+    }
+
+    for(int i = 0; i < offset; i++) {
+        if(attr_idx_table[i] == attr_idx) {
+            mp_raise_ValueError("different attributes has same attr index");
+        }
+    }
+    offset++;
+    offset = offset % MAX_SUPPORT_ATTR_IDX_COUNT;
+    attr_idx_table[offset] = attr_idx;
+}
 
 /// \method startServices()
 /// start all services registered in the Peripheral.
@@ -354,6 +389,7 @@ STATIC mp_obj_t peripheral_start_services(mp_obj_t self_in) {
 
     //check ble stack
     xblepy_peripheral_check_ble_stack_status();
+    xblepy_peripheral_check_attr_index(TRUE, 0);
 
     /**** 1 : add services to native porting *******/
 
@@ -363,6 +399,8 @@ STATIC mp_obj_t peripheral_start_services(mp_obj_t self_in) {
 
     for (uint8_t i = 0; i < num_services; i++) {
         xblepy_service_obj_t * s = (xblepy_service_obj_t *)services[i];
+
+        xblepy_peripheral_check_attr_index(FALSE, s->attr_idx);
 
         // 1. register service
         retval = gr_xblepy_gatt_add_service(s);
@@ -382,6 +420,7 @@ STATIC mp_obj_t peripheral_start_services(mp_obj_t self_in) {
         for(uint8_t j =0; j < num_chars; j++) {
             xblepy_characteristic_obj_t * c = (xblepy_characteristic_obj_t *)characs[j];
 
+            xblepy_peripheral_check_attr_index(FALSE, c->attr_idx);
             c->service_handle = service_handle;
             retval = gr_xblepy_gatt_add_characteristic(c);
 
@@ -398,6 +437,7 @@ STATIC mp_obj_t peripheral_start_services(mp_obj_t self_in) {
             for(uint8_t k =0; k < num_descs; k++) {
                 xblepy_descriptor_obj_t * d = (xblepy_descriptor_obj_t *)descs[k];
                 
+                xblepy_peripheral_check_attr_index(FALSE, d->attr_idx);
                 d->service_handle           = service_handle;
                 d->characteristic_handle    = charac_handle;
 
@@ -445,9 +485,10 @@ STATIC const mp_rom_map_elem_t xblepy_peripheral_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_getServices),             MP_ROM_PTR(&xblepy_peripheral_get_services_obj) },
     { MP_ROM_QSTR(MP_QSTR_startServices),           MP_ROM_PTR(&xblepy_peripheral_start_services_obj) },
     
-    /* event handler & delegate */
+    /* event handler & delegate */    
+    { MP_ROM_QSTR(MP_QSTR_setGapDelegate),          MP_ROM_PTR(&xblepy_peripheral_set_gap_delegate_obj) },
+    { MP_ROM_QSTR(MP_QSTR_setGattsDelegate),        MP_ROM_PTR(&xblepy_peripheral_set_gatts_delegate_obj) },
     
-    { MP_ROM_QSTR(MP_QSTR_setGapDelegate),            MP_ROM_PTR(&xblepy_peripheral_set_gap_delegate_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_withDelegate),            MP_ROM_PTR(&xblepy_peripheral_with_delegate_obj) },
     { MP_ROM_QSTR(MP_QSTR_setNotificationHandler),  MP_ROM_PTR(&xblepy_peripheral_set_notif_handler_obj) },

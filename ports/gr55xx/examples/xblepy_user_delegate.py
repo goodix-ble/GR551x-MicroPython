@@ -6,7 +6,7 @@
 ###########################################################################
 
 import xblepy,ble
-class MyGapHandler(xblepy.DefaultGAPDelegate):
+class MyGapHandler(xblepy.DefaultGapDelegate):
     def __init__(self):
         pass    
     def transefr_hex(bytes):

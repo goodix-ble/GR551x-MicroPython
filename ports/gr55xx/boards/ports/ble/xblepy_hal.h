@@ -11,11 +11,15 @@
  ***************************************************************************/
 
 /* PNI means micropython native interface */
-//methods for DefaultGAPDelegate
+//methods for DefaultGapDelegate
 #define PNI_GAP_HANDLE_ADV_START_EVENT              handleAdvStartEvent
 #define PNI_GAP_HANDLE_ADV_STOP_EVENT               handleAdvStopEvent
 #define PNI_GAP_HANDLE_CONNECT_EVENT                handleConnectEvent
 #define PNI_GAP_HANDLE_DISCONNECT_EVENT             handleDisconnectEvent
+
+//methods for DefaultGattsDelegate
+#define PNI_GATTS_HANDLE_READ_EVENT                 handleReadEvent
+#define PNI_GATTS_HANDLE_WRITE_EVENT                handleWriteEvent
 
 #define _METHOD_QSTR_(method)                       MP_QSTR_##method
 #define XBLEPY_METHOD_QSTR(method)                  _METHOD_QSTR_(method)
@@ -37,11 +41,11 @@ bool gr_xblepy_gatt_add_characteristic(xblepy_characteristic_obj_t * charac);
 bool gr_xblepy_gatt_add_descriptor(xblepy_descriptor_obj_t * desc);
 
 
-extern mp_obj_t     mp_ble_gap_delagate_obj;
+extern xblepy_peripheral_obj_t *     mp_ble_active_peripheral_object;
 
 typedef void (*ble_drv_gatts_evt_callback_t)(mp_obj_t self, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data);
 
-void gr_xblepy_set_gap_delegate_event_handler(mp_obj_t obj);
+void gr_xblepy_register_active_peripheral_object(xblepy_peripheral_obj_t * obj);
 void gr_xblepy_set_gatts_event_handler(mp_obj_t obj, ble_drv_gatts_evt_callback_t evt_handler);
 
 

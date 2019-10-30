@@ -194,8 +194,8 @@ static void app_gap_adv_start_cb(uint8_t inst_idx, uint8_t status)
         s_gr_ble_gap_params_ins.is_adv_started = false;
     }
 
-    if(mp_ble_gap_delagate_obj != NULL) {
-        xblepy_device_obj_t * device = MP_OBJ_TO_PTR(mp_ble_gap_delagate_obj);
+    if(mp_ble_active_peripheral_object != NULL) {
+        xblepy_device_obj_t * device = MP_OBJ_TO_PTR(mp_ble_active_peripheral_object);
         if(device->gap_delegate != mp_const_none) {
             xblepy_gap_delegate_obj_t * gap_dele = MP_OBJ_TO_PTR(device->gap_delegate);
             
@@ -225,8 +225,8 @@ static void app_gap_adv_stop_cb(uint8_t inst_idx, uint8_t status, gap_stopped_re
     }
     //no upper callback to notify
 
-    if(mp_ble_gap_delagate_obj != NULL) {
-        xblepy_device_obj_t * device = MP_OBJ_TO_PTR(mp_ble_gap_delagate_obj);
+    if(mp_ble_active_peripheral_object != NULL) {
+        xblepy_device_obj_t * device = MP_OBJ_TO_PTR(mp_ble_active_peripheral_object);
         if(device->gap_delegate != mp_const_none) {
             xblepy_gap_delegate_obj_t * gap_dele = MP_OBJ_TO_PTR(device->gap_delegate);
             
@@ -394,8 +394,8 @@ static void app_gap_connect_cb(uint8_t conn_idx, uint8_t status, const gap_conn_
         gr_trace("+++ app_gap_connect_cb connect fail: %d  \r\n", status);
     }
 
-    if(mp_ble_gap_delagate_obj != NULL) {
-        xblepy_device_obj_t * device = MP_OBJ_TO_PTR(mp_ble_gap_delagate_obj);
+    if(mp_ble_active_peripheral_object != NULL) {
+        xblepy_device_obj_t * device = MP_OBJ_TO_PTR(mp_ble_active_peripheral_object);
         if(device->gap_delegate != mp_const_none) {
             xblepy_gap_delegate_obj_t * gap_dele = MP_OBJ_TO_PTR(device->gap_delegate);
 
@@ -426,8 +426,8 @@ static void app_gap_disconnect_cb(uint8_t conn_idx, uint8_t status, uint8_t reas
         ("app_gap_disconnect_cb connect fail: %d  ", status);
     }
 
-    if(mp_ble_gap_delagate_obj != NULL) {
-        xblepy_device_obj_t * device = MP_OBJ_TO_PTR(mp_ble_gap_delagate_obj);
+    if(mp_ble_active_peripheral_object != NULL) {
+        xblepy_device_obj_t * device = MP_OBJ_TO_PTR(mp_ble_active_peripheral_object);
         if(device->gap_delegate != mp_const_none) {
             xblepy_gap_delegate_obj_t * gap_dele = MP_OBJ_TO_PTR(device->gap_delegate);
             

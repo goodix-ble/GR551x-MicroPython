@@ -49,8 +49,6 @@ typedef struct{
 }gr_srv_env_t;
 
 
-
-
 typedef struct
 {
     xblepy_uuid_type_t         uuid_type;
@@ -62,6 +60,7 @@ typedef struct
     uint16_t                    service_handle;     //save service handle
     uint16_t                    parent_handle;      //save parent handle
     uint16_t                    handle;             //save my onw handle, service handle's parent is 0, if service_handle == handle, it's service entity    
+    uint16_t                    attr_idx;           //handle from mpy, set by mpy user
     xblepy_attr_type_t          type;
     
     xblepy_prop_t              raw_properties;
@@ -76,6 +75,18 @@ typedef struct{
     void *              pAttTable;          //pointer to att table, real type is attm_desc_t * or attm_desc_128_t *    
 }BTGattServiceList_t;
 
+
+/*
+ * save Att Value for handles, default read & write for GattsDelegate
+ */         
+typedef struct _xblepy_gatts_value_t {
+    uint16_t                    attr_idx;           // attibute handle index in mpy layer    
+    uint16_t                    offset;             // current data offset
+    uint16_t                    data_size;          // alloced mem size of this handle for data
+    uint8_t *                   data;               // data pointer, point to alloc memory
+
+    struct _xblepy_gatts_value_t *  next;
+} xblepy_gatts_value_t;
 
 
 extern gr_ble_common_params_t       s_gr_ble_common_params_ins;
@@ -100,6 +111,14 @@ BTGattServiceList_t *   prvBTGattServiceListGetHead(void);
 void                    prvBTGattServiceListDelete(uint16_t serviceHandle);
 
 
+void                        xblepy_gatts_delegate_init(void) ;
+void                        xblepy_gatts_delegate_final(void) ;
+xblepy_gatts_value_t *      xblepy_gatts_delegate_read(uint16_t attr_idx) ;
+bool                        xblepy_gatts_delegate_write(uint16_t attr_idx, uint16_t offset, uint16_t length, uint8_t * data);
+void                        xblepy_gatts_delegate_delete_one(uint16_t attr_idx) ;
+void                        xblepy_gatts_delegate_delete_by_service(xblepy_service_obj_t * service);
+
+
 
 
 /*
@@ -114,6 +133,18 @@ uint16_t gr_gatt_transto_ble_stack_handle(uint16_t porting_handle);
  */
 uint16_t gr_gatt_transto_porting_layer_handle(uint16_t stack_handle);
 
+/*
+ * transfer ble stack handle in ble stack to mpy handle (attribute index in micropython language)
+ * JUST Be called when connected
+ */
+uint16_t gr_ble_gatt_transto_mpy_layer_handle_from_stack_handle(uint16_t stack_handle);
+
+
+/*
+ * transfer mpy handle (attribute index in micropython language) to ble stack handle in ble stack
+ * JUST Be called when connected
+ */
+uint16_t gr_ble_gatt_transto_stack_handle_from_mpy_layer_handle(uint16_t attr_idx);
 
 /*************************************************************************
  * mm Functions bases on py/gc for porting layer, etc.

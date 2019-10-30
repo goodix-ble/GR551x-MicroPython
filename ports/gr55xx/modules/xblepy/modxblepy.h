@@ -67,6 +67,7 @@ extern const mp_obj_type_t xblepy_constants_type;
 extern const mp_obj_type_t xblepy_constants_ad_types_type;
 
 extern const mp_obj_type_t xblepy_default_gap_delegate_type;
+extern const mp_obj_type_t xblepy_default_gatts_delegate_type;
 
 #define XBLEPY_UNASSIGNED_HANDLE       (0)
 #define XBLEPY_INVALID_HANDLE          (0xffff)
@@ -158,7 +159,9 @@ typedef struct _xblepy_event_handler_t {
 
 typedef struct _xblepy_gap_delegate_obj_t {
     mp_obj_base_t                   base;
-} xblepy_delegate_obj_t, xblepy_gap_delegate_obj_t;
+} xblepy_delegate_obj_t, 
+  xblepy_gap_delegate_obj_t,
+  xblepy_gatts_delegate_obj_t;
 
 /*
  * Device is super class of Peripheral and Central
@@ -174,24 +177,12 @@ typedef struct _xblepy_device_obj_t {
     xblepy_event_handler_t *        handler_list;
     
     xblepy_gap_delegate_obj_t *     gap_delegate;
+    xblepy_gatts_delegate_obj_t *   gatts_delegate;
 
     mp_obj_t                        conn_handler;       //delete later, avoid compile error for now
-} xblepy_device_obj_t;
-
-typedef struct _xblepy_device_obj_t     xblepy_peripheral_obj_t;
-typedef struct _xblepy_device_obj_t     xblepy_central_obj_t;
-
-/*
-typedef struct _xblepy_peripheral_obj_t {
-    xblepy_device_obj_t             device;
-    xblepy_role_type_t              role;
-    volatile uint16_t               conn_handle;
-    mp_obj_t                        delegate;
-    mp_obj_t                        notif_handler;
-    mp_obj_t                        conn_handler;
-    mp_obj_t                        service_list;
-} xblepy_peripheral_obj_t;
-*/
+} xblepy_device_obj_t,
+  xblepy_peripheral_obj_t,
+  xblepy_central_obj_t;
 
 typedef struct _xblepy_uuid_obj_t {
     mp_obj_base_t                   base;

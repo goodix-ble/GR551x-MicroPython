@@ -135,8 +135,6 @@ uint16_t gr_gatt_transto_porting_layer_handle(uint16_t stack_handle){
 
 
 
-
-
 /*
  * mm Functions bases on py/gc for porting layer, etc.
  */ 

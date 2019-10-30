@@ -115,6 +115,7 @@ SRC_C += \
     modules/xblepy/xblepy_scanner.c \
     modules/xblepy/xblepy_delegate.c \
     modules/xblepy/xblepy_default_gap_delegate.c \
+    modules/xblepy/xblepy_default_gatts_delegate.c \
 
     
 INC_GR += -I./modules/ble

@@ -115,7 +115,7 @@ STATIC MP_DEFINE_CONST_DICT(xblepy_default_gap_delegate_locals_dict, xblepy_defa
 
 const mp_obj_type_t xblepy_default_gap_delegate_type = {
     { &mp_type_type },
-    .name = MP_QSTR_DefaultGAPDelegate,
+    .name = MP_QSTR_DefaultGapDelegate,
     .print = xblepy_default_gap_delegate_print,
     .make_new = xblepy_default_gap_delegate_make_new,
     .locals_dict = (mp_obj_dict_t*)&xblepy_default_gap_delegate_locals_dict

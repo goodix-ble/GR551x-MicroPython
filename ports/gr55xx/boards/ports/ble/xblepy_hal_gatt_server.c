@@ -22,14 +22,6 @@ static bool prvGetServiceAttmTable(uint16_t usServiceHandle, bool * isUUID128, v
 
 
 
-
-
-
-
-
-
-
-
 static bool gr_transfer_mpy_props_to_goodix_props(const xblepy_prop_t xProperties, const xblepy_permission_t xPermissions, uint16_t *perm){
 
     *perm = 0;
@@ -151,6 +143,7 @@ bool gr_xblepy_gatt_add_service(xblepy_service_obj_t * service){
         xGattTable[ xGattTableSize ].service_handle = xGattTable[ xGattTableSize ].handle;
         xGattTable[ xGattTableSize ].raw_properties = 0;
         xGattTable[ xGattTableSize ].raw_permissions= 0;
+        xGattTable[ xGattTableSize ].attr_idx       = service->attr_idx;
         
         //update mpy service handle
         service->handle = xGattTable[ xGattTableSize ].handle;
@@ -210,6 +203,7 @@ bool gr_xblepy_gatt_add_characteristic(xblepy_characteristic_obj_t * charac) {
         xGattTable[ xGattTableSize ].service_handle = charac->p_service->handle;
         xGattTable[ xGattTableSize ].raw_properties = charac->props;
         xGattTable[ xGattTableSize ].raw_permissions= charac->perms;
+        xGattTable[ xGattTableSize ].attr_idx       = charac->attr_idx;
 
         for( int i = 0; i < xGattTableSize; ++i )
         {
@@ -306,6 +300,7 @@ bool gr_xblepy_gatt_add_descriptor(xblepy_descriptor_obj_t * p_desc) {
         xGattTable[ xGattTableSize ].service_handle = p_desc->service_handle;
         xGattTable[ xGattTableSize ].raw_properties = 0;
         xGattTable[ xGattTableSize ].raw_permissions= p_desc->perms;
+        xGattTable[ xGattTableSize ].attr_idx       = p_desc->attr_idx;
 
         for( int16_t i = ( int16_t ) xGattTableSize - 1; i >= 0; --i )
         {
@@ -383,6 +378,8 @@ bool gr_xblepy_stop_service(xblepy_service_obj_t * service) {
 bool gr_xblepy_delete_service(xblepy_service_obj_t * service) {
     bool ret = true;
     uint16_t service_handle = service->handle;
+
+    xblepy_gatts_delegate_delete_by_service(service);
 
     BTGattServiceList_t * psrv = prvBTGattServiceListGet(service_handle);
     
@@ -608,6 +605,34 @@ void gr_ble_gatt_handle_map_print(void){
     return;
 }
 
+uint16_t gr_ble_gatt_transto_mpy_layer_handle_from_stack_handle(uint16_t stack_handle) {
+    uint16_t porting_handle = gr_gatt_transto_porting_layer_handle(stack_handle);
+
+    for(int i = 0; i < xGattTableSize; i++) {
+        if ( xGattTable[ i ].handle  == porting_handle) {
+            return xGattTable[ i ].attr_idx;
+        }
+    }
+
+    return GR_BLE_GATT_INVALID_HANDLE;
+}
+
+/*
+ * transfer mpy handle (attribute index in micropython language) to ble stack handle in ble stack
+ * JUST Be called when connected
+ */
+uint16_t gr_ble_gatt_transto_stack_handle_from_mpy_layer_handle(uint16_t attr_idx) {
+    uint16_t porting_handle = GR_BLE_GATT_INVALID_HANDLE;
+
+    for(int i = 0; i < xGattTableSize; i++) {
+        if ( xGattTable[ i ].attr_idx  == attr_idx) {
+            porting_handle = xGattTable[ i ].handle;
+        }
+    }
+
+    return gr_gatt_transto_ble_stack_handle(porting_handle);
+}
+
 
 void gr_xblepy_init(void)
 {    
@@ -615,10 +640,205 @@ void gr_xblepy_init(void)
     memset(&xGattTable[0], 0, sizeof(BTGattEntity_t) * GR_BLE_GATT_MAX_ENTITIES);
     gr_gatt_service_reset();
     prvBTGattServiceListInit();
-    //prvBTGattValueHandleInit();
+    xblepy_gatts_delegate_init();
     
     memset(&s_gr_ble_gap_params_ins, 0 , sizeof(gr_ble_gap_params_t));
 }
 
 
 
+
+/**********************************************************************************************
+ *             Default delegate implementment for GATTS Read & Write 
+ **********************************************************************************************/
+
+xblepy_gatts_value_t * p_xblepy_gatts_value_link_head = NULL;
+
+void xblepy_gatts_delegate_init(void) {
+    p_xblepy_gatts_value_link_head = NULL;
+}
+
+void xblepy_gatts_delegate_final(void) {
+    xblepy_gatts_value_t * gptr = p_xblepy_gatts_value_link_head;
+    xblepy_gatts_value_t * gtmp = NULL;
+
+    while(gptr != NULL) {
+        gtmp = gptr->next;
+        //free resources
+        {
+            if(gptr->data != NULL) {
+                gr_free(gptr->data);
+                gptr->data = NULL;
+            }
+
+            gr_free(gptr);
+        }
+
+        gptr = gtmp;
+    }
+
+    p_xblepy_gatts_value_link_head = NULL;
+}
+
+
+xblepy_gatts_value_t * xblepy_gatts_delegate_read(uint16_t attr_idx) {
+    xblepy_gatts_value_t * gptr = p_xblepy_gatts_value_link_head;
+
+    while(gptr != NULL) {
+        if(gptr->attr_idx == attr_idx) {
+            return gptr;
+        }
+
+        gptr = gptr->next;
+    }
+
+    return NULL;
+}
+
+static xblepy_gatts_value_t * xblepy_gatts_delegate_new_one(uint16_t attr_idx) {
+    xblepy_gatts_value_t * gptr = gr_malloc(sizeof(xblepy_gatts_value_t));
+
+    if(gptr == NULL) {
+        return NULL;
+    }
+
+    gptr->data = gr_malloc(GR_BLE_GATTS_VAR_ATTR_LEN_DEFAULT);
+
+    if(gptr->data == NULL) {
+        gr_free(gptr);
+        return NULL;
+    }
+
+    memset(gptr->data, 0, GR_BLE_GATTS_VAR_ATTR_LEN_DEFAULT);
+    gptr->data_size = GR_BLE_GATTS_VAR_ATTR_LEN_DEFAULT;
+    gptr->attr_idx  = attr_idx;
+    gptr->offset    = 0;
+    gptr->next      = NULL;
+
+    //add to link tail
+    {
+        xblepy_gatts_value_t * gtmp = p_xblepy_gatts_value_link_head;
+
+        if(p_xblepy_gatts_value_link_head == NULL) {
+            p_xblepy_gatts_value_link_head = gptr;
+            p_xblepy_gatts_value_link_head->next = NULL;
+        } else {
+            while(gtmp->next != NULL) {
+                gtmp = gtmp->next;
+            }
+
+            gtmp->next = gptr;
+        }
+    }
+
+    return gptr;
+}
+
+void xblepy_gatts_delegate_delete_one(uint16_t attr_idx) {
+    xblepy_gatts_value_t * gptr = NULL;
+    xblepy_gatts_value_t * gtmp = NULL;
+
+    if(p_xblepy_gatts_value_link_head == NULL) {
+        return;
+    }
+
+    if(p_xblepy_gatts_value_link_head->attr_idx == attr_idx) {
+        gptr =  p_xblepy_gatts_value_link_head;
+        p_xblepy_gatts_value_link_head = p_xblepy_gatts_value_link_head->next;
+
+        gr_free(gptr->data);
+        gr_free(gptr);    
+
+        return;
+    } 
+
+    gptr = p_xblepy_gatts_value_link_head;
+    gtmp = NULL;
+
+    while (gptr != NULL) {
+        if((gptr->next != NULL) && (gptr->next->attr_idx == attr_idx)) {
+            gtmp = gptr->next;
+            gptr->next = gptr->next->next;
+            break;
+        }
+
+        gptr = gptr->next;
+    }
+
+    if(gtmp != NULL) {
+        gr_free(gtmp->data);
+        gr_free(gtmp);
+    }
+
+    return;
+}
+
+void xblepy_gatts_delegate_delete_by_service(xblepy_service_obj_t * service) {
+    mp_obj_t *      characs             = NULL;
+    mp_uint_t       num_chars           = 0;
+    mp_obj_t *      descs               = NULL;
+    mp_uint_t       num_descs           = 0;
+
+    if(service == NULL) {
+        return;
+    }
+
+    //delete gatts delegate resource from descriptor to characteristic to service
+
+    num_chars   = 0; 
+    characs     = NULL;
+    mp_obj_get_array(service->char_list, &num_chars, &characs);
+
+    for(uint8_t j =0; j < num_chars; j++) {
+
+        xblepy_characteristic_obj_t * c = (xblepy_characteristic_obj_t *)characs[j];
+
+        descs     = NULL;
+        num_descs = 0;
+        mp_obj_get_array(c->desc_list, &num_descs, &descs);
+
+        for(uint8_t k =0; k < num_descs; k++) {
+            xblepy_descriptor_obj_t * d = (xblepy_descriptor_obj_t *)descs[k];   
+
+            xblepy_gatts_delegate_delete_one(d->attr_idx);
+        }
+
+        xblepy_gatts_delegate_delete_one(c->attr_idx);
+    }
+
+    xblepy_gatts_delegate_delete_one(service->attr_idx);
+
+    return;
+}
+
+bool xblepy_gatts_delegate_write(uint16_t attr_idx, uint16_t offset, uint16_t length, uint8_t * data) {
+    xblepy_gatts_value_t * gptr = NULL;
+    
+    if(data == NULL) {
+        return FALSE;
+    }
+    
+    gptr = xblepy_gatts_delegate_read(attr_idx);
+    
+    if(gptr == NULL) {
+        gptr = xblepy_gatts_delegate_new_one(attr_idx);
+        if(gptr == NULL) {
+            return FALSE;
+        }
+    }
+
+    uint16_t max_wr_len = 0;
+    
+    if(offset >= gptr->data_size) {
+        max_wr_len = 0;
+    } else if ((offset < gptr->data_size) && (offset + length >= gptr->data_size)) {
+        max_wr_len = gptr->data_size - offset;
+    } else {
+        max_wr_len = length;
+    }
+
+    memcpy(&gptr->data[offset], data, max_wr_len);
+    gptr->offset = offset + max_wr_len;
+
+    return TRUE;
+}

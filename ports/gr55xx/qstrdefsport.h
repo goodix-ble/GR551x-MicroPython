@@ -215,12 +215,17 @@ Q(stopAdvertise)
 //Central
 Q(Central)
 
-//DefaultGAPDelegate
-Q(DefaultGAPDelegate)
+//DefaultGapDelegate
+Q(DefaultGapDelegate)
 Q(setGapDelegate)
+Q(setGattsDelegate)
 Q(handleAdvStartEvent)
 Q(handleAdvStopEvent)
 Q(handleConnectEvent)
 Q(handleDisconnectEvent)
 
+//DefaultGattsDelegate
+Q(DefaultGattsDelegate)
+Q(handleReadEvent)
+Q(handleWriteEvent)
 

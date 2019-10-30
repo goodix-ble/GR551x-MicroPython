@@ -76,8 +76,12 @@ mp_obj_t xblepy_device_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     s->service_list     = mp_obj_new_list(0, NULL);
     s->handler_list     = mp_obj_new_list(0, NULL);
     
-    s->gap_delegate     = m_new_obj(xblepy_gap_delegate_obj_t);
-    s->gap_delegate->base.type  = &xblepy_default_gap_delegate_type;
+    //set default delegate
+    s->gap_delegate                 = m_new_obj(xblepy_gap_delegate_obj_t);
+    s->gap_delegate->base.type      = &xblepy_default_gap_delegate_type;
+
+    s->gatts_delegate               = m_new_obj(xblepy_gatts_delegate_obj_t);
+    s->gatts_delegate->base.type    = &xblepy_default_gatts_delegate_type;
     
     s->conn_handler     = mp_const_none;    
     

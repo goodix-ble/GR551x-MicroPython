@@ -9,13 +9,13 @@ typedef void (*ble_drv_gatts_evt_callback_t)(mp_obj_t self, uint16_t event_id, u
 static ble_drv_gap_evt_callback_t           gap_event_handler;
 static ble_drv_gatts_evt_callback_t         gatts_event_handler;
 
-mp_obj_t                                    mp_ble_gap_delagate_obj = NULL;
+xblepy_peripheral_obj_t *                   mp_ble_active_peripheral_object = NULL;
 static mp_obj_t                             mp_gatts_observer;
 
 
-void gr_xblepy_set_gap_delegate_event_handler(mp_obj_t obj) {
-    printf("+++ gr_xblepy_set_gap_delegate_event_handler called \r\n");
-    mp_ble_gap_delagate_obj = obj;
+void gr_xblepy_register_active_peripheral_object(xblepy_peripheral_obj_t * obj) {
+    printf("+++ gr_xblepy_register_active_peripheral_object called \r\n");
+    mp_ble_active_peripheral_object = obj;
 }
 
 void gr_xblepy_set_gatts_event_handler(mp_obj_t obj, ble_drv_gatts_evt_callback_t evt_handler) {
