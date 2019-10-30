@@ -203,6 +203,7 @@ typedef struct _xblepy_uuid_obj_t {
 
 typedef struct _xblepy_service_obj_t {
     mp_obj_base_t                   base;
+    uint16_t                        attr_idx;               //attribute index, mpy layer's handle
     uint16_t                        handle;              //myself handle
     xblepy_service_type_t           type;
     xblepy_uuid_obj_t       *       p_uuid;
@@ -214,6 +215,7 @@ typedef struct _xblepy_service_obj_t {
 
 typedef struct _xblepy_characteristic_obj_t {
     mp_obj_base_t                   base;
+    uint16_t                        attr_idx;               //attribute index, mpy layer's handle
     uint16_t                        handle;                 //myself handle
     xblepy_uuid_obj_t *             p_uuid;
     uint16_t                        service_handle;
@@ -227,6 +229,7 @@ typedef struct _xblepy_characteristic_obj_t {
 
 typedef struct _xblepy_descriptor_obj_t {
     mp_obj_base_t                   base;
+    uint16_t                        attr_idx;               //attribute index, mpy layer's handle
     uint16_t                        handle;                 //myself handle
     xblepy_uuid_obj_t    *          p_uuid;    
     xblepy_permission_t             perms;

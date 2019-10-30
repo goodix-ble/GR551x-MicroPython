@@ -22,12 +22,12 @@ STATIC void xblepy_descriptor_print(const mp_print_t *print, mp_obj_t o, mp_prin
     xblepy_descriptor_obj_t * self = (xblepy_descriptor_obj_t *)o;
 
     if(self->p_uuid == NULL) {
-        mp_printf(print, "Descriptor(uuid: none)");
+        mp_printf(print, "Descriptor(handle:0, uuid: none)");
     } else {
         if(self->p_uuid->type == XBLEPY_UUID_128_BIT) {
-            mp_printf(print, "Descriptor(uuid: %s)",gr_ble_format_uuid128b_to_string(&self->p_uuid->value_128b[0], 16));
+            mp_printf(print, "Descriptor(handle:%d, uuid: %s)",self->attr_idx, gr_ble_format_uuid128b_to_string(&self->p_uuid->value_128b[0], 16));
         } else {
-            mp_printf(print, "Descriptor(uuid: 0x" HEX2_FMT HEX2_FMT ")",
+            mp_printf(print, "Descriptor(handle:%d, uuid: 0x%02x%02x)", self->attr_idx, 
               self->p_uuid->value[1], self->p_uuid->value[0]);
         }
     }
@@ -39,8 +39,9 @@ STATIC mp_obj_t xblepy_descriptor_make_new(const mp_obj_type_t *type, size_t n_a
     enum { ARG_NEW_UUID };
 
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_uuid, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_perms, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = XBLEPY_PERM_READ_FREE | XBLEPY_PERM_WRITE_FREE} },
+        { MP_QSTR_attr_idx, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_uuid,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_perms,    MP_ARG_KW_ONLY  | MP_ARG_INT, {.u_int = XBLEPY_PERM_READ_FREE | XBLEPY_PERM_WRITE_FREE} },
     };
 
     // parse args
@@ -50,7 +51,8 @@ STATIC mp_obj_t xblepy_descriptor_make_new(const mp_obj_type_t *type, size_t n_a
     xblepy_descriptor_obj_t * s = m_new_obj(xblepy_descriptor_obj_t);
     s->base.type = type;
 
-    mp_obj_t uuid_obj = args[0].u_obj;
+    s->attr_idx         =   args[0].u_int;
+    mp_obj_t uuid_obj   =   args[1].u_obj;
 
     if (uuid_obj == mp_const_none) {
         mp_raise_ValueError("must provide UUID parameter");
@@ -62,8 +64,8 @@ STATIC mp_obj_t xblepy_descriptor_make_new(const mp_obj_type_t *type, size_t n_a
         mp_raise_ValueError("Invalid UUID parameter");
     }
 
-    if (args[1].u_int > 0) {
-        s->perms = (uint8_t)args[1].u_int;
+    if (args[2].u_int > 0) {
+        s->perms = (uint8_t)args[2].u_int;
     }
 
     s->handle                   = XBLEPY_UNASSIGNED_HANDLE;

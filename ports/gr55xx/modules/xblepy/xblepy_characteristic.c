@@ -19,23 +19,24 @@ STATIC void xblepy_characteristic_print(const mp_print_t *print, mp_obj_t o, mp_
     xblepy_characteristic_obj_t * self = (xblepy_characteristic_obj_t *)o;
 
     if(self->p_uuid == NULL) {
-        mp_printf(print, "Characteristic(uuid: none, handle: %d)", self->handle);
+        mp_printf(print, "Characteristic(uuid: none, handle: %d)", self->attr_idx);
     } else {
         if(self->p_uuid->type == XBLEPY_UUID_128_BIT) {
-            mp_printf(print, "Characteristic(uuid: %s, handle: %d)",gr_ble_format_uuid128b_to_string(&self->p_uuid->value_128b[0], 16), self->handle);
+            mp_printf(print, "Characteristic(uuid: %s, handle: %d)",gr_ble_format_uuid128b_to_string(&self->p_uuid->value_128b[0], 16), self->attr_idx);
         } else {
             mp_printf(print, "Characteristic(uuid: 0x%02x%02x, handle: %d)",
-              self->p_uuid->value[1], self->p_uuid->value[0], self->handle);
+              self->p_uuid->value[1], self->p_uuid->value[0], self->attr_idx);
         }
     }    
 }
 
 STATIC mp_obj_t xblepy_characteristic_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_uuid,  MP_ARG_REQUIRED| MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_props, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = XBLEPY_PROP_READ | XBLEPY_PROP_WRITE} },        
-        { MP_QSTR_perms, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = XBLEPY_PERM_READ_FREE | XBLEPY_PERM_WRITE_FREE} },
-        { MP_QSTR_attrs, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_attr_idx, MP_ARG_REQUIRED| MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_uuid,     MP_ARG_REQUIRED| MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_props,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = XBLEPY_PROP_READ | XBLEPY_PROP_WRITE} },        
+        { MP_QSTR_perms,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = XBLEPY_PERM_READ_FREE | XBLEPY_PERM_WRITE_FREE} },
+        { MP_QSTR_attrs,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
 
     // parse args
@@ -45,7 +46,9 @@ STATIC mp_obj_t xblepy_characteristic_make_new(const mp_obj_type_t *type, size_t
     xblepy_characteristic_obj_t *s = m_new_obj(xblepy_characteristic_obj_t);
     s->base.type = type;
 
-    mp_obj_t uuid_obj = args[0].u_obj;
+    s->attr_idx         = args[0].u_int;
+
+    mp_obj_t uuid_obj   = args[1].u_obj;
 
     if (uuid_obj == mp_const_none) {
         return MP_OBJ_FROM_PTR(s);
@@ -58,16 +61,16 @@ STATIC mp_obj_t xblepy_characteristic_make_new(const mp_obj_type_t *type, size_t
         mp_raise_ValueError("Invalid UUID parameter");
     }
 
-    if (args[1].u_int > 0) {
-        s->props = (uint8_t)args[1].u_int;
-    }
-
     if (args[2].u_int > 0) {
-        s->perms = (uint8_t)args[2].u_int;
+        s->props = (uint8_t)args[2].u_int;
     }
 
     if (args[3].u_int > 0) {
-        s->attrs = (uint8_t)args[3].u_int;
+        s->perms = (uint8_t)args[3].u_int;
+    }
+
+    if (args[4].u_int > 0) {
+        s->attrs = (uint8_t)args[4].u_int;
     }
 
     s->handle                   = XBLEPY_UNASSIGNED_HANDLE;

@@ -23,24 +23,23 @@ STATIC void xblepy_service_print(const mp_print_t *print, mp_obj_t o, mp_print_k
     xblepy_service_obj_t * self = (xblepy_service_obj_t *)o;
     
     if(self->p_uuid == NULL) {
-        mp_printf(print, "Service(uuid: none, handle: 0x%02x)", self->handle);
+        mp_printf(print, "Service(uuid: none, handle: 0x%02x)", self->attr_idx);
     } else {
         if(self->p_uuid->type == XBLEPY_UUID_128_BIT) {
-            mp_printf(print, "Service(uuid: %s, handle: %d)",gr_ble_format_uuid128b_to_string(&self->p_uuid->value_128b[0], 16), self->handle);
+            mp_printf(print, "Service(uuid: %s, handle: %d)",gr_ble_format_uuid128b_to_string(&self->p_uuid->value_128b[0], 16), self->attr_idx);
         } else {
             mp_printf(print, "Service(uuid: 0x%02x%02x, handle: %d)",
-              self->p_uuid->value[1], self->p_uuid->value[0], self->handle);
+              self->p_uuid->value[1], self->p_uuid->value[0], self->attr_idx);
         }
     }
 }
 
 STATIC mp_obj_t xblepy_service_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
 
-    enum { ARG_NEW_UUID, ARG_NEW_TYPE };
-
     static const mp_arg_t allowed_args[] = {
-        { ARG_NEW_UUID, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { ARG_NEW_TYPE, MP_ARG_INT, {.u_int = XBLEPY_SERVICE_PRIMARY} },
+        { MP_QSTR_attr_idx, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_uuid,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_type,     MP_ARG_INT,                   {.u_int = XBLEPY_SERVICE_PRIMARY} },
     };
 
     // parse args
@@ -50,8 +49,9 @@ STATIC mp_obj_t xblepy_service_make_new(const mp_obj_type_t *type, size_t n_args
     xblepy_service_obj_t *s = m_new_obj(xblepy_service_obj_t);
     s->base.type    = type;
     s->handle       = gr_ble_get_mpy_handle();
-    
-    mp_obj_t uuid_obj = args[ARG_NEW_UUID].u_obj;
+    s->attr_idx     = args[0].u_int;
+
+    mp_obj_t uuid_obj = args[1].u_obj;
 
     if (uuid_obj == MP_OBJ_NULL) {
         return MP_OBJ_FROM_PTR(s);
@@ -60,7 +60,7 @@ STATIC mp_obj_t xblepy_service_make_new(const mp_obj_type_t *type, size_t n_args
     if (mp_obj_is_type(uuid_obj, &xblepy_uuid_type)) {
         s->p_uuid = MP_OBJ_TO_PTR(uuid_obj);
 
-        uint8_t type = args[ARG_NEW_TYPE].u_int;
+        uint8_t type = args[2].u_int;
         if (type > 0 &&  type <= XBLEPY_SERVICE_PRIMARY) {
             s->type = type;
         } else {

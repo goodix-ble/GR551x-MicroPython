@@ -138,10 +138,13 @@ Q(handleDiscovery)
 
 //Descriptor
 Q(Descriptor)
+Q(attr_idx)
+Q(uuid)
 
 //Characteristic
 Q(Characteristic)
 Q(uuid)
+Q(attr_idx)
 Q(props)
 Q(attrs)
 Q(perms)
@@ -163,6 +166,8 @@ Q(removeDescriptor)
 //Service 
 Q(Service)
 Q(uuid)
+Q(attr_idx)
+Q(type)
 Q(desc)
 Q(addCharacteristic)
 Q(getCharacteristic)
