@@ -3,7 +3,7 @@
 
 #include "mp_defs.h"
 
-#define GR_UART_RX_BUFF_LEN         (1024u)
+#define GR_UART_RX_BUFF_LEN         (10240u)
 
 typedef struct 
 {

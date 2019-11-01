@@ -182,21 +182,21 @@ static void srv_gatts_write_cb(uint8_t conn_idx, const gatts_write_req_cb_t *p_w
     gr_trace("srv_gatts_write_cb called...  \r\n");
 
     uint16_t attr_idx   = gr_ble_gatt_transto_mpy_layer_handle_from_stack_handle(p_write_req->handle);
-    mp_obj_t write_data = mp_obj_new_bytes(&p_write_req->value[0], p_write_req->length);    
+    mp_obj_t write_data = mp_obj_new_bytes(&p_write_req->value[0], p_write_req->length);
 
     if(mp_ble_active_peripheral_object != NULL) {
         xblepy_device_obj_t * device = MP_OBJ_TO_PTR(mp_ble_active_peripheral_object);
         if(device->gatts_delegate != mp_const_none) {
             xblepy_gatts_delegate_obj_t * gatts_dele = MP_OBJ_TO_PTR(device->gatts_delegate);
             
-            mp_obj_t arg[4] = { 
+            mp_obj_t arg[3] = { 
                         MP_OBJ_NEW_SMALL_INT(attr_idx),
                         MP_OBJ_NEW_SMALL_INT(p_write_req->offset),
-                        MP_OBJ_NEW_SMALL_INT(p_write_req->length),
+                        //MP_OBJ_NEW_SMALL_INT(p_write_req->length),
                         write_data};
 
             mp_obj_t load_attr = mp_load_attr(gatts_dele, XBLEPY_METHOD_TO_QSTR(PNI_GATTS_HANDLE_WRITE_EVENT));
-            mp_call_function_n_kw(load_attr, 4, 0, arg);
+            mp_call_function_n_kw(load_attr, 3, 0, arg);
         }
     }
 }

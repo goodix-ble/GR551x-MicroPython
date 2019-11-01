@@ -226,6 +226,8 @@ Q(handleDisconnectEvent)
 
 //DefaultGattsDelegate
 Q(DefaultGattsDelegate)
+Q(responseRead)
+Q(responseWrite)
 Q(handleReadEvent)
 Q(handleWriteEvent)
 

@@ -18,6 +18,8 @@
 #define PNI_GAP_HANDLE_DISCONNECT_EVENT             handleDisconnectEvent
 
 //methods for DefaultGattsDelegate
+#define PNI_GATTS_RESPONSE_READ                     responseRead
+#define PNI_GATTS_RESPONSE_WRITE                    responseWrite
 #define PNI_GATTS_HANDLE_READ_EVENT                 handleReadEvent
 #define PNI_GATTS_HANDLE_WRITE_EVENT                handleWriteEvent
 
@@ -52,6 +54,7 @@ void gr_xblepy_set_gatts_event_handler(mp_obj_t obj, ble_drv_gatts_evt_callback_
 bool gr_xblepy_start_service(xblepy_service_obj_t * service);
 bool gr_xblepy_stop_service(xblepy_service_obj_t * service);
 bool gr_xblepy_delete_service(xblepy_service_obj_t * service);
+void gr_xblepy_gap_hal_init(void);
 bool gr_xblepy_gap_start_services(mp_obj_t * p_services, uint8_t num_of_services);
 bool gr_xblepy_gap_start_advertise(xblepy_advertise_data_t * p_adv_params);
 bool gr_xblepy_gap_stop_advertise(void);

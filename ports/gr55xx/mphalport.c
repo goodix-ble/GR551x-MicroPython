@@ -25,7 +25,7 @@ void mp_hal_set_interrupt_char(char c) {
 
 
 /**@brief Bluetooth device address. */
-static const uint8_t    s_bd_addr[6] = {0x15, 0x00, 0xcf, 0x3e, 0xcb, 0xea};
+static const uint8_t    s_bd_addr[6] = {0xea, 0x99, 0xcf, 0x3e, 0xcb, 0x15};
  
 
 /*
@@ -62,7 +62,7 @@ void mp_gr5515_init(void)
     pwr_mgmt_mode_set(PMR_MGMT_ACTIVE_MODE);
     
     /* enable sdk log*/
-#if 1
+#if 0
     ble_stack_debug_setup(0x7FFFFFFF, 0x7FFFFFFF, vprintf);
 #endif
 }

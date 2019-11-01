@@ -23,6 +23,19 @@ gr_ble_gap_params_t s_gr_ble_gap_params_ins = {
     .is_need_sec_cfm    = false,
 };
 
+gap_sec_key_t       s_gr_gap_sec_key = {
+    .key            = {0x12,0x34,0x56,0x78,0x9a,0xbc,0xde,0xef, \
+                       0xfe,0xdc,0xba,0x98,0x76,0x54,0x32,0x10}
+};
+
+void gr_xblepy_gap_hal_init(void) {
+    /* set default config*/
+    ble_gap_pair_enable(true);
+    ble_gap_privacy_params_set(900, true);
+    ble_gap_irk_set(&s_gr_gap_sec_key);
+    ble_gap_l2cap_params_set(GR_BLE_DEFAULT_MTU_SIZE, GR_BLE_DEFAULT_MTU_SIZE, GR_BLE_MAX_NB_LECB_DEFUALT);
+}
+
 bool gr_xblepy_gap_start_adv(xblepy_advertise_data_t * p_adv_params) {
     static uint8_t adv_data[GR_BLE_GAP_ADV_DEFAULT_SIZE];    
     const  uint8_t max_size     = GR_BLE_ADV_DATA_LEN_MAX < GR_BLE_SCAN_RSP_DATA_LEN_MAX ? GR_BLE_ADV_DATA_LEN_MAX: GR_BLE_SCAN_RSP_DATA_LEN_MAX ;

@@ -16,4 +16,8 @@
 #define GR_BLE_ADV_DATA_LEN_MAX                             (28)        /// Advertising data maximum length
 #define GR_BLE_SCAN_RSP_DATA_LEN_MAX                        (31)        /// Scan response data maximum length
 #define GR_BLE_GAP_ADV_DEFAULT_SIZE                         (31)
+
+#define GR_BLE_DEFAULT_MTU_SIZE                             (512u)
+#define GR_BLE_MAX_NB_LECB_DEFUALT                          (10u)
+
 #endif /* __GR_CONFIG_H__ */
