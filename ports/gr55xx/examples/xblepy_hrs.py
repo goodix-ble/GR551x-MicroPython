@@ -37,7 +37,16 @@
 ##
 ###########################################################################
 
-import ble, xblepy
+import ble, xblepy, utime
+
+class HRS_SENSOR_LOC():
+    OTHER = 0
+    CHEST = 1
+    WRIST = 2
+    FINGER = 3
+    HAND  = 4
+    EARLOBE = 5
+    FOOT = 6
 
 class ATTR_IDX():
     # HRS
@@ -62,7 +71,18 @@ class MyGattsHandler(xblepy.DefaultGattsDelegate):
     def handleReadEvent(self, idx):
         res = 'unknown'
         print('+++ MyGattsHandler:read idx %d' % idx)
-        if idx == ATTR_IDX.DIS_CHR_SYS_ID :
+        if idx == ATTR_IDX.HRS_CHR_HRM :
+            # simulate heart rate, scope [60, 100]
+            max = 300
+            min = 180
+            random = utime.ticks_ms() % (max - min)
+            hr_val = (min + random)/3
+            res = str(hr_val)
+        elif idx == ATTR_IDX.HRS_CHR_BSL :
+            # simulate sensor location
+            loc = utime.ticks_ms() % (HRS_SENSOR_LOC.FOOT - HRS_SENSOR_LOC.OTHER + 1)
+            res = str(loc)        
+        elif idx == ATTR_IDX.DIS_CHR_SYS_ID :
             res = str(b'\x12\x34\x56\x78\x90\x64\x5d\xd7', 'utf-8')
         elif idx == ATTR_IDX.DIS_CHR_MODEL_NB :
             res = 'hr-sensor-01'

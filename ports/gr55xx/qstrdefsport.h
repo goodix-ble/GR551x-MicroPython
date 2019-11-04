@@ -17,8 +17,13 @@ Q(_slash_flash_slash_lib)
 
 //utime module
 Q(utime)
+Q(sleep)
 Q(sleep_ms)
 Q(sleep_us)
+Q(ticks_ms)
+Q(ticks_us)
+Q(ticks_diff)
+Q(ticks_add)
 
 //uos module
 Q(uos)
