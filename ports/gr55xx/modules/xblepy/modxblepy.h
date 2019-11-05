@@ -230,19 +230,6 @@ typedef struct _xblepy_descriptor_obj_t {
 } xblepy_descriptor_obj_t;
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 typedef struct _xblepy_advertise_data_t {
     uint8_t *                       p_device_name;
     uint8_t                         device_name_len;

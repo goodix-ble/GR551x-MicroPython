@@ -32,6 +32,68 @@ STATIC mp_obj_t xblepy_default_gatts_delegate_make_new(const mp_obj_type_t *type
     return MP_OBJ_FROM_PTR(s);
 }
 
+/// \StaticMethod sendNotification()
+/// send notification message
+/// param - attr_idx : integer, the attribute index of service, characteristic or descriptor, which to be read
+///         data     : bytearray, data which is responsed to gatt client
+STATIC mp_obj_t default_gatts_delegate_send_notification(mp_obj_t attr_idx, mp_obj_t data) {
+    uint32_t                      attr_index    = mp_obj_get_int(attr_idx);
+    mp_buffer_info_t              bufinfo;
+    gatts_noti_ind_t              n_data;
+    
+    memset(&n_data, 0 , sizeof(gatts_noti_ind_t));
+    n_data.handle = gr_ble_gatt_transto_stack_handle_from_mpy_layer_handle(attr_index);
+    
+    if (data != mp_const_none) {
+        mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
+    }
+    
+    if (bufinfo.len > 0) {
+        n_data.length = bufinfo.len;
+        n_data.value  = bufinfo.buf; 
+    } else {
+        mp_raise_ValueError("empty notification data");
+    }
+    
+    n_data.type       = BLE_GATT_NOTIFICATION;
+    
+    ble_gatts_noti_ind(s_gr_ble_gap_params_ins.cur_connect_id, &n_data);
+    
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(xblepy_default_gatts_delegate_send_notification_obj, default_gatts_delegate_send_notification);
+
+/// \StaticMethod sendIndication()
+/// send indication message
+/// param - attr_idx : integer, the attribute index of service, characteristic or descriptor, which to be read
+///         data     : bytearray, data which is responsed to gatt client
+STATIC mp_obj_t default_gatts_delegate_send_indication(mp_obj_t attr_idx, mp_obj_t data) {
+    uint32_t                      attr_index    = mp_obj_get_int(attr_idx);
+    mp_buffer_info_t              bufinfo;
+    gatts_noti_ind_t              n_data;
+    
+    memset(&n_data, 0 , sizeof(gatts_noti_ind_t));
+    n_data.handle = gr_ble_gatt_transto_stack_handle_from_mpy_layer_handle(attr_index);
+    
+    if (data != mp_const_none) {
+        mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
+    }
+    
+    if (bufinfo.len > 0) {
+        n_data.length = bufinfo.len;
+        n_data.value  = bufinfo.buf; 
+    } else {
+        mp_raise_ValueError("empty indication data");
+    }
+    
+    n_data.type       = BLE_GATT_INDICATION;
+    
+    ble_gatts_noti_ind(s_gr_ble_gap_params_ins.cur_connect_id, &n_data);
+    
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(xblepy_default_gatts_delegate_send_indication_obj, default_gatts_delegate_send_indication);
+
 
 /// \StaticMethod responseRead()
 /// response to read events.
@@ -187,9 +249,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(xblepy_default_gatts_delegate_handle_
 
 
 STATIC const mp_rom_map_elem_t xblepy_default_gatts_delegate_locals_dict_table[] = {
-    //StaticMethod
-    { MP_ROM_QSTR(XBLEPY_METHOD_QSTR(PNI_GATTS_RESPONSE_READ)),         MP_ROM_PTR(&xblepy_default_gatts_delegate_response_read_obj) },
-    { MP_ROM_QSTR(XBLEPY_METHOD_QSTR(PNI_GATTS_RESPONSE_WRITE)),         MP_ROM_PTR(&xblepy_default_gatts_delegate_response_write_obj) },
+    //StaticMethod    
+    { MP_ROM_QSTR(XBLEPY_METHOD_QSTR(PNI_GATTS_SEND_NOTIFICATION)),         MP_ROM_PTR(&xblepy_default_gatts_delegate_send_notification_obj) },
+    { MP_ROM_QSTR(XBLEPY_METHOD_QSTR(PNI_GATTS_SEND_INDICATION)),           MP_ROM_PTR(&xblepy_default_gatts_delegate_send_indication_obj) },    
+    { MP_ROM_QSTR(XBLEPY_METHOD_QSTR(PNI_GATTS_RESPONSE_READ)),             MP_ROM_PTR(&xblepy_default_gatts_delegate_response_read_obj) },
+    { MP_ROM_QSTR(XBLEPY_METHOD_QSTR(PNI_GATTS_RESPONSE_WRITE)),            MP_ROM_PTR(&xblepy_default_gatts_delegate_response_write_obj) },
     
     //Object Method
     { MP_ROM_QSTR(XBLEPY_METHOD_QSTR(PNI_GATTS_HANDLE_READ_EVENT)),         MP_ROM_PTR(&xblepy_default_gatts_delegate_handle_read_event_obj) },

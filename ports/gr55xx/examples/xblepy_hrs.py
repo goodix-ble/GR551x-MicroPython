@@ -38,6 +38,7 @@
 ###########################################################################
 
 import ble, xblepy, utime
+from machine import Timer
 
 class HRS_SENSOR_LOC():
     OTHER = 0
@@ -67,21 +68,29 @@ class ATTR_IDX():
     DIS_CHR_IEEE_CERTIF = 14  # Characteristic: IEEE Certification Data Listc
     DIS_CHR_PNP_ID = 15  # Characteristic: PnP ID
 
+def simulateHR():
+    # simulate heart rate, scope [60, 100]
+    max = 300
+    min = 180
+    random = utime.ticks_ms() % (max - min)
+    hr_val = (min + random)/3    
+    encode = bytearray([])
+    encode.append(0x06)         # first byte: flag
+    encode.append(int(hr_val))  # second byte: heart rate value
+    return encode.decode('utf-8')
+
 class MyGattsHandler(xblepy.DefaultGattsDelegate):
     def handleReadEvent(self, idx):
         res = 'unknown'
         print('+++ MyGattsHandler:read idx %d' % idx)
-        if idx == ATTR_IDX.HRS_CHR_HRM :
-            # simulate heart rate, scope [60, 100]
-            max = 300
-            min = 180
-            random = utime.ticks_ms() % (max - min)
-            hr_val = (min + random)/3
-            res = str(hr_val)
+        if idx == ATTR_IDX.HRS_CHR_HRM or idx == ATTR_IDX.HRS_CCCD_HRM :
+            res = simulateHR()
         elif idx == ATTR_IDX.HRS_CHR_BSL :
             # simulate sensor location
-            loc = utime.ticks_ms() % (HRS_SENSOR_LOC.FOOT - HRS_SENSOR_LOC.OTHER + 1)
-            res = str(loc)        
+            # int(HRS_SENSOR_LOC.FOOT - HRS_SENSOR_LOC.OTHER + 1)
+            loc = utime.ticks_ms() % 7
+            print('loc: %d' % loc)
+            res = str(loc)
         elif idx == ATTR_IDX.DIS_CHR_SYS_ID :
             res = str(b'\x12\x34\x56\x78\x90\x64\x5d\xd7', 'utf-8')
         elif idx == ATTR_IDX.DIS_CHR_MODEL_NB :
@@ -106,11 +115,32 @@ class MyGattsHandler(xblepy.DefaultGattsDelegate):
         MyGattsHandler.responseRead(idx, res)
     def handleWriteEvent(self, idx, offset, data):
         print('+++ MyGattsHandler:write idx %d ,offset %d' % (idx, offset))
+        if idx == ATTR_IDX.HRS_CHR_HRCP :
+            print("+++ reset energy extend")
+        elif idx == ATTR_IDX.HRS_CCCD_HRM :
+            val = int.from_bytes(data, 'little')
+            print(val)
+            if val == 0 :
+                periodicNotifyTimer.stop()
+                print("+++ Disable HRM Notify ")
+            else :
+                periodicNotifyTimer.start()
+                print("+++ Enable HRM Notify ")
+        else :
+            pass
         MyGattsHandler.responseWrite(idx, True)
 
+def periodicNotifyHeartRate(timer_id):
+    res = simulateHR()
+    print('+++ periodicNotifyHeartRate: %d ' % (timer_id))
+    MyGattsHandler.sendNotification(ATTR_IDX.HRS_CHR_HRM, res)
 
 if __name__ == '__main__':
-    ble.enable()
+    global periodicNotifyTimer
+    global gattsHandler
+    periodicNotifyTimer = Timer(1, period=2000, mode=Timer.PERIODIC, callback=periodicNotifyHeartRate)
+    gattsHandler = MyGattsHandler()
+    ble.enable()    
     # HRS
     hrs = xblepy.Service(1, xblepy.UUID(0x2800))
     hrs_c1 = xblepy.Characteristic(2, xblepy.UUID(0x2A37), perms=xblepy.Constants.AttrPerm.PERM_READ_FREE, props=xblepy.Constants.CharacProp.PROP_NOTIFY)
@@ -142,8 +172,8 @@ if __name__ == '__main__':
     dis.addCharacteristic(dis_c8)
     dis.addCharacteristic(dis_c9)
     # Peripheral
-    periph = xblepy.Peripheral()
-    periph.setGattsDelegate(MyGattsHandler())
+    periph = xblepy.Peripheral()    
+    periph.setGattsDelegate(gattsHandler)
     periph.addService(hrs)
     periph.addService(dis)
     periph.startServices()

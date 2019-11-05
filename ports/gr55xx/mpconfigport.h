@@ -151,6 +151,7 @@ typedef long                                mp_off_t;
 extern const struct _mp_obj_module_t        mp_module_board;
 extern const struct _mp_obj_module_t        mp_module_utime;
 extern const struct _mp_obj_module_t        mp_module_uos;
+extern const struct _mp_obj_module_t        mp_module_machine;
 
 #if MICROPY_PY_BLE > 0u
     extern const struct _mp_obj_module_t        mp_module_ble;    
@@ -170,6 +171,7 @@ extern const struct _mp_obj_module_t        mp_module_uos;
     { MP_ROM_QSTR(MP_QSTR_uos),             MP_ROM_PTR(&mp_module_uos) }, \
     { MP_ROM_QSTR(MP_QSTR_board),           MP_ROM_PTR(&mp_module_board) }, \
     { MP_ROM_QSTR(MP_QSTR_utime),           MP_ROM_PTR(&mp_module_utime) }, \
+    { MP_ROM_QSTR(MP_QSTR_machine),         MP_ROM_PTR(&mp_module_machine) }, \
     BLE_MODULE \
     XBLEPY_MODULE \
 

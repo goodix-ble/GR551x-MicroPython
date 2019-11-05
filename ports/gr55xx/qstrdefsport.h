@@ -231,8 +231,27 @@ Q(handleDisconnectEvent)
 
 //DefaultGattsDelegate
 Q(DefaultGattsDelegate)
+Q(sendNotification)
+Q(sendIndication)
 Q(responseRead)
 Q(responseWrite)
 Q(handleReadEvent)
 Q(handleWriteEvent)
+
+/*********************************** machine module *********************************/
+//machine
+Q(machine)
+Q(info)
+
+//Timer
+Q(Timer)
+Q(id)
+Q(period)
+Q(mode)
+Q(callback)
+Q(start)
+Q(stop)
+Q(deinit)
+Q(ONESHOT)
+Q(PERIODIC)
 

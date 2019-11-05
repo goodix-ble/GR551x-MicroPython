@@ -18,6 +18,8 @@
 #define PNI_GAP_HANDLE_DISCONNECT_EVENT             handleDisconnectEvent
 
 //methods for DefaultGattsDelegate
+#define PNI_GATTS_SEND_NOTIFICATION                 sendNotification
+#define PNI_GATTS_SEND_INDICATION                   sendIndication
 #define PNI_GATTS_RESPONSE_READ                     responseRead
 #define PNI_GATTS_RESPONSE_WRITE                    responseWrite
 #define PNI_GATTS_HANDLE_READ_EVENT                 handleReadEvent

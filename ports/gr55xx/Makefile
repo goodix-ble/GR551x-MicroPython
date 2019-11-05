@@ -61,6 +61,7 @@ INC_GR += -I./GR551x_SDK_V0_94/toolchain/gr551x/source/arm
 INC_GR += -I./modules/board
 INC_GR += -I./modules/utime
 INC_GR += -I./modules/uos
+INC_GR += -I./modules/machine
 
 
 # lib
@@ -75,6 +76,8 @@ SRC_C = modules/board/modboard.c \
         modules/board/xflash.c \
         modules/utime/modutime.c \
         modules/uos/moduos.c \
+        modules/machine/modmachine.c \
+        modules/machine/timer.c \
         boards/drivers/spi_flash.c \
         boards/gr5515/system/gr55xx_hal_msp.c \
         boards/gr5515/system/gr55xx_it.c \
