@@ -218,17 +218,6 @@ SRC_C += \
     # GR551x_SDK_V1_00/drivers/src/gr55xx_ll_comp.c  \
     # GR551x_SDK_V1_00/drivers/src/gr55xx_ll_msio.c  \
     # GR551x_SDK_V1_00/drivers/src/gr55xx_ll_xqspi.c  \
-    # 
-    # 
-    # GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_xqspi.c \
-    # GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_exflash.c \
-    # GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_pwr.c \
-    # GR551x_SDK_V1_00/drivers/src_inner/gr55xx_ll_xqspi.c \
-    
-    ##GR551x_SDK_V1_00/drivers/src/gr55xx_hal_xqspi.c  \
-    ##GR551x_SDK_V1_00/drivers/src/gr55xx_hal_pwr.c  \
-    ##GR551x_SDK_V1_00/drivers/src/gr55xx_hal_exflash.c  \
-    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal_msp_template.c  \
 
     
 SRC_ASM = GR551x_SDK_V1_00/toolchain/gr551x/source/gcc/startup_gr55xx.s
@@ -252,10 +241,8 @@ LDFLAGS += -Wl,--gc-sections
 LDFLAGS += -L./GR551x_SDK_V1_00/components/sdk/linker/lib_gcc -lsdk
 
 # set ref files
-# LINK_SCRIPT := ./GR551x_SDK_V1_00/toolchain/gr551x/source/gcc/gcc_linker.lds
-LINK_SCRIPT := ./gr5515.lds
+LINK_SCRIPT := ./GR551x_SDK_V1_00/toolchain/gr551x/source/gcc/gcc_linker.lds
 PATCH_FILE  += ./GR551x_SDK_V1_00/components/sdk/linker/symbol/sdk_rom_symbol_gcc.txt
-# PATCH_FILE  += ./boards/gr5515/lib/rom_symbol.txt
 TOOL_PATH    = ./GR551x_SDK_V1_00/build/binaries/
 
 # set OBJ
