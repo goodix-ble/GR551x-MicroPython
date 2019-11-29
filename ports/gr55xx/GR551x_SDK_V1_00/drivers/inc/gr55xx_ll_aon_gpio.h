@@ -998,7 +998,7 @@ __STATIC_INLINE uint32_t ll_aon_gpio_read_flag_it(uint32_t pin_mask)
 }
 
 /**
-  * @brief  Indicates if the AON_GPIO Interrupt Flag is set or not of specified AON_GPIO pins.
+  * @brief  Indicate if the AON_GPIO Interrupt Flag is set or not of specified AON_GPIO pins.
   * @note   After an interrupt is triggered, the corresponding bit in the INTSTATUS Register is set.
   *         The interrupt status can cleared by writing 1 to corresponding bit in INTCLEAR Register.
   *

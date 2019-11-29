@@ -102,9 +102,24 @@ typedef struct
 /** @} */
 
 /**
+ * @defgroup DFU_MASTER_TYPEDEF Typedefs
+ * @{
+ */
+/**@brief DFU Master Receive CMD Callback type. */
+typedef void (*dfu_m_rev_cmd_cb_t)(void);
+/** @} */
+
+/**
  * @defgroup DFU_MASTER_FUNCTION Functions
  * @{
  */
+/**
+ *****************************************************************************************
+ * @brief Function for reset the DFU cmd parse state.
+ *****************************************************************************************
+ */
+void dfu_m_parse_state_reset(void);
+
 /**
  *****************************************************************************************
  * @brief Function for checking DFU master cmd.
@@ -112,7 +127,7 @@ typedef struct
  * @note This function should be called in loop.
  *****************************************************************************************
  */
-void dfu_m_schedule(void);
+void dfu_m_schedule(dfu_m_rev_cmd_cb_t rev_cmd_cb);
 
 /**
  *****************************************************************************************

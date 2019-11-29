@@ -53,7 +53,7 @@
  *****************************************************************************************
  */
 #define APP_ERROR_INFO_LEN          1024
-#define APP_ERROR_CODE_NB           41
+#define APP_ERROR_CODE_NB           43
 
 /*
  * STRUCTURES
@@ -115,6 +115,8 @@ static struct error_code_info_t s_error_code_info[APP_ERROR_CODE_NB] =
     {SDK_ERR_INVALID_DURATION_PARAM,           "Invalid duration parameter_supplied."},
     {SDK_ERR_INVALID_PER_SYNC_IDX,             "Invalid periodic synchronization index supplied."},
     {SDK_ERR_INVALID_CID,                      "Invalid CID supplied."},
+    {SDK_ERR_INVALID_CHL_NUM,                  "Invalid channel number supplied."},
+    {SDK_ERR_NOT_ENOUGH_CREDITS,               "Not enough credits."},
 };
 
 
@@ -129,7 +131,7 @@ __WEAK void app_error_fault_handler(app_error_info_t *p_error_info)
 
     if (APP_ERROR_API_RET == p_error_info->error_type)
     {
-        for (uint8_t i = 0; i < APP_ERROR_CODE_NB; i++)
+        for (uint8_t i = 0; ; i++)
         {
             if (p_error_info->value.error_code == s_error_code_info[i].error_code)
             {
@@ -137,10 +139,12 @@ __WEAK void app_error_fault_handler(app_error_info_t *p_error_info)
                         "Error code 0X%04X: %s",
                         p_error_info->value.error_code,
                         s_error_code_info[i].error_info);
+                break;
             }
             else if (APP_ERROR_CODE_NB == i)
             {
                 sprintf(s_error_print_info, "Error code 0X%04X: No found information.", p_error_info->value.error_code);
+                break;
             }
         }
     }
@@ -160,6 +164,5 @@ __WEAK void app_error_fault_handler(app_error_info_t *p_error_info)
                    s_error_print_info);
 
     app_log_flush();
-    while(1);
 #endif
 }

@@ -127,6 +127,7 @@ soft_reset:
     pyb_set_repl_info(MP_OBJ_NEW_SMALL_INT(0));
 
     readline_init0();
+    
 
 #if MICROPY_PY_MACHINE_LED > 0u
     mp_led_init();

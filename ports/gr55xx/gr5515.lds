@@ -15,10 +15,7 @@ SECTIONS
         __Vectors_End = .;
         __Vectors_Size = __Vectors_End - __Vectors;
         __end__ = .;
-        *(EXCLUDE_FILE(./boards/gr5515/lib/gr55xx_hal_xqspi.o 
-                       ./boards/gr5515/lib/gr55xx_hal_exflash.o 
-                       ./boards/gr5515/lib/gr55xx_ll_xqspi.o 
-                       ./boards/gr5515/lib/gr55xx_hal_pwr.o ) .text*)
+        *( .text*)
         KEEP(*(.init))
         KEEP(*(.fini))
         *crtbegin.o(.ctors)
@@ -55,10 +52,6 @@ SECTIONS
         *(vtable)
         *(.data*)
             *(RAM_CODE)
-                ./boards/gr5515/lib/gr55xx_hal_xqspi.o
-                ./boards/gr5515/lib/gr55xx_hal_exflash.o
-                ./boards/gr5515/lib/gr55xx_ll_xqspi.o
-                ./boards/gr5515/lib/gr55xx_hal_pwr.o
                 . = ALIGN(4);
         PROVIDE_HIDDEN (__preinit_array_start = .);
         KEEP(*(.preinit_array))

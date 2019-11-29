@@ -36,37 +36,83 @@
 /* Includes ------------------------------------------------------------------*/
 #include "gr55xx_hal.h"
 
-#if defined(HAL_COMP_MODULE_ENABLED) && defined(GR551xx_C2)
-
-/* extern function -----------------------------------------------------------*/
-
-extern hal_status_t hal_comp_init_ext(comp_handle_t *p_comp);
-extern hal_status_t hal_comp_deinit_ext(comp_handle_t *p_comp);
-extern void hal_comp_register_callback(comp_callback_t *comp_callback);
+#ifdef HAL_COMP_MODULE_ENABLED
 
 /* Private variables ---------------------------------------------------------*/
-
-static comp_callback_t comp_callback = 
-{
-    .comp_msp_init               = hal_comp_msp_init,
-    .comp_msp_deinit             = hal_comp_msp_deinit,
-    .comp_conv_cplt_callback     = hal_comp_conv_cplt_callback
-};
-
 /* Private function prototypes -----------------------------------------------*/
-
-hal_status_t hal_comp_init(comp_handle_t *p_comp)
+__WEAK hal_status_t hal_comp_init(comp_handle_t *p_comp)
 {
-    hal_comp_register_callback(&comp_callback);
+    hal_status_t   status = HAL_OK;
+    error_status_t err    = SUCCESS;
 
-    return hal_comp_init_ext(p_comp);
+    /* Check the ADC handle allocation */
+    if (NULL == p_comp)
+    {
+        return HAL_ERROR;
+    }
+
+    /* Process locked */
+    __HAL_LOCK(p_comp);
+
+    if (HAL_COMP_STATE_RESET == p_comp->state)
+    {
+        /* Allocate lock resource and initialize it */
+        p_comp->lock = HAL_UNLOCKED;
+
+        /* init the low level hardware : MSIO, NVIC */
+        hal_comp_msp_init(p_comp);
+    }
+
+    /* Configure COMP peripheral */
+    err = ll_comp_init(&p_comp->init);
+
+    if (SUCCESS == err)
+    {
+        /* Set COMP error code to none */
+        p_comp->error_code = HAL_COMP_ERROR_NONE;
+
+        /* Initialize the ADC state */
+        p_comp->state = HAL_COMP_STATE_READY;
+    }
+    else
+    {
+        status = HAL_ERROR;
+    }
+
+    /* Release Lock */
+    __HAL_UNLOCK(p_comp);
+
+    /* Return function status */
+    return status;
 }
 
-hal_status_t hal_comp_deinit(comp_handle_t *p_comp)
+__WEAK hal_status_t hal_comp_deinit(comp_handle_t *p_comp)
 {
-    hal_comp_register_callback(&comp_callback);
+    /* Check the COMP handle allocation */
+    if (NULL == p_comp)
+    {
+        return HAL_ERROR;
+    }
 
-    return hal_comp_deinit_ext(p_comp);
+    /* Process locked */
+    __HAL_LOCK(p_comp);
+
+    /* Reset COMP Peripheral */
+    ll_comp_deinit();
+
+    /* DeInit the low level hardware: GPIO, NVIC... */
+    hal_comp_msp_deinit(p_comp);
+
+    /* Set COMP error code to none */
+    p_comp->error_code = HAL_COMP_ERROR_NONE;
+
+    /* Initialize the COMP state */
+    p_comp->state = HAL_COMP_STATE_RESET;
+
+    /* Release Lock */
+    __HAL_UNLOCK(p_comp);
+
+    return HAL_OK;
 }
 
 __WEAK void hal_comp_msp_init(comp_handle_t *p_comp)
@@ -89,10 +135,101 @@ __WEAK void hal_comp_msp_deinit(comp_handle_t *p_comp)
      */
 }
 
+__WEAK hal_status_t hal_comp_start(comp_handle_t *p_comp)
+{
+    hal_status_t status = HAL_OK;
+    
+    /* Process locked */
+    __HAL_LOCK(p_comp);
+
+    if (HAL_COMP_STATE_READY == p_comp->state)
+    {
+        p_comp->error_code = HAL_COMP_ERROR_NONE;
+
+        /* Update COMP state */
+        p_comp->state = HAL_COMP_STATE_BUSY;
+
+        /* Enable the comparator. */
+        ll_comp_enable();
+    }
+    else
+    {
+        status = HAL_BUSY;
+    }
+
+    /* Process unlocked */
+    __HAL_UNLOCK(p_comp);
+
+    /* Return function status */
+    return status;
+}
+
+__WEAK hal_status_t hal_comp_stop(comp_handle_t *p_comp)
+{
+    hal_status_t status = HAL_OK;
+
+    /* Process locked */
+    __HAL_LOCK(p_comp);
+    
+    if ((HAL_ADC_STATE_READY == p_comp->state) ||
+        (HAL_ADC_STATE_BUSY == p_comp->state))
+    {
+        p_comp->error_code = HAL_ADC_ERROR_NONE;
+        
+        /* Disable the comparator. */
+        ll_comp_disable();
+
+        p_comp->state = HAL_COMP_STATE_READY;
+    }
+    else
+    {
+        status = HAL_BUSY;
+    }
+
+    /* Process unlocked */
+    __HAL_UNLOCK(p_comp);
+
+    /* Return function status */
+    return status;
+}
+
+__WEAK void hal_comp_irq_handler(comp_handle_t *p_comp)
+{
+    if(ll_comp_is_active_flag_it())
+    {
+        /* Clear COMP pending bit */
+        ll_comp_clear_flag_it();
+
+        if (HAL_ADC_STATE_BUSY == p_comp->state)
+        {
+            /* Change state of COMP */
+            //p_comp->state = HAL_COMP_STATE_READY;
+
+            hal_comp_trigger_callback(p_comp);
+        }
+    }
+    return;
+}
+
+
 __WEAK void hal_comp_trigger_callback(comp_handle_t *p_comp)
 {
     return;
 }
 
-#endif /* HAL_COMP_MODULE_ENABLED */
+__WEAK hal_comp_state_t hal_comp_get_state(comp_handle_t *p_comp)
+{
+    /* Return COMP handle state */
+    return p_comp->state;
+}
+
+__WEAK uint32_t hal_comp_get_error(comp_handle_t *p_comp)
+{
+    return p_comp->error_code;
+}
+
+
+
+
+#endif /* HAL_ADC_MODULE_ENABLED */
 

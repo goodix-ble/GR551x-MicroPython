@@ -51,7 +51,7 @@
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __GR55XX_LL_GPIO_H__
 #define __GR55XX_LL_GPIO_H__
-#include "gr55xx_sys.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

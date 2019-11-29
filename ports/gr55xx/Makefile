@@ -30,9 +30,11 @@ INC_GR += -I./boards/gr5515
 INC_GR += -I./boards/gr5515/system
 INC_GR += -I./boards/drivers
 INC_GR += -I./GR551x_SDK_V1_00/build/config
+INC_GR += -I./GR551x_SDK_V1_00/components/app_drivers/inc
 INC_GR += -I./GR551x_SDK_V1_00/components/boards
 INC_GR += -I./GR551x_SDK_V1_00/components/drivers_ext/gr551x
 INC_GR += -I./GR551x_SDK_V1_00/components/sdk
+INC_GR += -I./GR551x_SDK_V1_00/components/libraries/app_alarm
 INC_GR += -I./GR551x_SDK_V1_00/components/libraries/app_assert
 INC_GR += -I./GR551x_SDK_V1_00/components/libraries/app_error
 INC_GR += -I./GR551x_SDK_V1_00/components/libraries/app_key
@@ -45,13 +47,13 @@ INC_GR += -I./GR551x_SDK_V1_00/components/libraries/gui/gui_config
 INC_GR += -I./GR551x_SDK_V1_00/components/libraries/hal_flash
 INC_GR += -I./GR551x_SDK_V1_00/components/libraries/hal_flash/vflash
 INC_GR += -I./GR551x_SDK_V1_00/components/libraries/hci_uart
+INC_GR += -I./GR551x_SDK_V1_00/components/libraries/pmu_calibration
 INC_GR += -I./GR551x_SDK_V1_00/components/libraries/log
 INC_GR += -I./GR551x_SDK_V1_00/components/libraries/pwr_mgmt
 INC_GR += -I./GR551x_SDK_V1_00/components/libraries/ring_buffer
 INC_GR += -I./GR551x_SDK_V1_00/components/libraries/sensorsim
 INC_GR += -I./GR551x_SDK_V1_00/components/libraries/utility
 INC_GR += -I./GR551x_SDK_V1_00/components/patch/ind
-INC_GR += -I./GR551x_SDK_V1_00/components/profiles/common
 INC_GR += -I./GR551x_SDK_V1_00/drivers/inc
 INC_GR += -I./GR551x_SDK_V1_00/toolchain/cmsis/include
 INC_GR += -I./GR551x_SDK_V1_00/toolchain/gr551x/include
@@ -78,10 +80,10 @@ SRC_C = modules/board/modboard.c \
         modules/uos/moduos.c \
         modules/machine/modmachine.c \
         modules/machine/timer.c \
+        lib/timeutils/timeutils.c \
         boards/drivers/spi_flash.c \
         boards/gr5515/system/gr55xx_hal_msp.c \
-        boards/gr5515/system/gr55xx_it.c \
-        lib/timeutils/timeutils.c \
+        # boards/gr5515/system/gr55xx_it.c \
 
 ifeq ($(MICROPY_FATFS), 1)
     SRC_C += \
@@ -141,100 +143,83 @@ SRC_C += \
     GR551x_SDK_V1_00/toolchain/gr551x/source/interrupt_gr55xx.c \
     GR551x_SDK_V1_00/toolchain/gr551x/source/platform_gr55xx.c \
     GR551x_SDK_V1_00/toolchain/gr551x/source/system_gr55xx.c \
-    GR551x_SDK_V1_00/drivers/src/gr55xx_hal.c  \
-    GR551x_SDK_V1_00/drivers/src/gr55xx_hal_adc.c  \
-    GR551x_SDK_V1_00/drivers/src/gr55xx_hal_aes.c  \
-    GR551x_SDK_V1_00/drivers/src/gr55xx_hal_aon_gpio.c  \
-    GR551x_SDK_V1_00/drivers/src/gr55xx_hal_aon_wdt.c  \
-    GR551x_SDK_V1_00/drivers/src/gr55xx_hal_calendar.c  \
-    GR551x_SDK_V1_00/drivers/src/gr55xx_hal_dual_tim.c  \
-    GR551x_SDK_V1_00/drivers/src/gr55xx_hal_efuse.c  \
-    GR551x_SDK_V1_00/drivers/src/gr55xx_hal_gpio.c  \
-    GR551x_SDK_V1_00/drivers/src/gr55xx_hal_hmac.c  \
-    GR551x_SDK_V1_00/drivers/src/gr55xx_hal_i2c.c  \
-    GR551x_SDK_V1_00/drivers/src/gr55xx_hal_i2s.c  \
-    GR551x_SDK_V1_00/drivers/src/gr55xx_hal_pkc.c  \
-    GR551x_SDK_V1_00/drivers/src/gr55xx_hal_pwm.c  \
-    GR551x_SDK_V1_00/drivers/src/gr55xx_hal_qspi.c  \
-    GR551x_SDK_V1_00/drivers/src/gr55xx_hal_rng.c  \
-    GR551x_SDK_V1_00/drivers/src/gr55xx_hal_spi.c  \
-    GR551x_SDK_V1_00/drivers/src/gr55xx_hal_tim.c  \
-    GR551x_SDK_V1_00/drivers/src/gr55xx_hal_uart.c  \
-    GR551x_SDK_V1_00/drivers/src/gr55xx_hal_wdt.c  \
-    GR551x_SDK_V1_00/drivers/bridge/gr55xx_hal_adc_br.c  \
-    GR551x_SDK_V1_00/drivers/bridge/gr55xx_hal_aes_br.c  \
-    GR551x_SDK_V1_00/drivers/bridge/gr55xx_hal_aon_gpio_br.c  \
-    GR551x_SDK_V1_00/drivers/bridge/gr55xx_hal_aon_wdt_br.c  \
-    GR551x_SDK_V1_00/drivers/bridge/gr55xx_hal_br.c  \
-    GR551x_SDK_V1_00/drivers/bridge/gr55xx_hal_calendar_br.c  \
-    GR551x_SDK_V1_00/drivers/bridge/gr55xx_hal_dual_tim_br.c  \
-    GR551x_SDK_V1_00/drivers/bridge/gr55xx_hal_efuse_br.c  \
-    GR551x_SDK_V1_00/drivers/bridge/gr55xx_hal_exflash_br.c  \
-    GR551x_SDK_V1_00/drivers/bridge/gr55xx_hal_gpio_br.c  \
-    GR551x_SDK_V1_00/drivers/bridge/gr55xx_hal_hmac_br.c  \
-    GR551x_SDK_V1_00/drivers/bridge/gr55xx_hal_i2c_br.c  \
-    GR551x_SDK_V1_00/drivers/bridge/gr55xx_hal_i2s_br.c  \
-    GR551x_SDK_V1_00/drivers/bridge/gr55xx_hal_pkc_br.c  \
-    GR551x_SDK_V1_00/drivers/bridge/gr55xx_hal_pwm_br.c  \
-    GR551x_SDK_V1_00/drivers/bridge/gr55xx_hal_qspi_br.c  \
-    GR551x_SDK_V1_00/drivers/bridge/gr55xx_hal_rng_br.c  \
-    GR551x_SDK_V1_00/drivers/bridge/gr55xx_hal_spi_br.c  \
-    GR551x_SDK_V1_00/drivers/bridge/gr55xx_hal_tim_br.c  \
-    GR551x_SDK_V1_00/drivers/bridge/gr55xx_hal_uart_br.c  \
-    GR551x_SDK_V1_00/drivers/bridge/gr55xx_hal_wdt_br.c  \
-    GR551x_SDK_V1_00/drivers/bridge/gr55xx_hal_xqspi_br.c  \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_adc.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_aes.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_aon_gpio.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_aon_wdt.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_calendar.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_cgc.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_cortex.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_dma.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_dual_tim.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_efuse.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_gpio.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_hmac.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_i2c.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_i2s.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_msio.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_msp_template.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_pkc.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_pwm.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_qspi.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_rng.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_spi.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_tim.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_uart.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_utils.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_wdt.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_ll_adc.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_ll_aes.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_ll_aon_gpio.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_ll_cgc.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_ll_dma.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_ll_dual_tim.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_ll_gpio.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_ll_hmac.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_ll_i2c.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_ll_i2s.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_ll_msio.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_ll_pkc.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_ll_pwm.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_ll_rng.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_ll_spi.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_ll_tim.c \
-    GR551x_SDK_V1_00/drivers/src_inner/gr55xx_ll_uart.c \
-    GR551x_SDK_V1_00/components/libraries/hal_flash/hal_flash.c  \
-    GR551x_SDK_V1_00/components/libraries/hal_flash/vflash/vflash.c  \
-    GR551x_SDK_V1_00/components/libraries/app_timer/app_timer.c  \
-    GR551x_SDK_V1_00/components/libraries/app_log/app_log.c  \
-    GR551x_SDK_V1_00/components/libraries/app_log/app_log_port.c  \
-    GR551x_SDK_V1_00/components/libraries/app_error/app_error.c  \
     GR551x_SDK_V1_00/components/libraries/app_assert/app_assert.c  \
+    GR551x_SDK_V1_00/components/libraries/app_error/app_error.c  \
+    GR551x_SDK_V1_00/components/libraries/app_log/app_log.c  \
+    GR551x_SDK_V1_00/components/libraries/app_timer/app_timer.c  \
+    GR551x_SDK_V1_00/components/libraries/pmu_calibration/pmu_calibration.c  \
     GR551x_SDK_V1_00/components/libraries/ring_buffer/ring_buffer.c  \
     GR551x_SDK_V1_00/components/libraries/utility/utility.c  \
+    GR551x_SDK_V1_00/components/app_drivers/src/app_adc.c \
+    GR551x_SDK_V1_00/components/app_drivers/src/app_comp.c \
+    GR551x_SDK_V1_00/components/app_drivers/src/app_dual_tim.c \
+    GR551x_SDK_V1_00/components/app_drivers/src/app_hmac.c \
+    GR551x_SDK_V1_00/components/app_drivers/src/app_i2s.c \
+    GR551x_SDK_V1_00/components/app_drivers/src/app_pwr_mgmt.c \
+    GR551x_SDK_V1_00/components/app_drivers/src/app_rng.c \
+    GR551x_SDK_V1_00/components/app_drivers/src/app_systick.c \
+    GR551x_SDK_V1_00/components/app_drivers/src/app_uart.c \
+    GR551x_SDK_V1_00/components/app_drivers/src/app_aes.c \
+    GR551x_SDK_V1_00/components/app_drivers/src/app_dma.c \
+    GR551x_SDK_V1_00/components/app_drivers/src/app_gpiote.c \
+    GR551x_SDK_V1_00/components/app_drivers/src/app_i2c.c \
+    GR551x_SDK_V1_00/components/app_drivers/src/app_io.c \
+    GR551x_SDK_V1_00/components/app_drivers/src/app_qspi.c \
+    GR551x_SDK_V1_00/components/app_drivers/src/app_spi.c \
+    GR551x_SDK_V1_00/components/app_drivers/src/app_tim.c \
+
+    # GR551x_SDK_V1_00/components/libraries/hal_flash/hal_flash.c  \
+    # GR551x_SDK_V1_00/components/libraries/hal_flash/vflash/vflash.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal_comp.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal_hmac.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal_pwr.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal_wdt.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_ll_dma.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_ll_pkc.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal_adc.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal_cortex.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal_i2c.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal_qspi.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal_xqspi.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_ll_dual_tim.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_ll_pwm.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal_aes.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal_dma.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal_i2s.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal_rng.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_ll_adc.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_ll_gpio.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_ll_rng.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal_aon_gpio.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal_dual_tim.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal_msio.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal_spi.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_ll_aes.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_ll_hmac.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_ll_spi.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal_aon_wdt.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal_efuse.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal_tim.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_ll_aon_gpio.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_ll_i2c.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_ll_tim.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal_calendar.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal_exflash.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal_pkc.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal_uart.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_ll_cgc.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_ll_i2s.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_ll_uart.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal_cgc.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal_gpio.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal_pwm.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal_utils.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_ll_comp.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_ll_msio.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_ll_xqspi.c  \
+    # 
+    # 
     # GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_xqspi.c \
     # GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_exflash.c \
     # GR551x_SDK_V1_00/drivers/src_inner/gr55xx_hal_pwr.c \
@@ -243,14 +228,16 @@ SRC_C += \
     ##GR551x_SDK_V1_00/drivers/src/gr55xx_hal_xqspi.c  \
     ##GR551x_SDK_V1_00/drivers/src/gr55xx_hal_pwr.c  \
     ##GR551x_SDK_V1_00/drivers/src/gr55xx_hal_exflash.c  \
+    # GR551x_SDK_V1_00/drivers/src/gr55xx_hal_msp_template.c  \
 
     
-SRC_ASM = startup_gr55xx.s
+SRC_ASM = GR551x_SDK_V1_00/toolchain/gr551x/source/gcc/startup_gr55xx.s
 
 # set CFLAGS
 # -DNDEBUG - close debug & assert
 CFLAGS += $(INC) $(INC_GR)
 CFLAGS += -DGR5515_SK
+CFLAGS += -DAPP_DRIVER_USE_ENABLE=1
 # CFLAGS += -O0 -std=gnu99 
 CFLAGS += -ggdb3
 CFLAGS += -ffunction-sections -fdata-sections 
@@ -262,18 +249,20 @@ LDFLAGS += -Wl,--gc-sections
 # -Wa,-mimplicit-it=thumb
 # -Map=$(BUILD)/$(TARGET_NAME).map
 # $(@:.axf=.map) --xref
-LDFLAGS += -L./boards/gr5515/lib -lsdk
+LDFLAGS += -L./GR551x_SDK_V1_00/components/sdk/linker/lib_gcc -lsdk
 
 # set ref files
+# LINK_SCRIPT := ./GR551x_SDK_V1_00/toolchain/gr551x/source/gcc/gcc_linker.lds
 LINK_SCRIPT := ./gr5515.lds
-PATCH_FILE  += ./boards/gr5515/lib/rom_symbol.txt
-TOOL_PATH    = ./boards/gr5515/tools
+PATCH_FILE  += ./GR551x_SDK_V1_00/components/sdk/linker/symbol/sdk_rom_symbol_gcc.txt
+# PATCH_FILE  += ./boards/gr5515/lib/rom_symbol.txt
+TOOL_PATH    = ./GR551x_SDK_V1_00/build/binaries/
 
 # set OBJ
-GR_SYS_OBJ += ./boards/gr5515/lib/gr55xx_hal_exflash.o
-GR_SYS_OBJ += ./boards/gr5515/lib/gr55xx_hal_pwr.o
-GR_SYS_OBJ += ./boards/gr5515/lib/gr55xx_hal_xqspi.o
-GR_SYS_OBJ += ./boards/gr5515/lib/gr55xx_ll_xqspi.o
+## GR_SYS_OBJ += ./boards/gr5515/lib/gr55xx_hal_exflash.o
+## GR_SYS_OBJ += ./boards/gr5515/lib/gr55xx_hal_pwr.o
+## GR_SYS_OBJ += ./boards/gr5515/lib/gr55xx_hal_xqspi.o
+## GR_SYS_OBJ += ./boards/gr5515/lib/gr55xx_ll_xqspi.o
 # GR_SYS_OBJ += ./boards/gr5515/lib/svc_handler_gcc.o
 
 #C_OBJ   = $(PY_CORE_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o)) 

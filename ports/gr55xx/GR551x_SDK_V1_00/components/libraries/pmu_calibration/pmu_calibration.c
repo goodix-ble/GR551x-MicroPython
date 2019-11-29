@@ -1,10 +1,10 @@
-#include "pmu_calibration.h"
-#include "custom_config.h"
-#include "gr55xx_hal.h"
+
+#include "platform_sdk.h" 
 #include "app_timer.h"
 #include <stdio.h>
-void pmu_calibration_handler(void* p_arg);
+
 static app_timer_id_t s_pmu_calibration_timer_id = 0;
+
 void system_pmu_calibration_start(uint32_t interval)
 {
     if(interval)

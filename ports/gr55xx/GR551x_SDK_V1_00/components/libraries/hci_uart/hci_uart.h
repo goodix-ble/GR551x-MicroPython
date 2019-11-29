@@ -242,7 +242,7 @@ void hci_uart_error_callback(uart_handle_t *huart);
  * If users want to support dtm test, this function should be called.
  *****************************************************************************************
  */
-void ble_hci_uart_init(void);
+void ble_hci_uart_init(uint8_t *buff, uint16_t size);
 
 /** @} */
 

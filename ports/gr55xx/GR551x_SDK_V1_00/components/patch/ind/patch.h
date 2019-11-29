@@ -27,6 +27,8 @@ enum
     BIT_ATTMDB_SVC_INIT,
     BIT_LLC_PREF_PARAM_COMPUTE, // it's used to implement the anchor point movement, not MANDATORY
     BIT_LLC_HCI_CON_UPD_INFO_SEND, // it's used to implement the anchor point movement accuracy, not MANDATORY
+    BIT_SCH_ARB_PROG_TIMER, // MANDATORY
+    BIT_GAPM_SMP_RESOLV_OP_CONT, // it's used for multi-link(over 3 links) pair process
 };
 
 /*
@@ -38,9 +40,9 @@ enum
 #define MANDATORY_PATCH         ( PATCH_ENABLE_FLAG(BIT_CO_LIST_PUSH_BACK)         \
                                 | PATCH_ENABLE_FLAG(BIT_CO_LIST_POP_FRONT)         \
                                 | PATCH_ENABLE_FLAG(BIT_GAPM_SEND_COMPLETE_EVT)    \
-                                | PATCH_ENABLE_FLAG(BIT_LLC_HCI_CON_UPD_INFO_SEND) \
+                                | PATCH_ENABLE_FLAG(BIT_GAPM_SMP_RESOLV_OP_CONT)   \
                                 | PATCH_ENABLE_FLAG(BIT_ATTMDB_SVC_INIT)           \
-                                | PATCH_ENABLE_FLAG(BIT_LLC_PREF_PARAM_COMPUTE)    \
+                                | PATCH_ENABLE_FLAG(BIT_SCH_ARB_PROG_TIMER)        \
                                 )
 
 #define OPTIMIZING_PATCH        0
@@ -50,7 +52,7 @@ enum
 #define MULTI_LINK_PATCH        ( PATCH_ENABLE_FLAG(BIT_CO_LIST_PUSH_BACK)         \
                                 | PATCH_ENABLE_FLAG(BIT_CO_LIST_POP_FRONT)         \
                                 | PATCH_ENABLE_FLAG(BIT_GAPM_SEND_COMPLETE_EVT)    \
-                                | PATCH_ENABLE_FLAG(BIT_LLC_HCI_CON_UPD_INFO_SEND) \
+                                | PATCH_ENABLE_FLAG(BIT_GAPM_SMP_RESOLV_OP_CONT)   \
                                 | PATCH_ENABLE_FLAG(BIT_ATTMDB_SVC_INIT)           \
                                 | PATCH_ENABLE_FLAG(BIT_LLC_PREF_PARAM_COMPUTE)    \
                                 )

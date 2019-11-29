@@ -20,4 +20,6 @@
 #define GR_BLE_DEFAULT_MTU_SIZE                             (512u)
 #define GR_BLE_MAX_NB_LECB_DEFUALT                          (10u)
 
+#define GR_PRF_INVALID_HANDLE                               (0x0000)
+
 #endif /* __GR_CONFIG_H__ */

@@ -139,4 +139,12 @@ const mp_obj_module_t mp_module_ble = {
     .globals = (mp_obj_dict_t*)&ble_module_globals,
 };
 
+
+void ble_adv_start(){
+    gr_ble_stack_init();
+    gr_xblepy_init();
+    gr_xblepy_gap_hal_init();
+    
+}
+
 #endif // MICROPY_PY_BLE

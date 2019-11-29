@@ -161,7 +161,7 @@ typedef struct
     uint16_t start_hdl;                                 /**< Service start handle. */
     uint16_t end_hdl;                                   /**< Service end handle. */
     union gattc_browse_attr_info info[__ARRAY_EMPTY];   /**< Attribute information presented in the service(array length = end_hdl - start_hdl);
-                                                             If attr_type is equal to BLE_GATTC_BROWSE_NONE, the last attribute information has be found in previous one, although not reach the service end handle. */
+                                                             If attr_type is equal to BLE_GATTC_BROWSE_NONE, the last attribute information has been found in previous one, although not reach the service end handle. */
 } ble_gattc_browse_srvc_t;
 
 
@@ -175,7 +175,7 @@ typedef struct
     uint8_t  *p_uuid;               /**< Service UUID. */
 } ble_gattc_service_t;
 
-/**@brief  GATT include. */
+/**@brief GATT include. */
 typedef struct
 {
     uint16_t  attr_hdl;               /**< Attribute handle. */
@@ -326,7 +326,7 @@ uint16_t ble_gattc_services_browse(uint8_t conn_idx, const ble_uuid_t *p_srvc_uu
  *
  * @note Function callback @ref gattc_cb_fun_t::app_gattc_srvc_disc_cb will be called for service(s) found. 
  *
- * @param[in] conn_idx:        Current connection index.
+ * @param[in] conn_idx:       Current connection index.
  * @param[in] p_srvc_uuid:    Pointer to Service UUID. If it is NULL, all Primary Services will be returned.
  *
  * @retval ::SDK_SUCCESS: Successfully start the Primary Service Discovery procedure.

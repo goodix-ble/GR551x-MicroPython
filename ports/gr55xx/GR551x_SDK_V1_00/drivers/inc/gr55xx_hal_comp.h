@@ -120,7 +120,7 @@ typedef struct _comp_handle
 
 /** @} */
 
-/** @addtogroup HAL_COMP_STRUCTURES Callback Structures
+/** @addtogroup HAL_COMP_CALLBACK_STRUCTURES Callback Structures
   * @{
   */
 
@@ -158,8 +158,7 @@ typedef struct _comp_callback
   */
 #define HAL_COMP_ERROR_NONE            ((uint32_t)0x00000000)  /**< No error           */
 #define HAL_COMP_ERROR_TIMEOUT         ((uint32_t)0x00000001)  /**< Timeout error      */
-#define HAL_COMP_ERROR_DMA             ((uint32_t)0x00000004)  /**< DMA transfer error */
-#define HAL_COMP_ERROR_INVALID_PARAM   ((uint32_t)0x00000008)  /**< Invalid parameters error */
+#define HAL_COMP_ERROR_INVALID_PARAM   ((uint32_t)0x00000002)  /**< Invalid parameters error */
 /** @} */
 
 
@@ -186,7 +185,7 @@ typedef struct _comp_callback
 /** @} */
 
 /**
-  * @brief COMP_default_config initStruct default configuartion
+  * @brief Default configuartion for initializing structure
   */
 #define COMP_DEFAULT_CONFIG         LL_COMP_DEFAULT_CONFIG
 /** @} */

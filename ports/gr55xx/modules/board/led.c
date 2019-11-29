@@ -2,12 +2,15 @@
 #include "py/runtime.h"
 
 #include "mp_defs.h"
+#include "app_io.h"
 #include "mphalport.h"
 #include "boards.h"
 #include "gr55xx_hal.h"
 #include "led.h"
 
 #if MICROPY_PY_MACHINE_LED > 0u
+
+#define LED_NUM_0_GRP                   GPIO0
 
 typedef struct _board_led_obj_t {
     const mp_obj_base_t     base;

@@ -78,12 +78,12 @@ typedef struct _ll_comp_init
     uint32_t input_source;  /**< Specifies the input source for the comparator.
                                  This parameter can be any value of @ref COMP_LL_EC_INPUT_SRC.
 
-                                 This parameter can be modified afterwards using unitary function @ref ll_comp_set_channelp(). */
+                                 This parameter can be modified afterwards using unitary function @ref ll_comp_set_input_src(). */
 
     uint32_t ref_source;    /**< Specifies the reference source for the comparator.
                                  This parameter can be any value of @ref COMP_LL_EC_INPUT_SRC.
 
-                                 This parameter can be modified afterwards using unitary function @ref ll_comp_set_channeln(). */
+                                 This parameter can be modified afterwards using unitary function @ref ll_comp_set_ref_src(). */
     uint32_t ref_value;     /*!< Specifies the value of the COMP buffered reference.
                                  If ref_source select to LL_COMP_REF_SRC_VBAT, this parameter can be a value between: 0 ~ 7.
                                  This parameter can be modified afterwards using unitary function @ref ll_comp_set_vbatt_lvl().
@@ -97,7 +97,7 @@ typedef struct _ll_comp_init
 /** @} */
 
 /**
-  * @defgroup  COM[_LL_MACRO Defines
+  * @defgroup  COMP_LL_MACRO Defines
   * @{
   */
 
@@ -173,7 +173,7 @@ typedef struct _ll_comp_init
   */
 
 /**
-  * @brief LL COMP InitStrcut default configuartion
+  * @brief Default configuartion for initializing structure
   */
 #define LL_COMP_DEFAULT_CONFIG                     \
 {                                                  \
@@ -206,7 +206,7 @@ typedef struct _ll_comp_init
   */
 __STATIC_INLINE void ll_comp_enable(void)
 {
-	SET_BITS(AON->PWR_RET01, AON_PWR_REG01_WAKE_UP_SEL_MISO_COMP);
+	SET_BITS(AON->PWR_RET01, AON_PWR_REG01_WAKE_UP_SEL_MSIO_COMP);
 	SET_BITS(AON->RF_REG_10, AON_RF_REG_10_WAKE_COMP_EN_Msk);
 }
 
@@ -222,7 +222,7 @@ __STATIC_INLINE void ll_comp_enable(void)
 __STATIC_INLINE void ll_comp_disable(void)
 {
     CLEAR_BITS(AON->RF_REG_10, AON_RF_REG_10_WAKE_COMP_EN_Msk);
-	CLEAR_BITS(AON->PWR_RET01, AON_PWR_REG01_WAKE_UP_SEL_MISO_COMP);
+	CLEAR_BITS(AON->PWR_RET01, AON_PWR_REG01_WAKE_UP_SEL_MSIO_COMP);
 }
 
 /**
@@ -300,7 +300,7 @@ __STATIC_INLINE void ll_comp_set_vref_lvl(uint32_t level)
 }
 
 /**
-  * @brief  Indicates if the COMP Interrupt Flag is set or not.
+  * @brief  Indicate if the COMP Interrupt Flag is set or not.
   *
   *  Register|BitsName
   *  --------|--------

@@ -49,6 +49,15 @@ typedef enum
     CLK_TYPE_NUM  = 6,
 } mcu_clock_type_t;
 
+typedef enum
+{
+    QSPI_64M_CLK  = 0,
+    QSPI_48M_CLK  = 1,
+    QSPI_32M_CLK  = 2,
+    QSPI_24M_CLK  = 3,
+    QSPI_16M_CLK  = 4,    
+    QSPI_CLK_TYPE_NUM  = 5,
+} qspi_clock_type_t;
 
 extern uint32_t SystemCoreClock;     /*!< System Clock Frequency (Core Clock) */
 
@@ -75,18 +84,6 @@ extern void SystemCoreGetClock(mcu_clock_type_t *clock);
 
 extern void SystemCoreUpdateClock(void);
 
-
-//extern void system_pmu_init(void);
-
-//extern void system_pmu_deinit(void);
-
-//extern void startClockCalibration(uint32_t lpcyclecounter);
-
-//extern void platform_init(void);
-
-//extern void warm_boot(void);
-
-//extern void system_pmu_calibration_start(uint32_t interval);
 
 #ifdef __cplusplus
 }

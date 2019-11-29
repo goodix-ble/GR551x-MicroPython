@@ -112,6 +112,10 @@
 
 ;smpc_patch.c
 0x30000d40 D gapc_env
+0x0000f2d5 T gapc_link_encrypted
+0x0000ff4d T gapc_update_state
+0x0004b945 T smpc_tkdp_rcp_start
+0x0004bb19 T smpc_tkdp_send_start
 
 ;prf_patch.c
 0x30000388 D ble_nb_profiles_max
@@ -153,6 +157,9 @@
 0x0000a861 T ble_util_buf_rx_alloc
 0x0003d0a1 T lld_res_list_clear
 0x300003b4 D lld_exp_sync_pos_tab
+0x0000b859 T co_nb_good_le_channels
+0x00030fed T lld_ch_assess_data_get
+0x0003b2b9 T lld_per_adv_ch_map_update
 
 0x300002a4 D TASK_DESC_GAPM
 0x000077bb T attm_att_set_value
@@ -487,6 +494,36 @@
 0x00007dcf T attm_uuid16_comp
 0x000432bd T llm_plan_elt_get
 
+;lld
+0x0004dd10 D lld_scan_map_legacy_pdu_to_evt_type
+0x0004dcf8 D byte_tx_time
+0x0004dd00 D fixed_tx_time
+0x00044b21 T rwip_timer_hus_set
+0x0000a611 T ble_util_buf_adv_tx_alloc
+0x0000a621 T ble_util_buf_adv_tx_free
+0x0002c0dd T lld_adv_adv_data_update
+0x0002e4d1 T lld_adv_rand_addr_update
+0x0002ece9 T lld_adv_scan_rsp_data_update
+0x30000ecc D ble_util_buf_env
+0x0003c239 T lld_per_adv_list_rem
+
+;l2cc
+0x0000cc7d T dbg_trc_req_l2cap
+0x0000ec8d T gapc_get_conhdl
+0x00023129 T l2cc_dbg_pdu_unpack
+0x00023759 T l2cc_lecb_init_disconnect
+0x00023839 T l2cc_lecb_pdu_unpack
+0x00023cd5 T l2cc_pdu_header_check
+0x000248a9 T l2cc_pdu_unpack
+
+;ke_mem
+0x30000918 D ke_env
+
+;gapm_smp
+0x000134bd T gapm_smp_encrypt_req
+
+;boot
+0x30001cd8 D boot_info
 
 #<SYMDEFS># ARM Linker, 5060061: Last Updated: Thu Jul 24 20:52:03 2018
 ;sdk rom symbol

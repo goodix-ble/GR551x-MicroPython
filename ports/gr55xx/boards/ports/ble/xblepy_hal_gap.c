@@ -24,7 +24,7 @@ gr_ble_gap_params_t s_gr_ble_gap_params_ins = {
 };
 
 gap_sec_key_t       s_gr_gap_sec_key = {
-    .key            = {0x12,0x34,0x56,0x78,0x9a,0xbc,0xde,0xef, \
+    .key            = {0x32,0x25,0x56,0x78,0x9a,0xbc,0xde,0xef, \
                        0xfe,0xdc,0xba,0x98,0x76,0x54,0x32,0x10}
 };
 
@@ -211,8 +211,8 @@ bool gr_xblepy_gap_start_advertise(xblepy_advertise_data_t * p_adv_params) {
     //2. start adv
     ret = gr_xblepy_gap_start_adv(p_adv_params);    
 
-    uint32_t patch_enable_flag_addr = 0x300041d8;
-    printf("+++ patch_enable_flag: 0x%x \r\n", *((uint32_t *)0x300041d8));
+    uint32_t patch_enable_flag_addr = 0x3000429c;
+    printf("+++ patch_enable_flag: 0x%x \r\n", *((uint32_t *)0x3000429c));
 
     
     return ret;

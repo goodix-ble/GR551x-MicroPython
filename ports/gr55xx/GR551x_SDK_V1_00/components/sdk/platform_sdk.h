@@ -17,7 +17,7 @@
  * @{
  */
  /**
-  @addtogroup platform sdk function
+  @addtogroup Plat_SDK Platform SDK
   @{
   @brief Definitions and prototypes for the Platform SDK
  */
@@ -28,14 +28,22 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
- 
-/**@addtogroup Platform SDK Enumerations
- * @{ */
+#include "system_gr55xx.h"
 
-/**@brief IO PINs for leakage protect. */
+/**
+ * @defgroup  PlAT_SDK_DEFINES Defines
+ * @{
+ */
+
+/**@brief IO PINs for leakage protection. */
 #define GPIO_PIN(x)                 ( 1<< (x) )
 #define AON_IO_PIN(x)               ( 1<< (x) )
 #define MSIO_PIN(x)                 ( 1<< (x) )
+
+ /** @} */
+
+/**@addtogroup PlAT_SDK_ENUM Enumerations
+ * @{ */
 
 /**@brief system clock and run mode. */
 typedef enum
@@ -63,13 +71,23 @@ typedef enum
 } sdk_clock_type_t;
 
 
-/*
+/**@brief memory power setting mode. */
+typedef enum
+{
+   MEM_POWER_FULL_MODE = 0,
+   MEM_POWER_AUTO_MODE,    
+} mem_power_t;
+ /** @} */
+ 
+/**@addtogroup PlAT_SDK_STRUCT Structures
+ * @{ */ 
+/**
  ****************************************************************************************
- * @brief   IO leakage protect config table.
- * The three fields are defined in bitmap format, each bit is corresponding to each IO
- * The configuration rules are as below
- * 1. input to GR551x with on-board PU or PD resistors
- * 2. output from GR551x
+ * @brief   IO leakage protection config table.
+ * The three fields are defined in bitmap format, each bit is corresponding to each IO.
+ * The configuration rules are as below.
+ * 1. input to GR551x with on-board PU or PD resistors.
+ * 2. output from GR551x.
  * IO setting must be set properly according to board configurations to avoid leackage
  * during sleep.
  ****************************************************************************************
@@ -81,60 +99,63 @@ typedef struct
    uint8_t  msio;
 } io_table_t;
 
-/**@brief memory power setting mode. */
-typedef enum
-{
-   MEM_POWER_FULL_MODE = 0,
-   MEM_POWER_AUTO_MODE,    
-} mem_power_t;
-
  /** @} */
 
-/** @addtogroup PLATFORM_SDK Functions
+/** @addtogroup PLAT_SDK_FUNCTIONS Functions
  * @{ */
 
-/*
+/**
  ****************************************************************************************
- * @brief   platform sdk init function
+ * @brief   platform sdk init function.
  * @retval :  void
  ****************************************************************************************
  */
 void platform_sdk_init(void);
 
-/*
+/**
  ****************************************************************************************
- * @brief  set the memory power state
- * @param[in] mem_pwr_mode : FULL POWER setting or AUTO POWER setting
+ * @brief  set the memory power state.
+ * @param[in] mem_pwr_mode : FULL POWER setting or AUTO POWER setting.
  * @retval : void
  ****************************************************************************************
  */
 void system_lp_mem_mode_set(mem_power_t mem_pwr_mode);
 
-/*
+/**
  ****************************************************************************************
- * @brief  update the counter A and counter B
- * @param[in] counter_a :  Start Index Number
- * @param[in] counter_b   :  End Index Number
+ * @brief  enable the power status of specified memory address.
+ * @param[in] addr : memory address.
+ * @param[in] length : memory length.
+ * @retval : void
+ ****************************************************************************************
+ */
+void system_mem_power_enable(uint32_t addr, uint32_t length);
+
+/**
+ ****************************************************************************************
+ * @brief  update the counter A and counter B.
+ * @param[in] cnt_a :  Start Index Number.
+ * @param[in] cnt_b :  End Index Number.
  * @retval :  void
  ****************************************************************************************
  */
 void system_lp_counter_set(uint8_t cnt_a, uint8_t cnt_b);
 
-/*
+/**
  ****************************************************************************************
- * @brief  Enabling patch function
- * @param[in] table_idx :  Start Index Number
- * @param[in] dur   :  duration setting
- * @param[in] ext   :  ext wakeup setting
- * @param[in] osc   :  pre-wakeup setting
+ * @brief  Enable patch function.
+ * @param[in] table_idx :  Start Index Number.
+ * @param[in] dur_offset   :  duration setting.
+ * @param[in] ext_offset   :  ext wakeup setting.
+ * @param[in] osc_offset   :  pre-wakeup setting.
  * @retval :  void
  ****************************************************************************************
  */
 void system_lp_table_update_twval(table_idx_t table_idx, int16_t dur_offset, int16_t ext_offset, int16_t osc_offset);
 
-/*
+/**
  ****************************************************************************************
- * @brief  Leakage Protection for User's IO 
+ * @brief  Leakage Protection for User's IO.
  *         The leakage protection only acts on the outside without pull-up and pull-down,
  *         and only for input mode IO. By default, flash-related IO has been internally processed.
  *         For instance : 
@@ -144,71 +165,90 @@ void system_lp_table_update_twval(table_idx_t table_idx, int16_t dur_offset, int
  *             .aon_gpio = AON_GPIO_PIN(0) | AON_GPIO_PIN(1),
  *             .msio     = MSIO_PIN(0) | MSIO_PIN(1),
  *         };
- * @param[in] p_io_table : the potiner of io setting table
+ * @param[in] p_io_table : the potiner of io setting table.
  * @retval :  void
  ****************************************************************************************
  */
 void system_io_leakage_protect(io_table_t *p_io_table);
 
-/*
+/**
  ****************************************************************************************
- * @brief  platform low power clock init function
-+ * @param[in] clock     :  Exteranl RTC setting or internal RNG/RNG2 setting
-+ * @param[in] accuracy  :  Low speed clock accuracy.
-+ * @param[in] xo_offset :  Clock calibration parameter.
+ * @brief  Platform low power clock init function.
+ * @param[in] clock     :  External RTC setting or internal RNG/RNG2 setting.
+ * @param[in] accuracy  :  Low speed clock accuracy.
+ * @param[in] xo_offset :  Clock calibration parameter.
  * @retval :  void
  ****************************************************************************************
  */
-void platform_clock_init(sdk_clock_type_t clock, uint16_t accuracy, uint16_t xo_offset);
+void platform_clock_init(mcu_clock_type_t sys_clock, sdk_clock_type_t clock, uint16_t accuracy, uint16_t xo_offset);
 
-/*
+/**
  ****************************************************************************************
- * @brief  platform rc calibration function
+ * @brief  Platform rc calibration function.
  * @retval :  void
  ****************************************************************************************
  */
 void platform_rc_calibration(void);
 
-/*
+/**
  ****************************************************************************************
- * @brief  platform init function
+ * @brief  Platform init function.
  * @retval :  void
  ****************************************************************************************
  */
 void platform_init(void);
 
-/*
+/**
  ****************************************************************************************
- * @brief  pmu init function
+ * @brief  PMU init function.
+ * @param[in] clock_type :  clock type to be configured.
  * @retval : void
  ****************************************************************************************
  */
-void system_pmu_init(void);
+void system_pmu_init(mcu_clock_type_t clock_type);
 
-/*
+/**
  ****************************************************************************************
- * @brief  pmu deinit function
+ * @brief  PMU deinit function.
  * @retval : void
  ****************************************************************************************
  */
 void system_pmu_deinit(void);
 
-/*
+/**
  ****************************************************************************************
- * @brief  warm boot process
+ * @brief  Warm boot process.
  * @retval :  void
  ****************************************************************************************
  */
 void warm_boot(void);
 
-/*
+/**
  ****************************************************************************************
- * @brief  pmu calibration handler     
- * @param[in] p_arg : none args
+ * @brief  PMU calibration handler.     
+ * @param[in] p_arg : no args.
  * @retval :  void
  ****************************************************************************************
  */
 void pmu_calibration_handler(void* p_arg);
+
+
+/**
+ ****************************************************************************************
+ * @brief  start calibration.     
+ * @param[in] interval : the interval of calibration process.
+ * @retval :  void
+ ****************************************************************************************
+ */
+void system_pmu_calibration_start(uint32_t interval);
+
+/**
+ ****************************************************************************************
+ * @brief  stop calibration.     
+ * @retval :  void
+ ****************************************************************************************
+ */
+void system_pmu_calibration_stop(void);
 
 
 /** @} */

@@ -63,7 +63,6 @@ static void ble_init_complete_callback(void){
     s_gr_ble_common_params_ins.is_ble_initialized = true;
     memcpy(&s_gr_ble_common_params_ins.local_bd_addr, &bd_addr, sizeof(gap_bdaddr_t));
 
-
     //gr_xblepy_gap_start_adv_test();
 }
 
@@ -72,6 +71,8 @@ void gr_ble_stack_init(void){
     s_gr_ble_common_params_ins.is_ble_initialized = false;
 
     ble_stack_init(&s_app_ble_callback, &heaps_table);
+    
+    //sys_delay_ms(1000);
     //gr_xblepy_gap_start_adv_test();
 }
 

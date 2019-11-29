@@ -165,7 +165,7 @@ typedef struct _i2s_handle
 
 /** @} */
 
-/** @addtogroup HAL_I2S_STRUCTURES Callback Structures
+/** @addtogroup HAL_I2S_CALLBACK_STRUCTURES Callback Structures
   * @{
   */
 
@@ -584,7 +584,7 @@ void hal_i2s_msp_deinit(i2s_handle_t *p_i2s);
     This subsection provides a set of functions allowing to manage the I2S
     data transfers.
 
-    [..] The I2S supports master and slave mode :
+    [..] The I2S supports master and slave mode:
 
     (#) There are two modes of transfer:
        (++) Blocking mode: The communication is performed in polling mode.
@@ -781,7 +781,7 @@ hal_status_t hal_i2s_stop_clock(i2s_handle_t *p_i2s);
  *           - Disable the DMA transfer in the peripheral register (if enabled)
  *           - Abort DMA transfer by calling hal_dma_abort (in case of transfer in DMA mode)
  *           - Set handle State to READY
- * @note   This procedure is executed in blocking mode : when exiting function, Abort is considered as completed.
+ * @note   This procedure is executed in blocking mode: When exiting function, Abort is considered as completed.
  * @retval ::HAL_OK: Operation is OK.
  * @retval ::HAL_ERROR: Parameter error or operation not supported.
  * @retval ::HAL_BUSY: Driver is busy.

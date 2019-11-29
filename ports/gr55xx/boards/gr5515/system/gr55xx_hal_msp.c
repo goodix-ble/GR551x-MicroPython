@@ -42,6 +42,36 @@
 #include "gr55xx_hal.h"
 #include "boards.h"
 
+
+#ifndef QSPI_MODULE
+    #define QSPI_MODULE                     QSPI1
+#endif
+#ifndef QSPI_GPIO_MUX
+    #define QSPI_GPIO_MUX                   GPIO_MUX_2
+#endif
+#ifndef QSPI_GPIO_PORT
+    #define QSPI_GPIO_PORT                  GPIO0
+#endif
+#ifndef QSPI_CS_PIN
+    #define QSPI_CS_PIN                     GPIO_PIN_15  //GPIO15
+#endif
+#ifndef QSPI_CLK_PIN
+    #define QSPI_CLK_PIN                    GPIO_PIN_9   //GPIO9
+#endif
+#ifndef QSPI_IO0_PIN
+    #define QSPI_IO0_PIN                    GPIO_PIN_8   //GPIO8
+#endif
+#ifndef QSPI_IO1_PIN
+    #define QSPI_IO1_PIN                    GPIO_PIN_14  //GPIO14
+#endif
+#ifndef QSPI_IO2_PIN
+    #define QSPI_IO2_PIN                    GPIO_PIN_13  //GPIO13
+#endif
+#ifndef QSPI_IO3_PIN
+    #define QSPI_IO3_PIN                    GPIO_PIN_12  //GPIO12
+#endif
+
+
 /*
  * DEFINES
  *****************************************************************************************

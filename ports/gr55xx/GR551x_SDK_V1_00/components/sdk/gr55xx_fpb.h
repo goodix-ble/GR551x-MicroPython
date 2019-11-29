@@ -70,4 +70,25 @@ void fpb_register_patch_init_func(fun_t patch_enable_func);
  */
 void fpb_init(fpb_mode_t fpb_mode);
 
+
+ /*
+ ****************************************************************************************
+ * @brief  svc sub-function register
+ * @param[in] svc_num : the number of svc 
+ * @param[in] func : sub-function callback
+ * @retval :  void
+ ****************************************************************************************
+ */
+void svc_func_register(uint8_t svc_num, uint32_t func);
+
+
+ /*
+ ****************************************************************************************
+ * @brief  register sve table function
+ * @param[in] p_svc_table : the pointer of sve table
+ * @retval :  void
+ ****************************************************************************************
+ */
+void svc_table_register(uint32_t *p_svc_table);
+
 #endif

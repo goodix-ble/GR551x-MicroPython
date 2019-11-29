@@ -4,7 +4,6 @@
  */
 #include "gr55xx_sys.h"
 #include "user_app.h"
-#include "ble_prf_utils.h"
 #include "gr_config.h"
 #include "gr_porting.h"
 #include "xblepy_hal.h"
@@ -57,7 +56,7 @@ static uint8_t  s_attr_mask[GR_BLE_ATTR_MASK_LEN];
 
 static ble_err_t gatt_prf_db_init(void)
 {
-    uint16_t           start_hdl  = PRF_INVALID_HANDLE;
+    uint16_t           start_hdl  = GR_PRF_INVALID_HANDLE;
     sdk_err_t          error_code = SDK_SUCCESS;
     gatts_create_db_t  gatts_db;
     BTGattServiceList_t * psrv;

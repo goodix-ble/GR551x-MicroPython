@@ -41,7 +41,7 @@
  */
 #include "at_cmd.h"
 #include "at_cmd_utils.h"
-#include "cmsis_armcc.h"
+#include "cmsis_compiler.h"
 #include <string.h>
 
 /*

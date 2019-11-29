@@ -47,7 +47,7 @@
  ****************************************************************************************
  */
 #define ONCE_SEND_LEN           1024     /**< DFU master once send length. */
-#define RECEIVE_MAX_LEN         1200     /**< DFU master receive max length. */
+#define RECEIVE_MAX_LEN         2048     /**< DFU master receive max length. */
 #define CMD_FRAME_HEADER_L      0x44     /**< CMD header low byte. */
 #define CMD_FRAME_HEADER_H      0x47     /**< CMD header high byte. */
 #define PROGRAM_START           0x23     /**< Program start cmd. */
@@ -111,6 +111,8 @@ static uint16_t          s_sended_len;
 static uint16_t          s_all_send_len;
 static uint16_t          s_once_size = 244;
 static uint8_t*          s_send_data_buffer;
+
+static cmd_parse_state_t s_parse_state = CHECK_FRAME_L_STATE;
 
 
 /**
@@ -316,21 +318,20 @@ void dfu_m_send_data_cmpl_process(void)
 
 void dfu_m_cmd_prase(uint8_t* data,uint16_t len)
 {
-    static cmd_parse_state_t parse_state = CHECK_FRAME_L_STATE; 
     uint16_t i = 0;
     
     if(s_cmd_receive_flag == 0)
     {
         for(i=0; i<len; i++)
         {
-            switch(parse_state)
+            switch(s_parse_state)
             {
                 case CHECK_FRAME_L_STATE:
                 {
                     s_receive_check_sum = 0;
                     if(data[i] == CMD_FRAME_HEADER_L)
                     {
-                        parse_state = CHECK_FRAME_H_STATE;
+                        s_parse_state = CHECK_FRAME_H_STATE;
                     }
                 }
                 break;
@@ -339,11 +340,11 @@ void dfu_m_cmd_prase(uint8_t* data,uint16_t len)
                 {
                     if(data[i] == CMD_FRAME_HEADER_H)
                     {
-                        parse_state = RECEIVE_CMD_TYPE_L_STATE;
+                        s_parse_state = RECEIVE_CMD_TYPE_L_STATE;
                     } else if(data[i] == CMD_FRAME_HEADER_L) {
-                        parse_state = CHECK_FRAME_H_STATE;
+                        s_parse_state = CHECK_FRAME_H_STATE;
                     } else {
-                        parse_state = CHECK_FRAME_L_STATE;
+                        s_parse_state = CHECK_FRAME_L_STATE;
                     }
                 }
                 break;
@@ -352,7 +353,7 @@ void dfu_m_cmd_prase(uint8_t* data,uint16_t len)
                 {
                     s_receive_frame.cmd_type = data[i];
                     s_receive_check_sum += data[i];
-                    parse_state = RECEIVE_CMD_TYPE_H_STATE;
+                    s_parse_state = RECEIVE_CMD_TYPE_H_STATE;
                 }
                 break;
                 
@@ -360,7 +361,7 @@ void dfu_m_cmd_prase(uint8_t* data,uint16_t len)
                 {
                     s_receive_frame.cmd_type |= (data[i] << 8);
                     s_receive_check_sum += data[i];
-                    parse_state = RECEIVE_LEN_L_STATE;
+                    s_parse_state = RECEIVE_LEN_L_STATE;
                 }
                 break;
                 
@@ -368,7 +369,7 @@ void dfu_m_cmd_prase(uint8_t* data,uint16_t len)
                 {
                     s_receive_frame.data_len = data[i];
                     s_receive_check_sum += data[i];
-                    parse_state = RECEIVE_LEN_H_STATE;
+                    s_parse_state = RECEIVE_LEN_H_STATE;
                 }
                 break;
                 
@@ -378,16 +379,16 @@ void dfu_m_cmd_prase(uint8_t* data,uint16_t len)
                     s_receive_check_sum += data[i];
                     if(s_receive_frame.data_len == 0)
                     {
-                        parse_state = RECEIVE_CHECK_SUM_L_STATE;
+                        s_parse_state = RECEIVE_CHECK_SUM_L_STATE;
                     }
                     else if(s_receive_frame.data_len >= RECEIVE_MAX_LEN)
                     {
-                        parse_state = CHECK_FRAME_L_STATE;
+                        s_parse_state = CHECK_FRAME_L_STATE;
                     }
                     else
                     {
                         s_receive_data_count = 0;
-                        parse_state = RECEIVE_DATA_STATE;
+                        s_parse_state = RECEIVE_DATA_STATE;
                     }
                 }
                 break;
@@ -397,7 +398,7 @@ void dfu_m_cmd_prase(uint8_t* data,uint16_t len)
                     s_receive_frame.data[s_receive_data_count] = data[i];    
                     if(++s_receive_data_count == s_receive_frame.data_len)
                     {
-                        parse_state = RECEIVE_CHECK_SUM_L_STATE;
+                        s_parse_state = RECEIVE_CHECK_SUM_L_STATE;
                     }
                 }
                 break;
@@ -405,19 +406,19 @@ void dfu_m_cmd_prase(uint8_t* data,uint16_t len)
                 case RECEIVE_CHECK_SUM_L_STATE:
                 {
                     s_receive_frame.check_sum = data[i];
-                    parse_state = RECEIVE_CHECK_SUM_H_STATE;
+                    s_parse_state = RECEIVE_CHECK_SUM_H_STATE;
                 }
                 break;
                 
                 case RECEIVE_CHECK_SUM_H_STATE:
                 {
                     s_receive_frame.check_sum |= (data[i] << 8);
-                    parse_state = CHECK_FRAME_L_STATE;
+                    s_parse_state = CHECK_FRAME_L_STATE;
                     dfu_m_cmd_check();
                 }
                 break;
                 
-                default:{parse_state=CHECK_FRAME_L_STATE;}break;
+                default:{s_parse_state=CHECK_FRAME_L_STATE;}break;
             }
         }
     }
@@ -473,12 +474,25 @@ void dfu_m_program_start(bool security, bool run_fw)
     dfu_m_send_frame(s_receive_frame.data, img_len+1, PROGRAM_START);
 }
 
-void dfu_m_schedule(void)
+void dfu_m_parse_state_reset(void)
+{
+    s_parse_state = CHECK_FRAME_L_STATE;
+    s_cmd_receive_flag   = false;
+    s_receive_data_count = 0;
+    s_receive_check_sum  = 0;
+}
+
+void dfu_m_schedule(dfu_m_rev_cmd_cb_t rev_cmd_cb)
 {
     uint8_t pre = 0;
 
     if(s_cmd_receive_flag)
     {
+        if (rev_cmd_cb)
+        {
+            rev_cmd_cb();
+        }
+
         switch (s_receive_frame.cmd_type)
         {
             case PROGRAM_START:
@@ -525,7 +539,7 @@ void dfu_m_schedule(void)
                 break;
 
             case PROGRAME_END:
-                if(s_receive_frame.data[0] == ACK_SUCCESS)//Éý¼¶³É¹¦
+                if(s_receive_frame.data[0] == ACK_SUCCESS)
                 {
                     dfu_m_event_handler(PRO_END_SUCCESS, 0);
                 }
